@@ -1,0 +1,143 @@
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 18% 30%, rgba(56, 225, 255, 0.1), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 85% 65%, rgba(225, 77, 255, 0.09), transparent 70%),
+    linear-gradient(180deg, rgba(5, 6, 11, 0.55), rgba(5, 6, 11, 0.25) 45%, var(--bg));
+}
+
+.hero-content {
+  position: relative;
+  padding-block: 140px 120px;
+  max-width: 980px;
+}
+
+.hero-content > * {
+  animation: hero-rise 0.9s var(--ease-out) both;
+}
+
+.hero-content > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.hero-content > *:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.hero-content > *:nth-child(4) {
+  animation-delay: 0.36s;
+}
+
+.hero-badge {
+  display: inline-block;
+  margin-bottom: 28px;
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(14, 17, 28, 0.6);
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hero-title {
+  font-size: clamp(2.8rem, 7.5vw, 5.4rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 28px;
+}
+
+.hero-lead {
+  max-width: 560px;
+  margin-bottom: 44px;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  justify-content: center;
+  width: 28px;
+  height: 46px;
+  border: 1.5px solid rgba(148, 163, 220, 0.4);
+  border-radius: 999px;
+}
+
+.hero-scroll span {
+  width: 4px;
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--muted);
+  animation: hero-scroll-hint 2s ease-in-out infinite;
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+
+@keyframes hero-scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  55% {
+    transform: translateY(14px);
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-content > * {
+    animation: none;
+  }
+
+  .hero-scroll span {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-content {
+    padding-block: 120px 100px;
+  }
+
+  .hero-scroll {
+    display: none;
+  }
+}
