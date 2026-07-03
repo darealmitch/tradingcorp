@@ -1,0 +1,25 @@
+<header class="site-header" [class.is-scrolled]="scrolled()" [class.is-open]="menuOpen()">
+  <div class="container header-inner">
+    <a class="brand" href="#accueil" (click)="closeMenu()">TRADING<span>CORP</span></a>
+
+    <nav class="header-nav" aria-label="Navigation principale">
+      <a href="#formations" (click)="closeMenu()">Programme</a>
+      <a href="#marches" (click)="closeMenu()">FAQ</a>
+      <a href="#methode" (click)="closeMenu()">Ressources</a>
+      <a class="btn btn-primary nav-cta" href="#commencer" (click)="closeMenu()">Ouvrir un compte</a>
+    </nav>
+
+    <a class="btn btn-primary header-cta" href="#commencer">Ouvrir un compte</a>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen()"
+      aria-label="Ouvrir ou fermer le menu"
+    >
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>

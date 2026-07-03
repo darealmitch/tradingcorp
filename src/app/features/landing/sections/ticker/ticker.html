@@ -1,0 +1,22 @@
+<section class="ticker" aria-label="Aperçu des marchés">
+  <div class="ticker-track">
+    <ul class="ticker-list">
+      @for (quote of quotes; track quote.symbol) {
+        <li>
+          <span class="ticker-symbol">{{ quote.symbol }}</span>
+          <span class="ticker-price">{{ quote.price }}</span>
+          <span class="ticker-change" [class.is-down]="!quote.up">{{ quote.change }}</span>
+        </li>
+      }
+    </ul>
+    <ul class="ticker-list" aria-hidden="true">
+      @for (quote of quotes; track quote.symbol) {
+        <li>
+          <span class="ticker-symbol">{{ quote.symbol }}</span>
+          <span class="ticker-price">{{ quote.price }}</span>
+          <span class="ticker-change" [class.is-down]="!quote.up">{{ quote.change }}</span>
+        </li>
+      }
+    </ul>
+  </div>
+</section>

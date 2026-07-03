@@ -1,0 +1,127 @@
+.site-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 0.3s,
+    border-color 0.3s;
+}
+
+.site-header.is-scrolled {
+  background: rgba(5, 6, 11, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: var(--line);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  height: 72px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-left: auto;
+}
+
+.header-nav a:not(.nav-cta) {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.header-nav a:not(.nav-cta):hover {
+  color: var(--text);
+}
+
+.nav-cta {
+  display: none;
+}
+
+.header-cta {
+  height: 44px;
+  padding-inline: 24px;
+  font-size: 0.9rem;
+}
+
+.menu-toggle {
+  position: relative;
+  z-index: 2;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+}
+
+.menu-toggle span {
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.3s var(--ease-out);
+}
+
+.is-open .menu-toggle span:first-child {
+  transform: translateY(4.5px) rotate(45deg);
+}
+
+.is-open .menu-toggle span:last-child {
+  transform: translateY(-4.5px) rotate(-45deg);
+}
+
+@media (max-width: 860px) {
+  .header-cta {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .header-nav {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 36px;
+    margin: 0;
+    background: rgba(5, 6, 11, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .is-open .header-nav {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .header-nav a:not(.nav-cta) {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--text);
+  }
+
+  .nav-cta {
+    display: inline-flex;
+    margin-top: 16px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header-nav {
+      transition: none;
+    }
+  }
+}
