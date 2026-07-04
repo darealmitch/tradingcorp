@@ -1,5 +1,6 @@
 .markets {
-  background: var(--bg-soft);
+  /* Translucide : laisse transparaître le champ de particules de fond */
+  background: rgba(9, 11, 19, 0.72);
   border-block: 1px solid var(--line);
 }
 
