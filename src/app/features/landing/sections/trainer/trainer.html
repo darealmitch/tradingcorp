@@ -1,0 +1,131 @@
+<section class="section trainer" id="formateur">
+  <div class="container">
+    <div class="section-head centered" appReveal>
+      <span class="eyebrow">Le formateur</span>
+      <h2>Un parcours, pas un <span class="text-gradient">discours</span>.</h2>
+    </div>
+
+    <div class="trainer-intro">
+      <!-- Portrait détouré sur halo + clip vidéo en incrustation -->
+      <div class="trainer-visual" appReveal>
+        <div class="trainer-halo" aria-hidden="true"></div>
+        <div class="trainer-portrait" #portrait>
+          <img src="images/formateur/andre.png" alt="Portrait de Keryan André, formateur TradingCorp" />
+        </div>
+        <button
+          type="button"
+          class="trainer-play"
+          (click)="openVideo('images/formateur/presentation.mp4', $event)"
+        >
+          <span class="trainer-play-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+          </span>
+          <span class="trainer-play-label">Voir la présentation</span>
+        </button>
+      </div>
+
+      <div class="trainer-bio" appReveal revealDelay="120">
+        <p class="trainer-role">Trader · Investisseur · Formateur</p>
+        <h3 class="trainer-name">Keryan André</h3>
+
+        <p>
+          Comme beaucoup, l'école n'était pas faite pour moi. Bac décroché en candidat libre à
+          18&nbsp;ans, puis une année derrière le comptoir d'un McDonald's — où j'ai placé mes
+          premières économies.
+        </p>
+        <p>
+          Du fast-food à l'entrepreneuriat&nbsp;: je me lance comme mandataire immobilier chez
+          Keller&nbsp;Williams, et je réinvestis chaque commission sur les marchés.
+        </p>
+        <p>
+          Aujourd'hui, <span class="trainer-em">plus de 800&nbsp;000&nbsp;euros</span> générés en
+          fonds propres et <span class="trainer-em">plus de 200&nbsp;élèves</span> accompagnés.
+        </p>
+
+        <div class="trainer-founder">
+          <span class="trainer-founder-label">Cofondateur de</span>
+          <ul>
+            <li>Million&nbsp;Quest</li>
+            <li>IMEO</li>
+            <li>Trading&nbsp;Corp</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chiffres-clés animés -->
+    <dl class="trainer-stats" appReveal revealDelay="80">
+      @for (stat of stats; track stat.label; let i = $index) {
+        <div class="trainer-stat">
+          <dt #statValue>{{ values()[i] }}{{ stat.suffix }}</dt>
+          <dd>{{ stat.label }}</dd>
+        </div>
+      }
+    </dl>
+
+    <!-- Parcours -->
+    <ol class="trainer-journey">
+      @for (milestone of milestones; track milestone.title; let i = $index) {
+        <li class="journey-step" appReveal [revealDelay]="i * 90">
+          <span class="journey-marker" aria-hidden="true"></span>
+          <span class="journey-index" aria-hidden="true">0{{ i + 1 }}</span>
+          <span class="journey-step-label">{{ milestone.step }}</span>
+          <h4 class="journey-title">{{ milestone.title }}</h4>
+          <p class="journey-desc">{{ milestone.desc }}</p>
+        </li>
+      }
+    </ol>
+
+    <!-- Mission -->
+    <figure class="trainer-mission" appReveal>
+      <blockquote>
+        Ma mission&nbsp;: donner aux débutants la <span class="text-gradient">confiance</span>, les
+        compétences et la discipline pour réussir dans l'investissement.
+      </blockquote>
+
+      <!-- Retours clients filmés après un entretien téléphonique avec Keryan -->
+      <div class="testimonials">
+        <span class="testimonials-label">Ce qu'ils en disent après un appel avec Keryan</span>
+        <ul class="testimonials-row">
+          @for (video of testimonials; track video.src) {
+            <li>
+              <button type="button" class="testimonial-card" (click)="openVideo(video.src, $event)">
+                <video
+                  [src]="video.src + '#t=0.1'"
+                  muted
+                  playsinline
+                  preload="metadata"
+                  [attr.aria-label]="video.alt"
+                ></video>
+                <span class="testimonial-play" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <figcaption>Keryan André — Fondateur de TradingCorp</figcaption>
+    </figure>
+  </div>
+</section>
+
+@if (activeVideo(); as src) {
+  <div
+    class="video-lightbox"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Lecture vidéo"
+    tabindex="-1"
+    (click)="closeVideo()"
+    (keydown.escape)="closeVideo()"
+  >
+    <div class="video-inner" (click)="$event.stopPropagation()">
+      <button type="button" class="video-close" (click)="closeVideo()" aria-label="Fermer" autofocus>
+        <span aria-hidden="true"></span>
+      </button>
+      <video [src]="src" controls autoplay playsinline preload="metadata"></video>
+    </div>
+  </div>
+}
