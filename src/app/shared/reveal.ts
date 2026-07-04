@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 
 /**
- * Révèle l'élément (fondu + translation) lorsqu'il entre dans le viewport.
- * Avec `prefers-reduced-motion`, l'élément est affiché immédiatement.
+  Révèle l'élément (fondu + translation) lorsqu'il entre dans le viewport.
+ Avec `prefers-reduced-motion`, l'élément est affiché immédiatement.
  */
 @Directive({
   selector: '[appReveal]',
