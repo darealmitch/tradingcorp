@@ -1,11 +1,15 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CryptoService } from '../../../../core/crypto/crypto.service';
+import { CryptoQuote } from '../../../../core/crypto/crypto.models';
 
-interface Quote {
-  symbol: string;
-  price: string;
-  change: string;
-  up: boolean;
-}
+/**
+ * IDs CoinMarketCap stables des cryptos affichées, dans l'ordre voulu.
+ * (Bitcoin, Ethereum, Tether, BNB, Solana, XRP, Cardano, Dogecoin.)
+ * Pour en ajouter d'autres, récupérer leur ID via /v1/cryptocurrency/map —
+ * voir la documentation dans CryptoService.
+ */
+const TRACKED_IDS = [1, 1027, 825, 1839, 5426, 52, 2010, 74];
 
 @Component({
   selector: 'app-ticker',
@@ -13,15 +17,42 @@ interface Quote {
   styleUrl: './ticker.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Ticker {
-  protected readonly quotes: Quote[] = [
-    { symbol: 'BTC / USD', price: '64 218,50', change: '+2,41 %', up: true },
-    { symbol: 'ETH / USD', price: '3 152,08', change: '+1,87 %', up: true },
-    { symbol: 'EUR / USD', price: '1,0842', change: '-0,12 %', up: false },
-    { symbol: 'S&P 500', price: '5 486,30', change: '+0,64 %', up: true },
-    { symbol: 'NASDAQ 100', price: '17 862,10', change: '+0,92 %', up: true },
-    { symbol: 'OR', price: '2 384,60', change: '-0,35 %', up: false },
-    { symbol: 'AAPL', price: '214,72', change: '+1,12 %', up: true },
-    { symbol: 'PÉTROLE WTI', price: '82,14', change: '+0,48 %', up: true },
-  ];
+export class Ticker implements OnInit {
+  private readonly crypto = inject(CryptoService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  protected readonly quotes = signal<CryptoQuote[]>([]);
+  protected readonly loading = signal(true);
+  protected readonly failed = signal(false);
+
+  ngOnInit(): void {
+    this.crypto
+      .getQuotes(TRACKED_IDS)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (quotes) => {
+          this.quotes.set(quotes);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.failed.set(true);
+          this.loading.set(false);
+        },
+      });
+  }
+
+  /** Prix en français ; plus de décimales sous 1 $ (stablecoins, micro-caps). */
+  protected formatPrice(price: number): string {
+    const digits = price >= 1 ? 2 : 6;
+    return price.toLocaleString('fr-FR', {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    });
+  }
+
+  /** Variation 24 h signée, format français. */
+  protected formatChange(percent: number): string {
+    const sign = percent >= 0 ? '+' : '';
+    return `${sign}${percent.toFixed(2).replace('.', ',')} %`;
+  }
 }

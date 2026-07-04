@@ -1,22 +1,19 @@
-<section class="ticker" aria-label="Aperçu des marchés">
-  <div class="ticker-track">
-    <ul class="ticker-list">
-      @for (quote of quotes; track quote.symbol) {
-        <li>
-          <span class="ticker-symbol">{{ quote.symbol }}</span>
-          <span class="ticker-price">{{ quote.price }}</span>
-          <span class="ticker-change" [class.is-down]="!quote.up">{{ quote.change }}</span>
-        </li>
+@if (quotes().length) {
+  <section class="ticker" aria-label="Cours des cryptomonnaies en temps réel">
+    <div class="ticker-track">
+      @for (copy of [0, 1]; track copy) {
+        <ul class="ticker-list" [attr.aria-hidden]="copy === 1 ? true : null">
+          @for (quote of quotes(); track quote.id) {
+            <li>
+              <span class="ticker-symbol">{{ quote.symbol }} / USD</span>
+              <span class="ticker-price">{{ formatPrice(quote.price) }}</span>
+              <span class="ticker-change" [class.is-down]="!quote.up">
+                {{ formatChange(quote.changePercent) }}
+              </span>
+            </li>
+          }
+        </ul>
       }
-    </ul>
-    <ul class="ticker-list" aria-hidden="true">
-      @for (quote of quotes; track quote.symbol) {
-        <li>
-          <span class="ticker-symbol">{{ quote.symbol }}</span>
-          <span class="ticker-price">{{ quote.price }}</span>
-          <span class="ticker-change" [class.is-down]="!quote.up">{{ quote.change }}</span>
-        </li>
-      }
-    </ul>
-  </div>
-</section>
+    </div>
+  </section>
+}
