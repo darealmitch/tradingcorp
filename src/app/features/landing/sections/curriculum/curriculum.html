@@ -1,0 +1,62 @@
+<section class="section curriculum" id="programme-detail">
+  <div class="container">
+    <div class="section-head centered" appReveal>
+      <span class="eyebrow">Le contenu</span>
+      <h2>Le programme <span class="text-gradient">en détail</span></h2>
+      <p>Neuf domaines complémentaires, du mental à la finance de marché — et un diplôme à la clé.</p>
+    </div>
+
+    <div class="curriculum-grid">
+      <!-- Certificat de fin de formation -->
+      <div class="curriculum-cert" appReveal>
+        <button type="button" class="cert-frame" (click)="openCert($event)" aria-label="Agrandir le certificat">
+          <img src="images/diplome.png" alt="Certificat de fin de programme signé, décerné à la fin de la formation" />
+          <span class="cert-zoom" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h6v6M21 3l-8 8M9 21H3v-6M3 21l8-8" />
+            </svg>
+          </span>
+        </button>
+
+        <h3 class="cert-title">Un diplôme reconnaissant tes compétences</h3>
+        <p class="cert-text">
+          Reçois, en fin de formation, un <span class="cert-em">certificat d'achèvement signé</span>
+          mettant en avant les compétences acquises durant ton apprentissage.
+        </p>
+        <p class="cert-text">
+          Un vrai complément à ton CV et une preuve de qualification dans le domaine de la finance,
+          et plus particulièrement de la finance de marché.
+        </p>
+      </div>
+
+      <!-- Matières du programme -->
+      <ol class="curriculum-topics">
+        @for (topic of topics; track topic; let i = $index) {
+          <li class="topic" appReveal [revealDelay]="i * 60">
+            <span class="topic-index" aria-hidden="true">{{ i < 9 ? '0' + (i + 1) : i + 1 }}</span>
+            <span class="topic-name">{{ topic }}</span>
+          </li>
+        }
+      </ol>
+    </div>
+  </div>
+</section>
+
+@if (certOpen()) {
+  <div
+    class="cert-lightbox"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Certificat de fin de programme"
+    tabindex="-1"
+    (click)="closeCert()"
+    (keydown.escape)="closeCert()"
+  >
+    <div class="cert-lightbox-inner" (click)="$event.stopPropagation()">
+      <button type="button" class="cert-close" (click)="closeCert()" aria-label="Fermer" autofocus>
+        <span aria-hidden="true"></span>
+      </button>
+      <img src="images/diplome.png" alt="Certificat de fin de programme en grand format" />
+    </div>
+  </div>
+}
