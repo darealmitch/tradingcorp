@@ -34,6 +34,18 @@ const AVIS: Avis[] = [
   { img: 'images/avis-11.jpg', alt: 'Discussion WhatsApp membre' },
   { img: 'images/avis-12.jpg', alt: 'Retour WhatsApp élève' },
   { img: 'images/avis-13.jpg', alt: 'Capture WhatsApp satisfaction' },
+  { img: 'images/avis-14.jpg', alt: 'Retour SMS membre' },
+  { img: 'images/avis-15.jpg', alt: 'Retour SMS membre' },
+  { img: 'images/avis-16.jpg', alt: 'Retour SMS membre' },
+  { img: 'images/avis-17.jpg', alt: 'Retour SMS membre' },
+  { img: 'images/avis-18.jpg', alt: 'Retour SMS membre' },
+  { img: 'images/avis-19.png', alt: 'Retour formation' },
+  { img: 'images/avis-20.png', alt: 'Retour formation fiscalité' },
+  { img: 'images/avis-21.png', alt: 'Retour formation TradingCorp' },
+  { img: 'images/avis-22.png', alt: 'Retour formation TradingCorp' },
+  { img: 'images/avis-23.png', alt: 'Retour formation TradingCorp' },
+  { img: 'images/avis-24.png', alt: 'Retour formation TradingCorp' },
+  { img: 'images/avis-25.png', alt: 'Retour formation TradingCorp' },
 ];
 
 /** Touches qui provoquent un défilement vertical, neutralisées pendant la modal. */
