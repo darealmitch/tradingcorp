@@ -1,7 +1,8 @@
 .ticker {
   overflow: hidden;
   border-block: 1px solid var(--line);
-  background: var(--bg-soft);
+  /* Translucide : laisse transparaître le champ de particules de fond */
+  background: rgba(9, 11, 19, 0.72);
   padding-block: 18px;
 }
 
