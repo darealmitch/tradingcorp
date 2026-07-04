@@ -1,0 +1,69 @@
+<section class="notice" id="notice" [class.is-static]="reducedMotion()">
+  <div class="notice-stage" #stage>
+    <div class="container">
+      <div class="section-head centered notice-head" appReveal>
+        <span class="eyebrow">Témoignages</span>
+        <h2>Changer de vie ne tient qu'à toi</h2>
+        <p>Comme certains de <span class="text-gradient">nos membres l'ont déjà fait.</span></p>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-track" #track>
+        @for (item of avis; track item.img; let i = $index) {
+          <button type="button" class="gallery-card" (click)="openAvis(i, $event)">
+            <img [src]="item.img" [alt]="item.alt" loading="lazy" />
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+@if (activeAvis(); as item) {
+  <div
+    class="avis-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Témoignage en grand"
+    tabindex="-1"
+    (click)="closeAvis()"
+    (keydown.escape)="closeAvis()"
+    (keydown.arrowright)="next()"
+    (keydown.arrowleft)="prev()"
+  >
+    <button
+      type="button"
+      class="avis-nav avis-prev"
+      (click)="prev(); $event.stopPropagation()"
+      [disabled]="activeIndex() === 0"
+      aria-label="Témoignage précédent"
+    >
+      <span aria-hidden="true"></span>
+    </button>
+
+    <div class="avis-modal-inner" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="avis-modal-close"
+        (click)="closeAvis()"
+        aria-label="Fermer"
+        autofocus
+      >
+        <span aria-hidden="true"></span>
+      </button>
+      @for (frame of [activeIndex()]; track frame) {
+        <img class="avis-modal-img" [src]="item.img" [alt]="item.alt" />
+      }
+    </div>
+
+    <button
+      type="button"
+      class="avis-nav avis-next"
+      (click)="next(); $event.stopPropagation()"
+      aria-label="Témoignage suivant"
+    >
+      <span aria-hidden="true"></span>
+    </button>
+  </div>
+}
