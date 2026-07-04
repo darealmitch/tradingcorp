@@ -1,0 +1,35 @@
+<div class="cases-stage" #stage [class.is-static]="reducedMotion()">
+  <div class="cases-frame">
+    <!-- Grille stricte en toile de fond, façon plan de travail -->
+    <div class="frame-grid" aria-hidden="true"></div>
+
+    <!-- Tunnel de particules : avance avec le scroll, recule si on remonte -->
+    <canvas class="frame-tunnel" #tunnel aria-hidden="true"></canvas>
+
+    <!-- Habillage HUD : étiquette + position dans la traversée -->
+    <div class="frame-hud" aria-hidden="true">
+      <span>TradingCorp — Programme</span>
+      <span>{{ currentIndex() }} / {{ total }}</span>
+    </div>
+
+    @for (item of cases; track item.id) {
+      <article class="case-slide">
+        @if (item.visuel) {
+          <img class="slide-visual" [src]="item.visuel" alt="" loading="lazy" />
+        } @else {
+          <span class="slide-number" aria-hidden="true">
+            {{ item.id < 10 ? '0' + item.id : item.id }}
+          </span>
+        }
+        <div class="slide-inner">
+          <h3 class="slide-title">{{ item.titre }}</h3>
+          <p class="slide-message">{{ item.message }}</p>
+        </div>
+      </article>
+    }
+
+    <div class="cases-progress" aria-hidden="true">
+      <span #progressBar></span>
+    </div>
+  </div>
+</div>

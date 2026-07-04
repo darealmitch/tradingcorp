@@ -1,0 +1,179 @@
+/* Traversée des cases pilotée par le scroll */
+
+.cases-stage {
+  margin-top: 150px;
+}
+
+.cases-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* Grille stricte en toile de fond, estompée vers les bords */
+.frame-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 220, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 220, 0.07) 1px, transparent 1px);
+  background-size: 120px 120px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black, transparent 90%);
+  mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black, transparent 90%);
+}
+
+.frame-tunnel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Habillage HUD en périphérie */
+.frame-hud {
+  position: absolute;
+  inset: 30px 36px auto;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.case-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* Numéro géant volontairement rogné par le bord droit du cadre */
+.slide-number {
+  position: absolute;
+  top: 50%;
+  right: -6vw;
+  translate: 0 -50%;
+  font-family: var(--font-display);
+  font-size: clamp(16rem, 42vw, 34rem);
+  font-weight: 700;
+  line-height: 1;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0.07;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Image de fond d'une case, à la place du numéro : panneau photo côté droit */
+.slide-visual {
+  position: absolute;
+  top: 50%;
+  right: 4vw;
+  translate: 0 -50%;
+  width: clamp(300px, 34vw, 560px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  opacity: 0.92;
+  pointer-events: none;
+  user-select: none;
+}
+
+.slide-inner {
+  position: relative;
+  width: min(100% - 48px, 1200px);
+  margin-inline: auto;
+}
+
+/* Très grand titre en capitales, aligné sur la grille */
+.slide-title {
+  max-width: 14ch;
+  font-size: clamp(2.6rem, 7.5vw, 6.5rem);
+  line-height: 0.98;
+}
+
+.slide-message {
+  max-width: 560px;
+  margin-top: 36px;
+  color: var(--text);
+  font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+  line-height: 1.7;
+}
+
+/* Barre de progression de la traversée */
+.cases-progress {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  translate: -50% 0;
+  width: 180px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.cases-progress span {
+  display: block;
+  height: 100%;
+  background: var(--gradient);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* ===== Repli statique (prefers-reduced-motion) ===== */
+
+.is-static .cases-frame {
+  display: block;
+  height: auto;
+  overflow: visible;
+}
+
+.is-static .frame-grid,
+.is-static .frame-tunnel,
+.is-static .frame-hud,
+.is-static .cases-progress {
+  display: none;
+}
+
+.is-static .case-slide {
+  position: static;
+  padding: 56px 0;
+  opacity: 1;
+  will-change: auto;
+}
+
+.is-static .slide-number {
+  position: static;
+  translate: none;
+  display: block;
+  margin-bottom: 12px;
+  font-size: 2rem;
+  opacity: 1;
+}
+
+.is-static .slide-visual {
+  position: static;
+  translate: none;
+  width: min(100%, 480px);
+  margin-bottom: 24px;
+  opacity: 1;
+}
+
+@media (max-width: 860px) {
+  .slide-visual {
+    right: -12vw;
+    width: 62vw;
+    opacity: 0.28;
+  }
+}
