@@ -1,0 +1,260 @@
+/* ===== Galerie horizontale des avis membres ===== */
+
+/* Scène épinglée : titre + galerie composés sur un seul écran, sans vides */
+.notice-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 56px;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.notice-head {
+  margin-bottom: 0;
+}
+
+.gallery {
+  position: relative;
+  overflow: hidden;
+}
+
+.gallery-track {
+  display: flex;
+  flex-wrap: nowrap;
+  width: max-content;
+  gap: 20px;
+  /* La bande démarre alignée sur le conteneur central du site */
+  padding-inline: max(24px, calc((100vw - 1200px) / 2)) 24px;
+  will-change: transform;
+}
+
+/* Cartes strictement uniformes : même largeur, même hauteur, même ratio */
+.gallery-card {
+  flex: 0 0 auto;
+  width: min(72vw, 300px);
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    transform 0.35s var(--ease-out),
+    border-color 0.35s,
+    box-shadow 0.35s;
+}
+
+.gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-card:hover,
+.gallery-card:focus-visible {
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(124, 108, 255, 0.55);
+  box-shadow:
+    0 24px 60px rgba(5, 6, 11, 0.65),
+    0 0 40px rgba(124, 108, 255, 0.18);
+}
+
+@media (max-width: 720px) {
+  .notice-stage {
+    gap: 36px;
+  }
+}
+
+/* ===== Modal : avis affiché en grand ===== */
+
+.avis-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(3, 4, 8, 0.78);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: avis-fade 0.25s var(--ease-out);
+}
+
+.avis-modal-inner {
+  position: relative;
+  max-width: min(92vw, 560px);
+  max-height: 90vh;
+  animation: avis-pop 0.3s var(--ease-out);
+}
+
+.avis-modal-img {
+  display: block;
+  width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+  /* Retriggé à chaque changement d'avis (remount via @for) : fondu doux */
+  animation: avis-img-in 0.35s var(--ease-out);
+}
+
+/* Flèches de navigation précédent / suivant */
+.avis-nav {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(14, 17, 28, 0.7);
+  cursor: pointer;
+  transition:
+    transform 0.25s var(--ease-out),
+    border-color 0.25s,
+    background-color 0.25s;
+}
+
+.avis-nav:hover,
+.avis-nav:focus-visible {
+  border-color: rgba(124, 108, 255, 0.55);
+  background: var(--surface);
+}
+
+/* Flèche précédent inerte sur le premier avis (pas de boucle) */
+.avis-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+.avis-prev {
+  left: clamp(12px, 4vw, 48px);
+}
+
+.avis-next {
+  right: clamp(12px, 4vw, 48px);
+}
+
+.avis-prev:hover,
+.avis-prev:focus-visible {
+  transform: translateY(-50%) translateX(-3px);
+}
+
+.avis-next:hover,
+.avis-next:focus-visible {
+  transform: translateY(-50%) translateX(3px);
+}
+
+/* Chevron en pur CSS */
+.avis-nav span {
+  width: 12px;
+  height: 12px;
+  border-top: 2px solid var(--text);
+  border-right: 2px solid var(--text);
+}
+
+.avis-prev span {
+  transform: rotate(-135deg);
+  margin-left: 4px;
+}
+
+.avis-next span {
+  transform: rotate(45deg);
+  margin-right: 4px;
+}
+
+.avis-modal-close {
+  position: absolute;
+  top: -16px;
+  right: -16px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    transform 0.25s var(--ease-out),
+    border-color 0.25s;
+}
+
+.avis-modal-close:hover,
+.avis-modal-close:focus-visible {
+  transform: scale(1.08);
+  border-color: rgba(124, 108, 255, 0.55);
+}
+
+/* Croix en pur CSS */
+.avis-modal-close span,
+.avis-modal-close span::before {
+  position: absolute;
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text);
+}
+
+.avis-modal-close span {
+  transform: rotate(45deg);
+}
+
+.avis-modal-close span::before {
+  content: '';
+  transform: rotate(-90deg);
+}
+
+@keyframes avis-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes avis-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes avis-img-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avis-modal,
+  .avis-modal-inner,
+  .avis-modal-img {
+    animation: none;
+  }
+}
+
+/* ===== Repli statique (prefers-reduced-motion) : bande défilable au doigt ===== */
+
+.is-static .notice-stage {
+  height: auto;
+  padding-block: 80px;
+}
+
+.is-static .gallery {
+  overflow-x: auto;
+  padding-block: 8px;
+}
+
+.is-static .gallery-track {
+  will-change: auto;
+}
