@@ -9,6 +9,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import { Reveal } from '../../../../shared/reveal';
+import { Cases } from './cases';
 
 const IMPACT_TARGETS = [90, 161_115_493, 150];
 
@@ -16,7 +17,7 @@ const IMPACT_TARGETS = [90, 161_115_493, 150];
   selector: 'app-formations',
   templateUrl: './formations.html',
   styleUrl: './formations.css',
-  imports: [Reveal],
+  imports: [Reveal, Cases],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Formations {
