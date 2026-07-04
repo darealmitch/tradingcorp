@@ -1,0 +1,130 @@
+/* ===== Section de transition vers le programme ===== */
+
+.transition {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 84vh;
+  min-height: 84svh;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Halo décoratif en fond */
+.transition-glow-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 50% 45% at 50% 42%, rgba(124, 108, 255, 0.16), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 22% 80%, rgba(56, 225, 255, 0.1), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 20%, rgba(225, 77, 255, 0.1), transparent 70%);
+}
+
+.transition-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 820px;
+  margin-inline: auto;
+}
+
+/* Trait vertical : marque la rupture / fin de la présentation */
+.transition-tick {
+  width: 2px;
+  height: 56px;
+  margin-bottom: 30px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, var(--violet));
+  transform-origin: top;
+  transform: scaleY(0);
+  transition: transform 0.8s var(--ease-out);
+}
+
+.transition-inner.is-visible .transition-tick {
+  transform: scaleY(1);
+}
+
+.transition-title {
+  margin: 20px 0 24px;
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
+  line-height: 1.04;
+}
+
+.transition-lead {
+  max-width: 620px;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 1.7vw, 1.22rem);
+}
+
+/* ===== Bouton principal ===== */
+
+.transition-action {
+  position: relative;
+  display: inline-flex;
+  margin-top: 44px;
+}
+
+/* Halo pulsé derrière le bouton */
+.transition-glow {
+  position: absolute;
+  inset: -22px;
+  z-index: -1;
+  border-radius: 999px;
+  background: var(--gradient);
+  filter: blur(34px);
+  opacity: 0.35;
+  animation: cta-glow-pulse 3.2s ease-in-out infinite;
+}
+
+@keyframes cta-glow-pulse {
+  50% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
+}
+
+.transition-cta {
+  height: 62px;
+  padding-inline: 38px;
+  font-size: 1.05rem;
+  gap: 12px;
+}
+
+.transition-arrow {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s var(--ease-out);
+}
+
+.transition-cta:hover .transition-arrow,
+.transition-cta:focus-visible .transition-arrow {
+  transform: translateX(5px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transition-tick {
+    transform: scaleY(1);
+    transition: none;
+  }
+
+  .transition-glow {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .transition {
+    min-height: 72vh;
+  }
+
+  .transition-action {
+    width: 100%;
+  }
+
+  .transition-cta {
+    width: 100%;
+    padding-inline: 22px;
+  }
+}
