@@ -29,6 +29,14 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
+# Secrets d'environnement (ne jamais committer — voir .env.example)
+.env
+.env.*
+!.env.example
+
+# Archives sources (ne pas embarquer dans les assets servis)
+*.zip
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/
