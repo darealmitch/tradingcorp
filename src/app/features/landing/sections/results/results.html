@@ -12,7 +12,8 @@
     </div>
 
     <p class="results-punch" appReveal revealDelay="160">
-      Investir n'est plus une option — <span class="text-gradient">c'est devenu une nécessité.</span>
+      Investir n'est plus une option —
+      <span class="text-gradient">c'est devenu une nécessité.</span>
     </p>
   </div>
 
@@ -26,7 +27,14 @@
               <button type="button" class="result-card" (click)="open(i, $event)">
                 <img [src]="result.img" [alt]="result.alt" loading="lazy" decoding="async" />
                 <span class="result-view" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M15 3h6v6M21 3l-8 8M9 21H3v-6M3 21l8-8" />
                   </svg>
                 </span>
@@ -39,9 +47,7 @@
   </div>
 
   <div class="container">
-    <p class="results-bridge" appReveal>
-      Derrière chaque capture, une méthode — et un formateur.
-    </p>
+    <p class="results-bridge" appReveal>Derrière chaque capture, une méthode — et un formateur.</p>
   </div>
 </section>
 
@@ -73,7 +79,9 @@
       @for (frame of [activeIndex()]; track frame) {
         <img class="lightbox-img" [src]="item.img" [alt]="item.alt" />
       }
-      <span class="lightbox-counter" aria-hidden="true">{{ activeIndex()! + 1 }} / {{ total }}</span>
+      <span class="lightbox-counter" aria-hidden="true"
+        >{{ activeIndex()! + 1 }} / {{ total }}</span
+      >
     </div>
 
     <button
