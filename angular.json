@@ -26,9 +26,7 @@
                 "ignore": ["**/rogner-source.mp4"]
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ]
+            "styles": ["src/styles.css"]
           },
           "configurations": {
             "production": {
