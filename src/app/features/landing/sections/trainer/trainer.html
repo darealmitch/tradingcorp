@@ -10,7 +10,10 @@
       <div class="trainer-visual" appReveal>
         <div class="trainer-halo" aria-hidden="true"></div>
         <div class="trainer-portrait" #portrait>
-          <img src="images/formateur/andre.png" alt="Portrait de Keryan André, formateur TradingCorp" />
+          <img
+            src="images/formateur/andre.png"
+            alt="Portrait de Keryan André, formateur TradingCorp"
+          />
         </div>
         <button
           type="button"
@@ -122,7 +125,13 @@
     (keydown.escape)="closeVideo()"
   >
     <div class="video-inner" (click)="$event.stopPropagation()">
-      <button type="button" class="video-close" (click)="closeVideo()" aria-label="Fermer" autofocus>
+      <button
+        type="button"
+        class="video-close"
+        (click)="closeVideo()"
+        aria-label="Fermer"
+        autofocus
+      >
         <span aria-hidden="true"></span>
       </button>
       <video [src]="src" controls autoplay playsinline preload="metadata"></video>

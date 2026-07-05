@@ -40,7 +40,12 @@ function anneesDepuis(debut: number): number {
 }
 
 const STATS: Stat[] = [
-  { target: anneesDepuis(INVESTISSEMENT_DEBUT), decimals: 0, suffix: ' ans', label: "d'investissement" },
+  {
+    target: anneesDepuis(INVESTISSEMENT_DEBUT),
+    decimals: 0,
+    suffix: ' ans',
+    label: "d'investissement",
+  },
   { target: anneesDepuis(TRADING_DEBUT), decimals: 0, suffix: ' ans', label: 'de trading' },
   { target: 800_000, decimals: 0, suffix: ' €+', label: 'générés en fonds propres' },
   { target: 200, decimals: 0, suffix: '+', label: 'élèves formés' },

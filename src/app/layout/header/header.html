@@ -1,6 +1,8 @@
 <header class="site-header" [class.is-scrolled]="scrolled()" [class.is-open]="menuOpen()">
   <div class="container header-inner">
-    <a class="brand" routerLink="/" fragment="accueil" (click)="closeMenu()">TRADING<span>CORP</span></a>
+    <a class="brand" routerLink="/" fragment="accueil" (click)="closeMenu()"
+      >TRADING<span>CORP</span></a
+    >
 
     <nav class="header-nav" aria-label="Navigation principale">
       <a routerLink="/" fragment="formations" (click)="closeMenu()">Formations</a>
@@ -8,7 +10,9 @@
       <a routerLink="/" fragment="resultats" (click)="closeMenu()">Résultats</a>
       <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
       <a routerLink="/facteurs" (click)="closeMenu()">Programme</a>
-      <a class="btn btn-primary nav-cta" routerLink="/" fragment="commencer" (click)="closeMenu()">Ouvrir un compte</a>
+      <a class="btn btn-primary nav-cta" routerLink="/" fragment="commencer" (click)="closeMenu()"
+        >Ouvrir un compte</a
+      >
     </nav>
 
     <a class="btn btn-primary header-cta" routerLink="/" fragment="commencer">Ouvrir un compte</a>
