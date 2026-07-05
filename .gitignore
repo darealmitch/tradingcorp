@@ -37,8 +37,6 @@ yarn-error.log
 # Archives sources (ne pas embarquer dans les assets servis)
 *.zip
 
-# Rush vidéo brut trop lourd pour le web (742 Mo) — hors build et hors git
-public/images/formateur/rogner-source.mp4
 
 # Vidéo de présentation (160 Mo > limite GitHub 100 Mo) — à héberger sur un CDN
 public/images/formateur/presentation.mp4
