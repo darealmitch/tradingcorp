@@ -1,0 +1,261 @@
+@startuml
+title MCD - TradingCorp (v2, post-audit)
+' Modèle cible issu de AUDIT-ARCHITECTURE.md (section 3.3).
+' Convention de cardinalité (Merise stricte) : la cardinalité notée près
+' d'une entité E décrit, pour UNE occurrence de E, le nombre d'occurrences
+' de l'AUTRE entité auxquelles elle est associée (min,max).
+' -> Cette version corrige au passage un renversement systématique des
+'    cardinalités présent dans la v1 (ex. UTILISATEUR "1,1" -- "0,N" PAIEMENT
+'    signifiait littéralement "un utilisateur a exactement 1 paiement,
+'    un paiement a 0 à N utilisateurs" — l'inverse de la réalité).
+
+' ===== Identité =====
+' L'authentification (mot de passe, e-mail, Google, MFA TOTP) est déléguée à
+' Supabase Auth (auth.users) et ne vit pas dans ce schéma applicatif.
+entity PROFIL {
+  #id_profil
+  nom
+  prenom
+  avatar_url
+  role
+  date_creation
+}
+note right of PROFIL
+  id_profil = auth.users.id (Supabase Auth)
+  role : enum (apprenant | formateur | admin)
+  Aucune donnée d'authentification stockée ici
+  (ni mot de passe, ni téléphone, ni date de naissance)
+end note
+
+' ===== Catalogue =====
+entity FORMATION {
+  #id_formation
+  titre
+  slug
+  description
+  prix_centimes
+  devise
+  est_publiee
+  date_creation
+}
+
+entity SECTION {
+  #id_section
+  titre
+  description
+  position
+}
+note right of SECTION
+  Renommée depuis MODULE (v1)
+  Cardinalité corrigée : 1,N par formation (au lieu de 1,1)
+end note
+
+entity LEÇON {
+  #id_lecon
+  titre
+  contenu
+  duree
+  video_provider_id
+  position
+  apercu_gratuit
+}
+note right of LEÇON
+  video_provider_id : identifiant Bunny Stream / Mux
+  (jamais une URL publique directe)
+end note
+
+entity RESSOURCE {
+  #id_ressource
+  nom
+  type_mime
+  chemin_storage
+  taille
+}
+note right of RESSOURCE
+  chemin_storage : bucket Supabase Storage privé
+  servi via URL signée à durée courte
+  (remplace url, public en v1 — faille d'accès)
+end note
+
+' ===== Commerce =====
+entity INSCRIPTION {
+  #id_inscription
+  statut
+  source
+  date_inscription
+}
+note right of INSCRIPTION
+  UNIQUE(id_profil, id_formation)
+  statut : active | revoquee
+  source : paiement | manuel
+  Porte le droit d'accès — absente du MCD v1
+end note
+
+entity PAIEMENT {
+  #id_paiement
+  montant_centimes
+  devise
+  statut
+  moyen_paiement
+  reference_transaction
+  email
+  date_paiement
+}
+note right of PAIEMENT
+  reference_transaction : UNIQUE
+  (garantit l'idempotence du webhook Stripe)
+  Écriture réservée au service_role — jamais au client
+end note
+
+' ===== Pédagogie =====
+entity PROGRESSION_LECON {
+  #id_progression_lecon
+  terminee_le
+  position_video_s
+}
+note right of PROGRESSION_LECON
+  UNIQUE(id_profil, id_lecon)
+  Remplace PROGRESSION (v1) : pas de pourcentage stocké,
+  cardinalité 1,1-1,1 intenable dès l'inscription
+end note
+
+entity QUIZ {
+  #id_quiz
+  titre
+  score_requis
+  est_examen_final
+  position
+}
+
+entity QUESTION {
+  #id_question
+  libelle
+  position
+  type
+}
+
+entity REPONSE {
+  #id_reponse
+  contenu
+  correcte
+}
+note right of REPONSE
+  correcte : jamais exposée au client via l'API
+  Correction effectuée côté serveur (Edge Function)
+end note
+
+entity TENTATIVEQUIZ {
+  #id_tentative
+  score
+  reussi
+  reponses_donnees
+  date_passage
+}
+
+entity CERTIFICAT {
+  #id_certificat
+  numero
+  date_obtention
+  chemin_storage
+}
+note right of CERTIFICAT
+  UNIQUE(id_profil, id_formation)
+  numero : unique, vérifiable publiquement (/verifier/{numero})
+  chemin_storage : bucket Supabase Storage privé + URL signée
+  (remplace lien_document public en v1)
+end note
+
+note as N_VUE
+  **VUE progression_formation** (calculée, non stockée)
+  --
+  id_profil, id_formation, pourcentage_termine
+  Dérivée de PROGRESSION_LECON + LEÇON + SECTION + FORMATION
+end note
+
+' ===== Communauté =====
+entity COMMENTAIRE {
+  #id_commentaire
+  contenu
+  statut
+  date_creation
+}
+note right of COMMENTAIRE
+  statut : en_attente | approuve | rejete
+  Relation réflexive répond_à : un seul niveau de réponse
+end note
+
+entity AVIS {
+  #id_avis
+  note
+  contenu
+  statut
+  date_creation
+}
+note right of AVIS
+  UNIQUE(id_profil, id_formation)
+  note : contrainte entre 1 et 5
+  statut : en_attente | approuve | rejete
+  (attribut renommé contenu — collision de nom avec l'entité en v1)
+end note
+
+entity NOTIFICATION {
+  #id_notification
+  titre
+  message
+  type
+  lien
+  date_envoi
+  lu_le
+}
+
+' ===== Administration =====
+entity JOURNAL_ADMIN {
+  #id_journal
+  action
+  cible
+  meta
+  date_action
+}
+note right of JOURNAL_ADMIN
+  acteur = id_profil avec role = admin
+  (contrainte applicative, pas de rôle FK distinct)
+  Absent du MCD v1
+end note
+
+' ===== Relations =====
+
+PROFIL "0,N" -- "1,1" INSCRIPTION : souscrit
+FORMATION "0,N" -- "1,1" INSCRIPTION : concerne
+INSCRIPTION "0,1" -- "0,1" PAIEMENT : provient_de
+
+PROFIL "0,N" -- "1,1" PAIEMENT : effectue
+
+FORMATION "1,N" -- "1,1" SECTION : contient
+SECTION "1,N" -- "1,1" LEÇON : contient
+LEÇON "0,N" -- "1,1" RESSOURCE : possède
+
+PROFIL "0,N" -- "1,1" PROGRESSION_LECON : progresse
+LEÇON "0,N" -- "1,1" PROGRESSION_LECON : concerne
+
+FORMATION "0,N" -- "1,1" QUIZ : évalue
+QUIZ "1,N" -- "1,1" QUESTION : contient
+QUESTION "1,N" -- "1,1" REPONSE : possède
+
+PROFIL "0,N" -- "1,1" TENTATIVEQUIZ : tente
+QUIZ "0,N" -- "1,1" TENTATIVEQUIZ : concerne
+
+PROFIL "0,N" -- "1,1" CERTIFICAT : obtient
+FORMATION "0,N" -- "1,1" CERTIFICAT : délivre
+
+PROFIL "0,N" -- "1,1" COMMENTAIRE : écrit
+LEÇON "0,N" -- "1,1" COMMENTAIRE : reçoit
+COMMENTAIRE "0,N" -- "0,1" COMMENTAIRE : répond_à
+
+PROFIL "0,N" -- "1,1" AVIS : dépose
+FORMATION "0,N" -- "1,1" AVIS : reçoit
+
+PROFIL "0,N" -- "1,1" NOTIFICATION : reçoit
+
+PROFIL "0,N" -- "1,1" JOURNAL_ADMIN : effectue
+
+@enduml
