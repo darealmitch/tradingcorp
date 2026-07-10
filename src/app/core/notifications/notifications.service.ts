@@ -1,60 +1,66 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { SUPABASE } from '../supabase/supabase.client';
 
 export interface Notification {
-  id: number;
+  id_notification: string;
   titre: string;
-  message: string;
-  date: string;
+  message: string | null;
+  date_envoi: string;
   lue: boolean;
 }
 
-/**
- * Données simulées en attendant le branchement sur la table `notifications`
- * (l'API du service ne changera pas : seule l'origine des données bougera).
- */
-const NOTIFICATIONS_DEMO: Notification[] = [
-  {
-    id: 1,
-    titre: 'Bienvenue sur TradingCorp',
-    message: 'Ton espace est prêt. Commence par découvrir ta formation.',
-    date: 'il y a 2 h',
-    lue: false,
-  },
-  {
-    id: 2,
-    titre: 'Nouvelle leçon disponible',
-    message: '« Structure de marché : les bases » vient d’être publiée.',
-    date: 'il y a 5 h',
-    lue: false,
-  },
-  {
-    id: 3,
-    titre: 'Quiz à terminer',
-    message: 'Le quiz « Gestion du risque » t’attend toujours.',
-    date: 'hier',
-    lue: true,
-  },
-  {
-    id: 4,
-    titre: 'Paiement confirmé',
-    message: 'Ton accès à la formation Trader Pro est actif.',
-    date: 'il y a 3 jours',
-    lue: true,
-  },
-];
+interface LigneNotification {
+  id_notification: string;
+  titre: string;
+  message: string | null;
+  date_envoi: string;
+  lu_le: string | null;
+}
 
+/**
+ * Notifications du profil connecté (table `notifications`, RLS : ses lignes
+ * uniquement). Alimentée côté serveur — ex. le webhook Stripe à l'achat.
+ */
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
-  private readonly listeSig = signal<Notification[]>(NOTIFICATIONS_DEMO);
+  private readonly supabase = inject(SUPABASE);
+
+  private readonly listeSig = signal<Notification[]>([]);
 
   readonly liste = this.listeSig.asReadonly();
   readonly nonLues = computed(() => this.listeSig().filter((n) => !n.lue).length);
 
-  marquerLue(id: number): void {
-    this.listeSig.update((liste) => liste.map((n) => (n.id === id ? { ...n, lue: true } : n)));
+  constructor() {
+    void this.recharger();
   }
 
-  toutMarquerLues(): void {
+  async recharger(): Promise<void> {
+    const { data } = await this.supabase
+      .from('notifications')
+      .select('id_notification, titre, message, date_envoi, lu_le')
+      .order('date_envoi', { ascending: false });
+    const lignes = (data as LigneNotification[] | null) ?? [];
+    this.listeSig.set(
+      lignes.map(({ lu_le, ...notification }) => ({ ...notification, lue: lu_le !== null })),
+    );
+  }
+
+  async marquerLue(id: string): Promise<void> {
+    this.listeSig.update((liste) =>
+      liste.map((n) => (n.id_notification === id ? { ...n, lue: true } : n)),
+    );
+    await this.supabase
+      .from('notifications')
+      .update({ lu_le: new Date().toISOString() })
+      .eq('id_notification', id)
+      .is('lu_le', null);
+  }
+
+  async toutMarquerLues(): Promise<void> {
     this.listeSig.update((liste) => liste.map((n) => ({ ...n, lue: true })));
+    await this.supabase
+      .from('notifications')
+      .update({ lu_le: new Date().toISOString() })
+      .is('lu_le', null);
   }
 }

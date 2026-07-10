@@ -11,4 +11,11 @@ import { Icone } from '../../../shared/ui/icone';
 })
 export class Notifications {
   protected readonly notifications = inject(NotificationsService);
+
+  protected dateEnvoi(iso: string): string {
+    return new Intl.DateTimeFormat('fr-FR', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date(iso));
+  }
 }

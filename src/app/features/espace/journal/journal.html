@@ -1,36 +1,43 @@
 <header class="page-tete">
   <h1 class="page-titre">Journal d'administration</h1>
   <p class="page-sous">
-    Piste d'audit des actions sensibles (rôles, modération, remboursements). Alimenté par la table
-    journal_admin une fois les actions branchées.
+    Piste d'audit des actions sensibles. Chaque changement de rôle y est enregistré ; la modération
+    et les remboursements s'y ajouteront.
   </p>
 </header>
 
 <div class="panneau">
   <div class="panneau-tete">
     <h2 class="panneau-titre">Dernières actions</h2>
-    <span class="etiquette-demo">démo</span>
   </div>
-  <div class="tableau-defile">
-    <table class="tableau">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Administrateur</th>
-          <th>Action</th>
-          <th>Cible</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (entree of entrees; track entree.date) {
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (entrees().length === 0) {
+    <p class="cellule-discrete">
+      Aucune action enregistrée pour l'instant. Le prochain changement de rôle apparaîtra ici.
+    </p>
+  } @else {
+    <div class="tableau-defile">
+      <table class="tableau">
+        <thead>
           <tr>
-            <td class="cellule-discrete">{{ entree.date }}</td>
-            <td>{{ entree.admin }}</td>
-            <td>{{ entree.action }}</td>
-            <td class="cellule-discrete">{{ entree.cible }}</td>
+            <th>Date</th>
+            <th>Administrateur</th>
+            <th>Action</th>
+            <th>Cible</th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @for (entree of entrees(); track entree.id_journal) {
+            <tr>
+              <td class="cellule-discrete">{{ dateAction(entree) }}</td>
+              <td>{{ auteur(entree) }}</td>
+              <td>{{ libelle(entree) }}</td>
+              <td class="cellule-discrete">{{ entree.cible ?? '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

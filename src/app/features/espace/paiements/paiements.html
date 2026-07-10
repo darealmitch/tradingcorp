@@ -4,59 +4,61 @@
 </header>
 
 <div class="grille-stats">
-  <app-stat-card
-    icone="paiements"
-    libelle="Chiffre d'affaires du mois"
-    valeur="5 982 €"
-    tendance="hausse"
-    detail="+12 % vs juin"
-  />
-  <app-stat-card icone="stats" libelle="Chiffre d'affaires total" valeur="48 550 €" />
-  <app-stat-card icone="coche" libelle="Paiements réussis" valeur="49" detail="sur 52 tentatives" />
-  <app-stat-card icone="tendance" libelle="Panier moyen" valeur="991 €" />
+  <app-stat-card icone="paiements" libelle="Chiffre d'affaires du mois" [valeur]="caMois()" />
+  <app-stat-card icone="stats" libelle="Chiffre d'affaires total" [valeur]="caTotal()" />
+  <app-stat-card icone="coche" libelle="Paiements réussis" [valeur]="nbReussis()" />
+  <app-stat-card icone="tendance" libelle="Panier moyen" [valeur]="panierMoyen()" />
 </div>
 
 <div class="panneau">
   <div class="panneau-tete">
-    <h2 class="panneau-titre">Dernières transactions</h2>
-    <span class="etiquette-demo">démo</span>
+    <h2 class="panneau-titre">Transactions</h2>
   </div>
-  <div class="tableau-defile">
-    <table class="tableau">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Client</th>
-          <th>Montant</th>
-          <th>Moyen</th>
-          <th>Statut</th>
-          <th>Référence</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (paiement of paiements; track paiement.reference) {
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (paiements().length === 0) {
+    <p class="cellule-discrete">Aucune transaction pour l'instant.</p>
+  } @else {
+    <div class="tableau-defile">
+      <table class="tableau">
+        <thead>
           <tr>
-            <td class="cellule-discrete">{{ paiement.date }}</td>
-            <td>{{ paiement.client }}</td>
-            <td>{{ paiement.montant }}</td>
-            <td class="cellule-discrete">{{ paiement.moyen }}</td>
-            <td>
-              @switch (paiement.statut) {
-                @case ('reussi') {
-                  <span class="badge-statut est-succes">Réussi</span>
-                }
-                @case ('rembourse') {
-                  <span class="badge-statut est-attente">Remboursé</span>
-                }
-                @case ('echoue') {
-                  <span class="badge-statut est-echec">Échoué</span>
-                }
-              }
-            </td>
-            <td class="cellule-discrete">{{ paiement.reference }}</td>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Montant</th>
+            <th>Moyen</th>
+            <th>Statut</th>
+            <th>Référence</th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @for (paiement of paiements(); track paiement.id_paiement) {
+            <tr>
+              <td class="cellule-discrete">{{ datePaiement(paiement) }}</td>
+              <td>{{ paiement.email ?? '—' }}</td>
+              <td>{{ euros(paiement.montant_centimes) }}</td>
+              <td class="cellule-discrete">{{ paiement.moyen_paiement ?? '—' }}</td>
+              <td>
+                @switch (paiement.statut) {
+                  @case ('reussi') {
+                    <span class="badge-statut est-succes">Réussi</span>
+                  }
+                  @case ('rembourse') {
+                    <span class="badge-statut est-attente">Remboursé</span>
+                  }
+                  @case ('echoue') {
+                    <span class="badge-statut est-echec">Échoué</span>
+                  }
+                  @default {
+                    <span class="badge-statut">En attente</span>
+                  }
+                }
+              </td>
+              <td class="cellule-discrete">{{ reference(paiement) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

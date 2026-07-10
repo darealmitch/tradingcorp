@@ -1,67 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-
-interface LeconDemo {
-  titre: string;
-  duree: string;
-  statut: 'publiee' | 'brouillon';
-  apercuGratuit: boolean;
-}
-
-interface SectionDemo {
-  titre: string;
-  lecons: LeconDemo[];
-}
-
-/* Données simulées en attendant le branchement sur sections/lecons/ressources. */
-const SECTIONS_DEMO: SectionDemo[] = [
-  {
-    titre: 'Les fondations',
-    lecons: [
-      {
-        titre: 'Bienvenue dans la formation',
-        duree: '6 min',
-        statut: 'publiee',
-        apercuGratuit: true,
-      },
-      {
-        titre: 'Comprendre les marchés financiers',
-        duree: '22 min',
-        statut: 'publiee',
-        apercuGratuit: false,
-      },
-      {
-        titre: 'Les acteurs institutionnels',
-        duree: '18 min',
-        statut: 'publiee',
-        apercuGratuit: false,
-      },
-    ],
-  },
-  {
-    titre: 'Structure de marché',
-    lecons: [
-      { titre: 'Lecture des ranges', duree: '25 min', statut: 'publiee', apercuGratuit: false },
-      {
-        titre: 'Liquidité et zones de déséquilibre',
-        duree: '18 min',
-        statut: 'publiee',
-        apercuGratuit: false,
-      },
-      {
-        titre: 'Cassures et faux départs',
-        duree: '20 min',
-        statut: 'brouillon',
-        apercuGratuit: false,
-      },
-    ],
-  },
-  {
-    titre: 'Gestion du risque',
-    lecons: [
-      { titre: 'Position sizing', duree: '24 min', statut: 'brouillon', apercuGratuit: false },
-    ],
-  },
-];
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ContenuService,
+  LeconResume,
+  SectionAvecLecons,
+} from '../../../core/contenu/contenu.service';
 
 @Component({
   selector: 'app-contenus',
@@ -70,5 +12,21 @@ const SECTIONS_DEMO: SectionDemo[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Contenus {
-  protected readonly sections = SECTIONS_DEMO;
+  private readonly contenu = inject(ContenuService);
+
+  protected readonly chargement = signal(true);
+  protected readonly sections = signal<SectionAvecLecons[]>([]);
+
+  constructor() {
+    void this.charger();
+  }
+
+  private async charger(): Promise<void> {
+    this.sections.set(await this.contenu.chargerStructure());
+    this.chargement.set(false);
+  }
+
+  protected duree(lecon: LeconResume): string {
+    return lecon.duree_s ? `${Math.round(lecon.duree_s / 60)} min` : '—';
+  }
 }

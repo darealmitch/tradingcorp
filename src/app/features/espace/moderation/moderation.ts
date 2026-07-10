@@ -1,65 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  AvisEnAttente,
+  CommentaireEnAttente,
+  ModerationService,
+} from '../../../core/moderation/moderation.service';
 import { Icone } from '../../../shared/ui/icone';
-
-interface CommentaireDemo {
-  id: number;
-  auteur: string;
-  lecon: string;
-  contenu: string;
-  date: string;
-}
-
-interface AvisDemo {
-  id: number;
-  auteur: string;
-  note: number;
-  contenu: string;
-  date: string;
-}
-
-/* Données simulées en attendant le branchement sur commentaires/avis
-   (l'approbation ne modifie ici que la liste locale). */
-const COMMENTAIRES_DEMO: CommentaireDemo[] = [
-  {
-    id: 1,
-    auteur: 'Lucas M.',
-    lecon: 'Gestion du risque : position sizing',
-    contenu: 'Super clair ! Est-ce que tu peux partager la feuille de calcul du ratio ?',
-    date: 'il y a 1 h',
-  },
-  {
-    id: 2,
-    auteur: 'Sarah B.',
-    lecon: 'Analyse fondamentale',
-    contenu:
-      'Une question sur le calcul du ratio de Sharpe à 12:40, je ne retrouve pas le même résultat.',
-    date: 'il y a 3 h',
-  },
-  {
-    id: 3,
-    auteur: 'Karim D.',
-    lecon: 'Psychologie du trading',
-    contenu: 'Exactement ce qui me manquait, merci pour cette leçon.',
-    date: 'hier',
-  },
-];
-
-const AVIS_DEMO: AvisDemo[] = [
-  {
-    id: 1,
-    auteur: 'Julie R.',
-    note: 5,
-    contenu: 'Formation exceptionnelle, très loin de ce qu’on trouve sur YouTube.',
-    date: 'il y a 4 h',
-  },
-  {
-    id: 2,
-    auteur: 'Mehdi L.',
-    note: 4,
-    contenu: 'Très bon contenu, j’aurais aimé plus d’exemples en conditions réelles.',
-    date: 'il y a 2 jours',
-  },
-];
 
 @Component({
   selector: 'app-moderation',
@@ -69,15 +14,58 @@ const AVIS_DEMO: AvisDemo[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Moderation {
-  protected readonly commentaires = signal(COMMENTAIRES_DEMO);
-  protected readonly avis = signal(AVIS_DEMO);
+  private readonly moderation = inject(ModerationService);
 
-  protected traiterCommentaire(id: number): void {
-    this.commentaires.update((liste) => liste.filter((c) => c.id !== id));
+  protected readonly chargement = signal(true);
+  protected readonly commentaires = signal<CommentaireEnAttente[]>([]);
+  protected readonly avis = signal<AvisEnAttente[]>([]);
+  protected readonly erreur = signal<string | null>(null);
+  protected readonly traitement = signal(false);
+
+  constructor() {
+    void this.charger();
   }
 
-  protected traiterAvis(id: number): void {
-    this.avis.update((liste) => liste.filter((a) => a.id !== id));
+  private async charger(): Promise<void> {
+    const [commentaires, avis] = await Promise.all([
+      this.moderation.commentairesEnAttente(),
+      this.moderation.avisEnAttente(),
+    ]);
+    this.commentaires.set(commentaires);
+    this.avis.set(avis);
+    this.chargement.set(false);
+  }
+
+  protected async traiterCommentaire(id: string, statut: 'approuve' | 'rejete'): Promise<void> {
+    this.erreur.set(null);
+    this.traitement.set(true);
+    const erreur = await this.moderation.traiterCommentaire(id, statut);
+    if (erreur) {
+      this.erreur.set(erreur);
+    } else {
+      this.commentaires.update((liste) => liste.filter((c) => c.id_commentaire !== id));
+    }
+    this.traitement.set(false);
+  }
+
+  protected async traiterAvis(id: string, statut: 'approuve' | 'rejete'): Promise<void> {
+    this.erreur.set(null);
+    this.traitement.set(true);
+    const erreur = await this.moderation.traiterAvis(id, statut);
+    if (erreur) {
+      this.erreur.set(erreur);
+    } else {
+      this.avis.update((liste) => liste.filter((a) => a.id_avis !== id));
+    }
+    this.traitement.set(false);
+  }
+
+  protected nomComplet(personne: { prenom: string; nom: string } | null): string {
+    return personne ? `${personne.prenom} ${personne.nom}`.trim() : 'Utilisateur supprimé';
+  }
+
+  protected datePublication(iso: string): string {
+    return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(iso));
   }
 
   protected etoiles(note: number): string {

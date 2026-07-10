@@ -5,37 +5,48 @@
   </p>
 </header>
 
+@if (erreur(); as message) {
+  <p class="alerte est-erreur">{{ message }}</p>
+}
+
 <section class="panneau">
   <div class="panneau-tete">
     <h2 class="panneau-titre">
       <app-icone nom="moderation" [taille]="18" />
       Commentaires en attente
     </h2>
-    <span class="etiquette-demo">démo</span>
   </div>
 
-  @if (commentaires().length === 0) {
-    <p class="cellule-discrete">Aucun commentaire en attente. Tout est à jour.</p>
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (commentaires().length === 0) {
+    <p class="cellule-discrete">
+      Aucun commentaire en attente. Ils arriveront ici quand les apprenants commenteront les leçons.
+    </p>
   }
-  @for (commentaire of commentaires(); track commentaire.id) {
+  @for (commentaire of commentaires(); track commentaire.id_commentaire) {
     <div class="moderation-ligne">
       <div class="liste-corps">
-        <p class="liste-titre">{{ commentaire.auteur }} — {{ commentaire.lecon }}</p>
+        <p class="liste-titre">
+          {{ nomComplet(commentaire.profils) }} — {{ commentaire.lecons?.titre }}
+        </p>
         <p class="moderation-contenu">{{ commentaire.contenu }}</p>
-        <p class="liste-date">{{ commentaire.date }}</p>
+        <p class="liste-date">{{ datePublication(commentaire.date_creation) }}</p>
       </div>
       <div class="moderation-actions">
         <button
           class="btn btn-ghost btn-compact"
           type="button"
-          (click)="traiterCommentaire(commentaire.id)"
+          [disabled]="traitement()"
+          (click)="traiterCommentaire(commentaire.id_commentaire, 'approuve')"
         >
           Approuver
         </button>
         <button
           class="btn btn-ghost btn-compact est-rejet"
           type="button"
-          (click)="traiterCommentaire(commentaire.id)"
+          [disabled]="traitement()"
+          (click)="traiterCommentaire(commentaire.id_commentaire, 'rejete')"
         >
           Rejeter
         </button>
@@ -50,30 +61,41 @@
       <app-icone nom="etoile" [taille]="18" />
       Avis en attente
     </h2>
-    <span class="etiquette-demo">démo</span>
   </div>
 
-  @if (avis().length === 0) {
-    <p class="cellule-discrete">Aucun avis en attente. Tout est à jour.</p>
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (avis().length === 0) {
+    <p class="cellule-discrete">
+      Aucun avis en attente. Ils arriveront ici quand les apprenants noteront la formation.
+    </p>
   }
-  @for (unAvis of avis(); track unAvis.id) {
+  @for (unAvis of avis(); track unAvis.id_avis) {
     <div class="moderation-ligne">
       <div class="liste-corps">
         <p class="liste-titre">
-          {{ unAvis.auteur }}
+          {{ nomComplet(unAvis.profils) }}
           <span class="moderation-note">{{ etoiles(unAvis.note) }}</span>
         </p>
-        <p class="moderation-contenu">{{ unAvis.contenu }}</p>
-        <p class="liste-date">{{ unAvis.date }}</p>
+        @if (unAvis.contenu) {
+          <p class="moderation-contenu">{{ unAvis.contenu }}</p>
+        }
+        <p class="liste-date">{{ datePublication(unAvis.date_creation) }}</p>
       </div>
       <div class="moderation-actions">
-        <button class="btn btn-ghost btn-compact" type="button" (click)="traiterAvis(unAvis.id)">
+        <button
+          class="btn btn-ghost btn-compact"
+          type="button"
+          [disabled]="traitement()"
+          (click)="traiterAvis(unAvis.id_avis, 'approuve')"
+        >
           Approuver
         </button>
         <button
           class="btn btn-ghost btn-compact est-rejet"
           type="button"
-          (click)="traiterAvis(unAvis.id)"
+          [disabled]="traitement()"
+          (click)="traiterAvis(unAvis.id_avis, 'rejete')"
         >
           Rejeter
         </button>
