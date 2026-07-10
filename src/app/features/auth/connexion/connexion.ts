@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/auth/auth.service';
+import { AuthService, GOOGLE_OAUTH_ACTIF } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-connexion',
@@ -15,6 +15,8 @@ export class Connexion {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(NonNullableFormBuilder);
+
+  protected readonly googleActif = GOOGLE_OAUTH_ACTIF;
 
   protected readonly chargement = signal(false);
   protected readonly erreur = signal<string | null>(null);
