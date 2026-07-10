@@ -33,7 +33,6 @@ export class MonProfil {
 
   protected readonly auth = inject(AuthService);
 
-  protected readonly avatarEnCours = signal(false);
   protected readonly enregistrementSurnom = signal(false);
   protected readonly message = signal<Message | null>(null);
 
@@ -91,32 +90,6 @@ export class MonProfil {
       erreur ? { texte: erreur, type: 'erreur' } : { texte: 'Surnom mis à jour.', type: 'succes' },
     );
     this.enregistrementSurnom.set(false);
-  }
-
-  protected async avatarChoisi(evenement: Event): Promise<void> {
-    const input = evenement.target as HTMLInputElement;
-    const fichier = input.files?.[0];
-    input.value = ''; // Permet de re-sélectionner le même fichier.
-    if (!fichier) {
-      return;
-    }
-    this.message.set(null);
-    this.avatarEnCours.set(true);
-    const erreur = await this.profilService.televerserAvatar(fichier);
-    this.message.set(
-      erreur
-        ? { texte: erreur, type: 'erreur' }
-        : { texte: 'Photo de profil mise à jour.', type: 'succes' },
-    );
-    this.avatarEnCours.set(false);
-  }
-
-  protected initiales(): string {
-    const profil = this.auth.profil();
-    if (!profil) {
-      return '?';
-    }
-    return ((profil.prenom[0] ?? '') + (profil.nom[0] ?? '')).toUpperCase() || '?';
   }
 
   protected membreDepuis(): string {

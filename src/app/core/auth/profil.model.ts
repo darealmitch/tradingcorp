@@ -10,7 +10,6 @@ export interface Profil {
   surnom: string | null;
   /** Dernière modification du surnom (fenêtre des 30 jours). */
   surnom_modifie_le: string | null;
-  avatar_url: string | null;
   role: Role;
   date_creation: string;
   /** Compte créé par un admin : mot de passe temporaire à remplacer. */

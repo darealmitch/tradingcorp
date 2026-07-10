@@ -1,0 +1,256 @@
+## Table `profils`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_profil` | `uuid` | Primary |
+| `nom` | `text` |  |
+| `prenom` | `text` |  |
+| `avatar_url` | `text` |  Nullable |
+| `role` | `text` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+| `doit_changer_mdp` | `bool` |  |
+| `est_test` | `bool` |  |
+
+## Table `formations`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_formation` | `uuid` | Primary |
+| `titre` | `text` |  |
+| `slug` | `text` |  Unique |
+| `description` | `text` |  Nullable |
+| `prix_centimes` | `int4` |  |
+| `devise` | `text` |  |
+| `est_publiee` | `bool` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `sections`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_section` | `uuid` | Primary |
+| `id_formation` | `uuid` |  |
+| `titre` | `text` |  |
+| `description` | `text` |  Nullable |
+| `position` | `int4` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `lecons`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_lecon` | `uuid` | Primary |
+| `id_section` | `uuid` |  |
+| `titre` | `text` |  |
+| `contenu` | `text` |  Nullable |
+| `duree_s` | `int4` |  Nullable |
+| `video_provider` | `text` |  |
+| `video_provider_id` | `text` |  Nullable |
+| `position` | `int4` |  |
+| `apercu_gratuit` | `bool` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `ressources`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_ressource` | `uuid` | Primary |
+| `id_lecon` | `uuid` |  |
+| `nom` | `text` |  |
+| `type_mime` | `text` |  |
+| `chemin_storage` | `text` |  |
+| `taille` | `int8` |  Nullable |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `paiements`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_paiement` | `uuid` | Primary |
+| `id_profil` | `uuid` |  Nullable |
+| `montant_centimes` | `int4` |  |
+| `devise` | `text` |  |
+| `statut` | `text` |  |
+| `moyen_paiement` | `text` |  Nullable |
+| `reference_transaction` | `text` |  Unique |
+| `email` | `text` |  Nullable |
+| `date_paiement` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+| `mode_test` | `bool` |  |
+
+## Table `inscriptions`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_inscription` | `uuid` | Primary |
+| `id_profil` | `uuid` |  |
+| `id_formation` | `uuid` |  |
+| `id_paiement` | `uuid` |  Nullable |
+| `statut` | `text` |  |
+| `source` | `text` |  |
+| `date_inscription` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `progression_lecons`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_progression_lecon` | `uuid` | Primary |
+| `id_profil` | `uuid` |  |
+| `id_lecon` | `uuid` |  |
+| `terminee_le` | `timestamptz` |  Nullable |
+| `position_video_s` | `int4` |  |
+| `date_creation` | `timestamptz` |  |
+
+## Table `quiz`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_quiz` | `uuid` | Primary |
+| `id_formation` | `uuid` |  |
+| `titre` | `text` |  |
+| `score_requis` | `int4` |  |
+| `est_examen_final` | `bool` |  |
+| `position` | `int4` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `questions`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_question` | `uuid` | Primary |
+| `id_quiz` | `uuid` |  |
+| `libelle` | `text` |  |
+| `position` | `int4` |  |
+| `type` | `text` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `reponses`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_reponse` | `uuid` | Primary |
+| `id_question` | `uuid` |  |
+| `contenu` | `text` |  |
+| `correcte` | `bool` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `tentatives_quiz`
+
+Écrite uniquement par le service_role (Edge Function de correction) — jamais par le client.
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_tentative` | `uuid` | Primary |
+| `id_profil` | `uuid` |  |
+| `id_quiz` | `uuid` |  |
+| `score` | `int4` |  |
+| `reussi` | `bool` |  |
+| `reponses_donnees` | `jsonb` |  |
+| `date_passage` | `timestamptz` |  |
+
+## Table `certificats`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_certificat` | `uuid` | Primary |
+| `id_profil` | `uuid` |  |
+| `id_formation` | `uuid` |  |
+| `numero` | `text` |  Unique |
+| `date_obtention` | `timestamptz` |  |
+| `chemin_storage` | `text` |  Nullable |
+
+## Table `commentaires`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_commentaire` | `uuid` | Primary |
+| `id_profil` | `uuid` |  |
+| `id_lecon` | `uuid` |  |
+| `id_parent` | `uuid` |  Nullable |
+| `contenu` | `text` |  |
+| `statut` | `text` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `avis`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_avis` | `uuid` | Primary |
+| `id_profil` | `uuid` |  |
+| `id_formation` | `uuid` |  |
+| `note` | `int4` |  |
+| `contenu` | `text` |  Nullable |
+| `statut` | `text` |  |
+| `date_creation` | `timestamptz` |  |
+| `date_modification` | `timestamptz` |  |
+
+## Table `notifications`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_notification` | `uuid` | Primary |
+| `id_profil` | `uuid` |  |
+| `titre` | `text` |  |
+| `message` | `text` |  Nullable |
+| `type` | `text` |  |
+| `lien` | `text` |  Nullable |
+| `date_envoi` | `timestamptz` |  |
+| `lu_le` | `timestamptz` |  Nullable |
+
+## Table `journal_admin`
+
+ON DELETE RESTRICT sur id_profil : un admin ne peut pas être supprimé silencieusement sans traiter d'abord son journal (intégrité de la piste d'audit).
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id_journal` | `uuid` | Primary |
+| `id_profil` | `uuid` |  |
+| `action` | `text` |  |
+| `cible` | `text` |  Nullable |
+| `meta` | `jsonb` |  Nullable |
+| `date_action` | `timestamptz` |  |
+
