@@ -1,0 +1,82 @@
+.admin {
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 140px 0 80px;
+}
+
+.admin-tete {
+  margin-bottom: 48px;
+}
+
+.admin-titre {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+}
+
+.admin-sous {
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+.admin-alerte {
+  margin-bottom: 24px;
+  padding: 14px 20px;
+  border: 1px solid rgba(255, 92, 122, 0.4);
+  border-radius: 14px;
+  color: var(--down);
+}
+
+.admin-panneau {
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.admin-table th {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-email {
+  color: var(--muted);
+}
+
+.admin-select {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.admin-select:disabled {
+  opacity: 0.6;
+}
+
+.admin-soi {
+  color: var(--muted);
+}

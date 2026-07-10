@@ -16,6 +16,9 @@
           >Ouvrir un compte</a
         >
       } @else {
+        @if (auth.role() === 'admin') {
+          <a routerLink="/admin" (click)="closeMenu()">Admin</a>
+        }
         <a class="btn btn-primary nav-cta" routerLink="/espace" (click)="closeMenu()">Mon espace</a>
       }
     </nav>
