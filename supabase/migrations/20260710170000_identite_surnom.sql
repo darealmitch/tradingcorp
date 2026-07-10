@@ -7,10 +7,12 @@
 --
 --   • surnom / surnom_modifie_le : pseudo modifiable une fois tous les 30 jours,
 --     via la RPC changer_surnom (contrôle serveur, infalsifiable côté front).
---   • avatar_url supprimée : le profil ne gère plus aucune image. Le bucket
---     Supabase Storage d'avatars est démonté ci-dessous. Les médias du projet
---     (captures, images de formation, illustrations, ressources) passeront par
---     Cloudinary et seront stockés dans les tables métier, jamais dans profils.
+--   • avatar_url supprimée : le profil ne gère plus aucune image. Les policies
+--     du bucket Supabase Storage d'avatars sont retirées ci-dessous ; le bucket
+--     lui-même se supprime depuis le dashboard (Postgres interdit le DELETE
+--     direct sur storage.objects). Les médias du projet (captures, images de
+--     formation, illustrations, ressources) passeront par Cloudinary, stockés
+--     dans les tables métier, jamais dans profils.
 --   • nom / prénom : plus aucune écriture directe par l'utilisateur ; seul un
 --     admin les corrige via corriger_identite (journalisé).
 -- =============================================================================
@@ -27,12 +29,13 @@ alter table profils drop column if exists avatar_url;
 revoke update on profils from authenticated;
 
 -- 3. Démontage du stockage d'avatars (Supabase Storage) ----------------------
+-- On retire uniquement les policies (DDL autorisé). Le bucket `avatars` et ses
+-- éventuels objets se suppriment depuis le dashboard : Storage → avatars →
+-- Delete bucket (Postgres bloque tout DELETE direct sur storage.objects).
 drop policy if exists "avatars_lecture_publique" on storage.objects;
 drop policy if exists "avatars_insert_proprietaire" on storage.objects;
 drop policy if exists "avatars_update_proprietaire" on storage.objects;
 drop policy if exists "avatars_delete_proprietaire" on storage.objects;
-delete from storage.objects where bucket_id = 'avatars';
-delete from storage.buckets where id = 'avatars';
 
 -- 4. Surnom : une modification par période de 30 jours -----------------------
 create or replace function public.changer_surnom(p_surnom text)
