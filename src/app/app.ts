@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { Footer } from './layout/footer/footer';
 import { Header } from './layout/header/header';
 
@@ -9,4 +11,15 @@ import { Header } from './layout/header/header';
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class App {}
+export class App {
+  private readonly router = inject(Router);
+
+  /** Le footer marketing n'a pas sa place dans l'espace connecté. */
+  protected readonly surEspace = toSignal(
+    this.router.events.pipe(
+      filter((evenement): evenement is NavigationEnd => evenement instanceof NavigationEnd),
+      map((evenement) => evenement.urlAfterRedirects.startsWith('/espace')),
+    ),
+    { initialValue: false },
+  );
+}

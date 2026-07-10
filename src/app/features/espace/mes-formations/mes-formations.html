@@ -1,0 +1,56 @@
+<header class="page-tete">
+  <h1 class="page-titre">Ma formation</h1>
+  <p class="page-sous">Ton accès au programme et le catalogue des formations disponibles.</p>
+</header>
+
+@if (erreurAchat(); as erreur) {
+  <p class="alerte est-erreur">{{ erreur }}</p>
+}
+
+<div class="panneau">
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (formations().length === 0) {
+    <h2 class="panneau-titre">Ta formation arrive ici</h2>
+    <p class="page-sous">
+      L'espace d'apprentissage (leçons, ressources, quiz et progression) sera disponible dans cette
+      page une fois le contenu publié.
+    </p>
+  } @else {
+    <div class="formations-liste">
+      @for (formation of formations(); track formation.id_formation) {
+        <article class="formation-carte">
+          <div class="formation-infos">
+            <h3>{{ formation.titre }}</h3>
+            @if (formation.description) {
+              <p>{{ formation.description }}</p>
+            }
+          </div>
+          @if (inscrites().has(formation.id_formation)) {
+            <span class="badge-statut est-succes">Accès actif</span>
+          } @else {
+            <button
+              class="btn btn-primary btn-compact"
+              type="button"
+              [disabled]="achatEnCours() !== null"
+              (click)="acheter(formation)"
+            >
+              @if (achatEnCours() === formation.id_formation) {
+                Redirection…
+              } @else {
+                Acheter — {{ prix(formation) }}
+              }
+            </button>
+          }
+        </article>
+      }
+    </div>
+
+    @if (inscrites().size > 0) {
+      <p class="formation-note">
+        Le lecteur de leçons (vidéos, ressources, quiz et progression) arrive dans la prochaine
+        étape — ton accès est déjà enregistré.
+      </p>
+    }
+  }
+</div>

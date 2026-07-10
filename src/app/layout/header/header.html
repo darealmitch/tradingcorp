@@ -1,32 +1,36 @@
-<header class="site-header" [class.is-scrolled]="scrolled()" [class.is-open]="menuOpen()">
+<header
+  class="site-header"
+  [class.is-scrolled]="scrolled() || surEspace()"
+  [class.is-open]="menuOpen()"
+>
   <div class="container header-inner">
     <a class="brand" routerLink="/" fragment="accueil" (click)="closeMenu()"
       >TRADING<span>CORP</span></a
     >
 
     <nav class="header-nav" aria-label="Navigation principale">
-      <a routerLink="/" fragment="formations" (click)="closeMenu()">Formations</a>
-      <a routerLink="/" fragment="notice" (click)="closeMenu()">Avis</a>
-      <a routerLink="/" fragment="resultats" (click)="closeMenu()">Résultats</a>
-      <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
-      <a routerLink="/facteurs" (click)="closeMenu()">Programme</a>
       @if (!auth.estConnecte()) {
+        <a routerLink="/" fragment="formations" (click)="closeMenu()">Formations</a>
+        <a routerLink="/" fragment="notice" (click)="closeMenu()">Avis</a>
+        <a routerLink="/" fragment="resultats" (click)="closeMenu()">Résultats</a>
+        <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
+        <a routerLink="/facteurs" (click)="closeMenu()">Programme</a>
         <a routerLink="/connexion" (click)="closeMenu()">Connexion</a>
         <a class="btn btn-primary nav-cta" routerLink="/inscription" (click)="closeMenu()"
           >Ouvrir un compte</a
         >
       } @else {
-        @if (auth.role() === 'admin') {
-          <a routerLink="/admin" (click)="closeMenu()">Admin</a>
-        }
-        <a class="btn btn-primary nav-cta" routerLink="/espace" (click)="closeMenu()">Mon espace</a>
+        <a routerLink="/espace" (click)="closeMenu()">Dashboard</a>
+        <a routerLink="/espace/notifications" (click)="closeMenu()">Notifications</a>
+        <a routerLink="/espace/profil" (click)="closeMenu()">Profil</a>
+        <button class="nav-deconnexion" type="button" (click)="deconnecter()">Déconnexion</button>
       }
     </nav>
 
     @if (!auth.estConnecte()) {
       <a class="btn btn-primary header-cta" routerLink="/inscription">Ouvrir un compte</a>
     } @else {
-      <a class="btn btn-primary header-cta" routerLink="/espace">Mon espace</a>
+      <a class="btn btn-primary header-cta" routerLink="/espace">Dashboard</a>
     }
 
     <button

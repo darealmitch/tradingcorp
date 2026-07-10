@@ -1,0 +1,214 @@
+.espace-layout {
+  display: flex;
+  min-height: 100svh;
+  padding-top: 72px;
+}
+
+/* ===== Barre latérale ===== */
+
+.lateral {
+  position: sticky;
+  top: 72px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 264px;
+  height: calc(100svh - 72px);
+  padding: 18px 12px 12px;
+  border-right: 1px solid var(--line);
+  background: var(--bg-soft);
+  transition: width 0.3s var(--ease-out);
+}
+
+.lateral.est-replie {
+  width: 76px;
+}
+
+.marque {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 6px 18px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.marque-logo {
+  display: grid;
+  place-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--gradient);
+  color: #05060b;
+  font-family: var(--font-title);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+.marque-texte {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.marque-nom {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.marque-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+/* ===== Navigation ===== */
+
+.lateral-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.lateral-separation {
+  margin: 12px 6px;
+  border-top: 1px solid var(--line);
+}
+
+.lateral-lien {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 44px;
+  border-radius: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+}
+
+.lateral-lien:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lateral-lien.est-actif {
+  color: var(--text);
+  background: rgba(124, 108, 255, 0.12);
+  box-shadow: inset 2px 0 0 var(--violet);
+}
+
+.lien-icone {
+  display: grid;
+  place-content: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 100%;
+}
+
+.lien-libelle {
+  font-size: 0.92rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.est-replie .lien-libelle,
+.est-replie .marque-texte {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pastille {
+  position: absolute;
+  right: 12px;
+  display: grid;
+  place-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding-inline: 6px;
+  border-radius: 999px;
+  background: var(--violet);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.est-replie .pastille {
+  top: 8px;
+  right: 10px;
+  min-width: 8px;
+  height: 8px;
+  padding: 0;
+  font-size: 0;
+}
+
+/* ===== Pied (déconnexion + repli) ===== */
+
+.lateral-pied {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.chevrons {
+  transition: transform 0.3s var(--ease-out);
+}
+
+.chevrons.est-retourne {
+  transform: rotate(180deg);
+}
+
+/* ===== Contenu ===== */
+
+.contenu {
+  flex: 1;
+  min-width: 0;
+  padding: 36px 40px 90px;
+}
+
+.contenu-interieur {
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+@media (max-width: 860px) {
+  .lateral {
+    width: 76px;
+  }
+
+  .lateral .lien-libelle,
+  .lateral .marque-texte {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .lateral .pastille {
+    top: 8px;
+    right: 10px;
+    min-width: 8px;
+    height: 8px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .replier {
+    display: none;
+  }
+
+  .contenu {
+    padding: 24px 16px 64px;
+  }
+}

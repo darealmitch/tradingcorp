@@ -1,0 +1,36 @@
+<header class="page-tete">
+  <h1 class="page-titre">Journal d'administration</h1>
+  <p class="page-sous">
+    Piste d'audit des actions sensibles (rôles, modération, remboursements). Alimenté par la table
+    journal_admin une fois les actions branchées.
+  </p>
+</header>
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Dernières actions</h2>
+    <span class="etiquette-demo">démo</span>
+  </div>
+  <div class="tableau-defile">
+    <table class="tableau">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Administrateur</th>
+          <th>Action</th>
+          <th>Cible</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entree of entrees; track entree.date) {
+          <tr>
+            <td class="cellule-discrete">{{ entree.date }}</td>
+            <td>{{ entree.admin }}</td>
+            <td>{{ entree.action }}</td>
+            <td class="cellule-discrete">{{ entree.cible }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

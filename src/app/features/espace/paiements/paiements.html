@@ -1,0 +1,62 @@
+<header class="page-tete">
+  <h1 class="page-titre">Paiements</h1>
+  <p class="page-sous">Chiffre d'affaires et historique des transactions Stripe.</p>
+</header>
+
+<div class="grille-stats">
+  <app-stat-card
+    icone="paiements"
+    libelle="Chiffre d'affaires du mois"
+    valeur="5 982 €"
+    tendance="hausse"
+    detail="+12 % vs juin"
+  />
+  <app-stat-card icone="stats" libelle="Chiffre d'affaires total" valeur="48 550 €" />
+  <app-stat-card icone="coche" libelle="Paiements réussis" valeur="49" detail="sur 52 tentatives" />
+  <app-stat-card icone="tendance" libelle="Panier moyen" valeur="991 €" />
+</div>
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Dernières transactions</h2>
+    <span class="etiquette-demo">démo</span>
+  </div>
+  <div class="tableau-defile">
+    <table class="tableau">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Client</th>
+          <th>Montant</th>
+          <th>Moyen</th>
+          <th>Statut</th>
+          <th>Référence</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (paiement of paiements; track paiement.reference) {
+          <tr>
+            <td class="cellule-discrete">{{ paiement.date }}</td>
+            <td>{{ paiement.client }}</td>
+            <td>{{ paiement.montant }}</td>
+            <td class="cellule-discrete">{{ paiement.moyen }}</td>
+            <td>
+              @switch (paiement.statut) {
+                @case ('reussi') {
+                  <span class="badge-statut est-succes">Réussi</span>
+                }
+                @case ('rembourse') {
+                  <span class="badge-statut est-attente">Remboursé</span>
+                }
+                @case ('echoue') {
+                  <span class="badge-statut est-echec">Échoué</span>
+                }
+              }
+            </td>
+            <td class="cellule-discrete">{{ paiement.reference }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

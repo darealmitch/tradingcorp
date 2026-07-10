@@ -32,15 +32,82 @@ export const routes: Routes = [
   },
   {
     path: 'espace',
-    loadComponent: () => import('./features/espace/espace').then((m) => m.Espace),
+    loadComponent: () => import('./features/espace/espace-layout').then((m) => m.EspaceLayout),
     canActivate: [authGuard],
-    title: 'TradingCorp — Mon espace',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/espace/accueil/accueil').then((m) => m.Accueil),
+        title: 'TradingCorp — Tableau de bord',
+      },
+      {
+        path: 'formations',
+        loadComponent: () =>
+          import('./features/espace/mes-formations/mes-formations').then((m) => m.MesFormations),
+        title: 'TradingCorp — Ma formation',
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/espace/notifications/notifications').then((m) => m.Notifications),
+        title: 'TradingCorp — Notifications',
+      },
+      {
+        path: 'profil',
+        loadComponent: () =>
+          import('./features/espace/mon-profil/mon-profil').then((m) => m.MonProfil),
+        title: 'TradingCorp — Profil',
+      },
+      {
+        path: 'contenus',
+        loadComponent: () => import('./features/espace/contenus/contenus').then((m) => m.Contenus),
+        canActivate: [roleGuard('formateur', 'admin')],
+        title: 'TradingCorp — Contenus',
+      },
+      {
+        path: 'apprenants',
+        loadComponent: () =>
+          import('./features/espace/apprenants/apprenants').then((m) => m.Apprenants),
+        canActivate: [roleGuard('formateur', 'admin')],
+        title: 'TradingCorp — Apprenants',
+      },
+      {
+        path: 'moderation',
+        loadComponent: () =>
+          import('./features/espace/moderation/moderation').then((m) => m.Moderation),
+        canActivate: [roleGuard('formateur', 'admin')],
+        title: 'TradingCorp — Modération',
+      },
+      {
+        path: 'utilisateurs',
+        loadComponent: () =>
+          import('./features/espace/utilisateurs/utilisateurs').then((m) => m.Utilisateurs),
+        canActivate: [roleGuard('admin')],
+        title: 'TradingCorp — Utilisateurs',
+      },
+      {
+        path: 'paiements',
+        loadComponent: () =>
+          import('./features/espace/paiements/paiements').then((m) => m.Paiements),
+        canActivate: [roleGuard('admin')],
+        title: 'TradingCorp — Paiements',
+      },
+      {
+        path: 'journal',
+        loadComponent: () => import('./features/espace/journal/journal').then((m) => m.Journal),
+        canActivate: [roleGuard('admin')],
+        title: 'TradingCorp — Journal',
+      },
+      {
+        path: 'parametres',
+        loadComponent: () =>
+          import('./features/espace/parametres/parametres').then((m) => m.Parametres),
+        canActivate: [roleGuard('admin')],
+        title: 'TradingCorp — Paramètres',
+      },
+    ],
   },
-  {
-    path: 'admin',
-    loadComponent: () => import('./features/admin/admin').then((m) => m.Admin),
-    canActivate: [roleGuard('admin')],
-    title: 'TradingCorp — Administration',
-  },
+  // Ancienne URL du back-office, désormais dans l'espace.
+  { path: 'admin', redirectTo: '/espace/utilisateurs' },
   { path: '**', redirectTo: '' },
 ];

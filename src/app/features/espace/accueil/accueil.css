@@ -1,0 +1,53 @@
+.debloquer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.debloquer h2 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.reprendre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.panneau-lien {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--cyan);
+  transition: opacity 0.2s;
+}
+
+.panneau-lien:hover {
+  opacity: 0.75;
+}
+
+.indicateurs {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.indicateur-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.indicateur-valeur {
+  font-weight: 600;
+  color: var(--text);
+}

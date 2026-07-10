@@ -1,0 +1,83 @@
+<header class="page-tete">
+  <h1 class="page-titre">Modération</h1>
+  <p class="page-sous">
+    Commentaires et avis en attente d'approbation avant d'être visibles par les apprenants.
+  </p>
+</header>
+
+<section class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">
+      <app-icone nom="moderation" [taille]="18" />
+      Commentaires en attente
+    </h2>
+    <span class="etiquette-demo">démo</span>
+  </div>
+
+  @if (commentaires().length === 0) {
+    <p class="cellule-discrete">Aucun commentaire en attente. Tout est à jour.</p>
+  }
+  @for (commentaire of commentaires(); track commentaire.id) {
+    <div class="moderation-ligne">
+      <div class="liste-corps">
+        <p class="liste-titre">{{ commentaire.auteur }} — {{ commentaire.lecon }}</p>
+        <p class="moderation-contenu">{{ commentaire.contenu }}</p>
+        <p class="liste-date">{{ commentaire.date }}</p>
+      </div>
+      <div class="moderation-actions">
+        <button
+          class="btn btn-ghost btn-compact"
+          type="button"
+          (click)="traiterCommentaire(commentaire.id)"
+        >
+          Approuver
+        </button>
+        <button
+          class="btn btn-ghost btn-compact est-rejet"
+          type="button"
+          (click)="traiterCommentaire(commentaire.id)"
+        >
+          Rejeter
+        </button>
+      </div>
+    </div>
+  }
+</section>
+
+<section class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">
+      <app-icone nom="etoile" [taille]="18" />
+      Avis en attente
+    </h2>
+    <span class="etiquette-demo">démo</span>
+  </div>
+
+  @if (avis().length === 0) {
+    <p class="cellule-discrete">Aucun avis en attente. Tout est à jour.</p>
+  }
+  @for (unAvis of avis(); track unAvis.id) {
+    <div class="moderation-ligne">
+      <div class="liste-corps">
+        <p class="liste-titre">
+          {{ unAvis.auteur }}
+          <span class="moderation-note">{{ etoiles(unAvis.note) }}</span>
+        </p>
+        <p class="moderation-contenu">{{ unAvis.contenu }}</p>
+        <p class="liste-date">{{ unAvis.date }}</p>
+      </div>
+      <div class="moderation-actions">
+        <button class="btn btn-ghost btn-compact" type="button" (click)="traiterAvis(unAvis.id)">
+          Approuver
+        </button>
+        <button
+          class="btn btn-ghost btn-compact est-rejet"
+          type="button"
+          (click)="traiterAvis(unAvis.id)"
+        >
+          Rejeter
+        </button>
+      </div>
+    </div>
+  }
+</section>

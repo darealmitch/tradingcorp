@@ -1,0 +1,220 @@
+<header class="page-tete">
+  <h1 class="page-titre">
+    Bonjour<span class="text-gradient">{{
+      auth.profil()?.prenom ? ' ' + auth.profil()!.prenom : ''
+    }}</span>
+  </h1>
+  <p class="page-sous">Voici où en est ta plateforme aujourd'hui.</p>
+</header>
+
+@if (retourAchat() === 'succes') {
+  <p class="alerte est-succes">Paiement confirmé ! Ton accès s'active dans quelques instants.</p>
+} @else if (retourAchat() === 'annule') {
+  <p class="alerte">Paiement annulé. Tu peux réessayer quand tu veux.</p>
+}
+
+@switch (auth.role()) {
+  @case ('apprenant') {
+    @if (chargement()) {
+      <p class="cellule-discrete">Chargement…</p>
+    } @else if (!possedeFormation()) {
+      <div class="panneau debloquer">
+        <div>
+          <h2>Débloque ta formation</h2>
+          <p class="page-sous">
+            Accède à l'intégralité du programme : leçons vidéo, ressources, quiz et certificat.
+          </p>
+        </div>
+        <a class="btn btn-primary btn-compact" routerLink="/espace/formations">
+          Découvrir la formation
+        </a>
+      </div>
+    } @else {
+      <div class="grille-stats">
+        <app-stat-card
+          icone="stats"
+          libelle="Progression"
+          [valeur]="progression.pourcentage + ' %'"
+          detail="de la formation terminée"
+        />
+        <app-stat-card
+          icone="lecture"
+          libelle="Leçons terminées"
+          [valeur]="progression.leconsTerminees + ' / ' + progression.leconsTotal"
+        />
+        <app-stat-card
+          icone="liste"
+          libelle="Quiz réussis"
+          [valeur]="progression.quizReussis + ' / ' + progression.quizTotal"
+        />
+        <app-stat-card
+          icone="diplome"
+          libelle="Certificats"
+          [valeur]="'' + progression.certificats"
+          detail="l'examen final t'attend"
+        />
+      </div>
+
+      <div class="grille-deux">
+        <section class="panneau">
+          <div class="panneau-tete">
+            <h2 class="panneau-titre">Reprendre où tu t'es arrêté</h2>
+            <span class="etiquette-demo">démo</span>
+          </div>
+          <div class="reprendre">
+            <span class="liste-icone"><app-icone nom="lecture" [taille]="18" /></span>
+            <div class="liste-corps">
+              <p class="liste-titre">{{ progression.derniereLecon }}</p>
+              <p class="liste-detail">
+                Leçon {{ progression.leconsTerminees + 1 }} sur {{ progression.leconsTotal }}
+              </p>
+            </div>
+            <a class="btn btn-primary btn-compact" routerLink="/espace/formations">Reprendre</a>
+          </div>
+          <app-barre-progression [valeur]="progression.pourcentage" />
+        </section>
+
+        <section class="panneau">
+          <div class="panneau-tete">
+            <h2 class="panneau-titre">À suivre</h2>
+            <span class="etiquette-demo">démo</span>
+          </div>
+          @for (lecon of progression.prochaines; track lecon.titre) {
+            <div class="ligne-liste">
+              <span class="liste-icone"><app-icone nom="horloge" [taille]="16" /></span>
+              <div class="liste-corps">
+                <p class="liste-titre">{{ lecon.titre }}</p>
+              </div>
+              <span class="liste-date">{{ lecon.duree }}</span>
+            </div>
+          }
+        </section>
+      </div>
+    }
+  }
+
+  @case ('formateur') {
+    <div class="grille-stats">
+      <app-stat-card
+        icone="apprenants"
+        libelle="Apprenants actifs"
+        [valeur]="'' + formateur.apprenants"
+        tendance="hausse"
+        detail="+5 cette semaine"
+      />
+      <app-stat-card
+        icone="contenus"
+        libelle="Leçons publiées"
+        [valeur]="'' + formateur.leconsPubliees"
+      />
+      <app-stat-card
+        icone="moderation"
+        libelle="Commentaires en attente"
+        [valeur]="'' + formateur.commentairesEnAttente"
+      />
+      <app-stat-card icone="etoile" libelle="Note moyenne" [valeur]="formateur.noteMoyenne" />
+    </div>
+
+    <div class="grille-deux">
+      <section class="panneau">
+        <div class="panneau-tete">
+          <h2 class="panneau-titre">Derniers commentaires</h2>
+          <span class="etiquette-demo">démo</span>
+        </div>
+        @for (commentaire of formateur.derniersCommentaires; track commentaire.auteur) {
+          <div class="ligne-liste">
+            <span class="liste-icone"><app-icone nom="moderation" [taille]="16" /></span>
+            <div class="liste-corps">
+              <p class="liste-titre">{{ commentaire.auteur }} — {{ commentaire.lecon }}</p>
+              <p class="liste-detail">{{ commentaire.extrait }}</p>
+            </div>
+            <span class="liste-date">{{ commentaire.date }}</span>
+          </div>
+        }
+        <a class="panneau-lien" routerLink="/espace/moderation">Ouvrir la modération</a>
+      </section>
+
+      <section class="panneau">
+        <div class="panneau-tete">
+          <h2 class="panneau-titre">Activité des apprenants</h2>
+          <span class="etiquette-demo">démo</span>
+        </div>
+        @for (element of formateur.activite; track element.titre) {
+          <div class="ligne-liste">
+            <span class="liste-icone"><app-icone nom="tendance" [taille]="16" /></span>
+            <div class="liste-corps">
+              <p class="liste-titre">{{ element.titre }}</p>
+              <p class="liste-detail">{{ element.detail }}</p>
+            </div>
+            <span class="liste-date">{{ element.date }}</span>
+          </div>
+        }
+        <a class="panneau-lien" routerLink="/espace/apprenants">Voir les apprenants</a>
+      </section>
+    </div>
+  }
+
+  @case ('admin') {
+    <div class="grille-stats">
+      <app-stat-card
+        icone="paiements"
+        libelle="Chiffre d'affaires du mois"
+        [valeur]="admin.caMois"
+        tendance="hausse"
+        detail="+12 % vs mois dernier"
+      />
+      <app-stat-card icone="stats" libelle="Chiffre d'affaires total" [valeur]="admin.caTotal" />
+      <app-stat-card
+        icone="apprenants"
+        libelle="Apprenants"
+        [valeur]="'' + admin.apprenants"
+        tendance="hausse"
+        detail="+8 ce mois-ci"
+      />
+      <app-stat-card
+        icone="diplome"
+        libelle="Certificats émis"
+        [valeur]="'' + admin.certificatsEmis"
+      />
+    </div>
+
+    <div class="grille-deux">
+      <section class="panneau">
+        <div class="panneau-tete">
+          <h2 class="panneau-titre">Activité récente</h2>
+          <span class="etiquette-demo">démo</span>
+        </div>
+        @for (element of admin.activite; track element.titre) {
+          <div class="ligne-liste">
+            <span class="liste-icone"><app-icone [nom]="element.icone" [taille]="16" /></span>
+            <div class="liste-corps">
+              <p class="liste-titre">{{ element.titre }}</p>
+              <p class="liste-detail">{{ element.detail }}</p>
+            </div>
+            <span class="liste-date">{{ element.date }}</span>
+          </div>
+        }
+        <a class="panneau-lien" routerLink="/espace/journal">Ouvrir le journal</a>
+      </section>
+
+      <section class="panneau">
+        <div class="panneau-tete">
+          <h2 class="panneau-titre">Indicateurs</h2>
+          <span class="etiquette-demo">démo</span>
+        </div>
+        <div class="indicateurs">
+          @for (indicateur of admin.indicateurs; track indicateur.libelle) {
+            <div class="indicateur">
+              <div class="indicateur-tete">
+                <span>{{ indicateur.libelle }}</span>
+                <span class="indicateur-valeur">{{ indicateur.valeur }} %</span>
+              </div>
+              <app-barre-progression [valeur]="indicateur.valeur" />
+            </div>
+          }
+        </div>
+        <a class="panneau-lien" routerLink="/espace/paiements">Voir les paiements</a>
+      </section>
+    </div>
+  }
+}
