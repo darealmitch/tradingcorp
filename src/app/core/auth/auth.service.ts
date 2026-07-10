@@ -3,6 +3,13 @@ import { AuthError, Session } from '@supabase/supabase-js';
 import { SUPABASE } from '../supabase/supabase.client';
 import { Profil } from './profil.model';
 
+/**
+ * Provider Google non configuré côté dashboard Supabase (OAuth client GCP en
+ * attente). Passer à true une fois le provider activé (Authentication →
+ * Providers → Google) pour réafficher le bouton sur connexion/inscription.
+ */
+export const GOOGLE_OAUTH_ACTIF = false;
+
 /** Résultat homogène des opérations d'authentification. */
 export interface ResultatAuth {
   ok: boolean;

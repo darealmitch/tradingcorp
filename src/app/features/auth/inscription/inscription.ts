@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/auth/auth.service';
+import { AuthService, GOOGLE_OAUTH_ACTIF } from '../../../core/auth/auth.service';
 
 /** Les deux champs mot de passe doivent correspondre. */
 function mdpIdentiques(groupe: AbstractControl): ValidationErrors | null {
@@ -27,6 +27,8 @@ export class Inscription {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(NonNullableFormBuilder);
+
+  protected readonly googleActif = GOOGLE_OAUTH_ACTIF;
 
   protected readonly chargement = signal(false);
   protected readonly erreur = signal<string | null>(null);
