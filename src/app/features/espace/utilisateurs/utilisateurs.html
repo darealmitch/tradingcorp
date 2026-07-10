@@ -1,7 +1,8 @@
 <header class="page-tete">
   <h1 class="page-titre">Utilisateurs</h1>
   <p class="page-sous">
-    Attribue les rôles formateur et admin. Le rôle change immédiatement, sans confirmation.
+    Rôles, comptes de test et création manuelle (formateur, apprenant privilégié, migration d'un
+    ancien client).
   </p>
 </header>
 
@@ -9,7 +10,82 @@
   <p class="alerte est-erreur">{{ message }}</p>
 }
 
-<div class="panneau">
+<section class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Créer un compte</h2>
+  </div>
+
+  @if (erreurCreation(); as message) {
+    <p class="alerte est-erreur">{{ message }}</p>
+  }
+
+  @if (compteCree(); as compte) {
+    <div class="alerte est-succes compte-cree">
+      <p>
+        Compte <strong>{{ compte.email }}</strong> créé. Transmets-lui ce mot de passe temporaire —
+        il n'est affiché qu'une seule fois, et devra être remplacé à la première connexion :
+      </p>
+      <p class="compte-mdp">
+        <code>{{ compte.motDePasse }}</code>
+        <button class="btn btn-ghost btn-compact" type="button" (click)="copierMotDePasse()">
+          {{ motDePasseCopie() ? 'Copié !' : 'Copier' }}
+        </button>
+      </p>
+    </div>
+  }
+
+  <form class="creation-form" [formGroup]="formCreation" (ngSubmit)="creerCompte()" novalidate>
+    <div class="creation-champs">
+      <div class="champ-creation">
+        <label for="creation-prenom">Prénom</label>
+        <input id="creation-prenom" type="text" formControlName="prenom" autocomplete="off" />
+      </div>
+      <div class="champ-creation">
+        <label for="creation-nom">Nom</label>
+        <input id="creation-nom" type="text" formControlName="nom" autocomplete="off" />
+      </div>
+      <div class="champ-creation">
+        <label for="creation-email">E-mail *</label>
+        <input
+          id="creation-email"
+          type="email"
+          formControlName="email"
+          autocomplete="off"
+          placeholder="personne@exemple.com"
+        />
+        @if (invalideEmail()) {
+          <p class="champ-erreur">Adresse e-mail invalide.</p>
+        }
+      </div>
+      <div class="champ-creation">
+        <label for="creation-role">Rôle</label>
+        <select id="creation-role" class="selecteur-role" formControlName="role">
+          <option value="apprenant">apprenant</option>
+          <option value="formateur">formateur</option>
+        </select>
+      </div>
+      @if (formCreation.controls.role.value === 'apprenant') {
+        <div class="champ-creation">
+          <label for="creation-formation">Accès offert</label>
+          <select id="creation-formation" class="selecteur-role" formControlName="id_formation">
+            <option value="">Aucun</option>
+            @for (formation of formations(); track formation.id_formation) {
+              <option [value]="formation.id_formation">{{ formation.titre }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
+    <button class="btn btn-primary btn-compact" type="submit" [disabled]="creationEnCours()">
+      {{ creationEnCours() ? 'Création…' : 'Créer le compte' }}
+    </button>
+  </form>
+</section>
+
+<section class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Comptes</h2>
+  </div>
   @if (chargement()) {
     <p class="cellule-discrete">Chargement…</p>
   } @else if (profils().length === 0) {
@@ -23,12 +99,52 @@
             <th>E-mail</th>
             <th>Inscrit le</th>
             <th>Rôle</th>
+            <th>Statut</th>
+            <th>Test</th>
           </tr>
         </thead>
         <tbody>
           @for (profil of profils(); track profil) {
             <tr>
-              <td>{{ profil.prenom }} {{ profil.nom }}</td>
+              <td>
+                @if (correctionId() === profil.id_profil) {
+                  <form
+                    class="correction"
+                    [formGroup]="formCorrection"
+                    (ngSubmit)="enregistrerCorrection(profil)"
+                  >
+                    <input type="text" formControlName="prenom" aria-label="Prénom" />
+                    <input type="text" formControlName="nom" aria-label="Nom" />
+                    <button
+                      class="btn btn-primary btn-compact"
+                      type="submit"
+                      [disabled]="enregistrement()"
+                    >
+                      OK
+                    </button>
+                    <button
+                      class="btn btn-ghost btn-compact"
+                      type="button"
+                      (click)="annulerCorrection()"
+                    >
+                      Annuler
+                    </button>
+                  </form>
+                } @else {
+                  <span class="nom-cellule">
+                    {{ profil.prenom }} {{ profil.nom }}
+                    <button
+                      class="lien-corriger"
+                      type="button"
+                      (click)="ouvrirCorrection(profil)"
+                      title="Corriger le nom"
+                      aria-label="Corriger le nom et le prénom"
+                    >
+                      ✎
+                    </button>
+                  </span>
+                }
+              </td>
               <td class="cellule-discrete">{{ profil.email }}</td>
               <td class="cellule-discrete">{{ inscritLe(profil) }}</td>
               <td>
@@ -47,10 +163,27 @@
                   </select>
                 }
               </td>
+              <td>
+                @if (profil.doit_changer_mdp) {
+                  <span class="badge-statut est-attente">Activation en attente</span>
+                } @else {
+                  <span class="badge-statut est-succes">Actif</span>
+                }
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  class="case-test"
+                  [checked]="profil.est_test"
+                  [disabled]="enregistrement()"
+                  (change)="basculerTest(profil, $any($event.target).checked)"
+                  [attr.aria-label]="'Compte de test : ' + profil.prenom + ' ' + profil.nom"
+                />
+              </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
   }
-</div>
+</section>
