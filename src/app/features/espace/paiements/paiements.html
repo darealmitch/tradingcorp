@@ -1,12 +1,20 @@
 <header class="page-tete">
   <h1 class="page-titre">Paiements</h1>
-  <p class="page-sous">Chiffre d'affaires et historique des transactions Stripe.</p>
+  <p class="page-sous">
+    Chiffre d'affaires et historique des transactions Stripe. Les statistiques ne comptent que les
+    paiements réels d'apprenants — le mode test et les comptes marqués test sont exclus.
+  </p>
 </header>
 
 <div class="grille-stats">
   <app-stat-card icone="paiements" libelle="Chiffre d'affaires du mois" [valeur]="caMois()" />
   <app-stat-card icone="stats" libelle="Chiffre d'affaires total" [valeur]="caTotal()" />
-  <app-stat-card icone="coche" libelle="Paiements réussis" [valeur]="nbReussis()" />
+  <app-stat-card
+    icone="coche"
+    libelle="Paiements comptabilisés"
+    [valeur]="comptabilises()"
+    [detail]="exclus() > 0 ? exclus() + ' exclu(s) : test ou hors apprenant' : null"
+  />
   <app-stat-card icone="tendance" libelle="Panier moyen" [valeur]="panierMoyen()" />
 </div>
 
@@ -26,8 +34,8 @@
             <th>Date</th>
             <th>Client</th>
             <th>Montant</th>
-            <th>Moyen</th>
             <th>Statut</th>
+            <th>Mode</th>
             <th>Référence</th>
           </tr>
         </thead>
@@ -37,7 +45,6 @@
               <td class="cellule-discrete">{{ datePaiement(paiement) }}</td>
               <td>{{ paiement.email ?? '—' }}</td>
               <td>{{ euros(paiement.montant_centimes) }}</td>
-              <td class="cellule-discrete">{{ paiement.moyen_paiement ?? '—' }}</td>
               <td>
                 @switch (paiement.statut) {
                   @case ('reussi') {
@@ -52,6 +59,15 @@
                   @default {
                     <span class="badge-statut">En attente</span>
                   }
+                }
+              </td>
+              <td>
+                @if (paiement.mode_test) {
+                  <span class="badge-statut">Test Stripe</span>
+                } @else if (estReel(paiement)) {
+                  <span class="badge-statut est-succes">Réel</span>
+                } @else {
+                  <span class="badge-statut">Hors CA</span>
                 }
               </td>
               <td class="cellule-discrete">{{ reference(paiement) }}</td>

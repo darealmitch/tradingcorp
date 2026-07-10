@@ -26,7 +26,12 @@
         <tbody>
           @for (apprenant of apprenants(); track apprenant.id_profil) {
             <tr>
-              <td>{{ apprenant.prenom }} {{ apprenant.nom }}</td>
+              <td>
+                {{ apprenant.prenom }} {{ apprenant.nom }}
+                @if (apprenant.est_test) {
+                  <span class="badge-statut">Test</span>
+                }
+              </td>
               <td class="cellule-discrete">{{ inscritLe(apprenant) }}</td>
               <td>
                 @if (apprenant.inscrit) {

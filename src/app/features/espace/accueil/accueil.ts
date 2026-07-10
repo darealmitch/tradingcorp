@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AdminService, PaiementLigne } from '../../../core/admin/admin.service';
+import { AdminService, PaiementLigne, compteDansCa } from '../../../core/admin/admin.service';
 import { ProfilAdmin } from '../../../core/admin/profil-admin.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
@@ -155,22 +155,24 @@ export class Accueil {
       this.adminService.listerProfils(),
       this.adminService.compterCertificats(),
     ]);
-    const reussis = paiements.filter((p) => p.statut === 'reussi');
+    // Seuls les paiements réels d'apprenants comptent (ni test, ni staff).
+    const reels = paiements.filter(compteDansCa);
     const debutMois = new Date();
     debutMois.setDate(1);
     debutMois.setHours(0, 0, 0, 0);
-    const caMois = reussis
+    const caMois = reels
       .filter((p) => new Date(p.date_paiement) >= debutMois)
       .reduce((somme, p) => somme + p.montant_centimes, 0);
-    const caTotal = reussis.reduce((somme, p) => somme + p.montant_centimes, 0);
+    const caTotal = reels.reduce((somme, p) => somme + p.montant_centimes, 0);
 
     this.admin.set({
       caMois: this.euros(caMois),
       caTotal: this.euros(caTotal),
-      apprenants: profils.filter((p) => p.role === 'apprenant').length,
+      apprenants: profils.filter((p) => p.role === 'apprenant' && !p.est_test).length,
       certificats,
       paiements: paiements.slice(0, 4),
-      nouveauxComptes: [...profils]
+      nouveauxComptes: profils
+        .filter((p) => !p.est_test)
         .sort((a, b) => b.date_creation.localeCompare(a.date_creation))
         .slice(0, 4),
     });

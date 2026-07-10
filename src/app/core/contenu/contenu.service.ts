@@ -27,6 +27,7 @@ export interface ApprenantSuivi {
   prenom: string;
   nom: string;
   date_creation: string;
+  est_test: boolean;
   inscrit: boolean;
   terminees: number;
   total: number;
@@ -82,12 +83,13 @@ export class ContenuService {
       .slice(0, limite);
   }
 
-  /** Nombre de comptes apprenants (lecture staff via RLS). */
+  /** Nombre de comptes apprenants réels — les comptes test sont exclus. */
   async compterApprenants(): Promise<number> {
     const { count } = await this.supabase
       .from('profils')
       .select('id_profil', { count: 'exact', head: true })
-      .eq('role', 'apprenant');
+      .eq('role', 'apprenant')
+      .eq('est_test', false);
     return count ?? 0;
   }
 
@@ -104,7 +106,7 @@ export class ContenuService {
     const [profils, inscriptions, progression, total] = await Promise.all([
       this.supabase
         .from('profils')
-        .select('id_profil, prenom, nom, date_creation')
+        .select('id_profil, prenom, nom, date_creation, est_test')
         .eq('role', 'apprenant')
         .order('date_creation'),
       this.supabase.from('inscriptions').select('id_profil').eq('statut', 'active'),
@@ -122,7 +124,14 @@ export class ContenuService {
 
     const lignes =
       (profils.data as
-        { id_profil: string; prenom: string; nom: string; date_creation: string }[] | null) ?? [];
+        | {
+            id_profil: string;
+            prenom: string;
+            nom: string;
+            date_creation: string;
+            est_test: boolean;
+          }[]
+        | null) ?? [];
     return lignes.map((profil) => ({
       ...profil,
       inscrit: inscrits.has(profil.id_profil),

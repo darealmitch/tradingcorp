@@ -181,6 +181,9 @@
           <div class="liste-corps">
             <p class="liste-titre">
               {{ euros(paiement.montant_centimes) }} — {{ statutPaiement(paiement) }}
+              @if (paiement.mode_test) {
+                <span class="badge-statut">Test</span>
+              }
             </p>
             <p class="liste-detail">{{ paiement.email ?? 'e-mail inconnu' }}</p>
           </div>
