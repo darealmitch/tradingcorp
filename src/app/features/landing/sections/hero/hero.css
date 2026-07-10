@@ -2,8 +2,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 100vh;
-  min-height: 100svh;
+  /* 60px = hauteur du ticker crypto : la bande reste visible dès l'arrivée,
+     collée au bas du premier écran. */
+  min-height: calc(100vh - 60px);
+  min-height: calc(100svh - 60px);
   overflow: hidden;
 }
 
@@ -25,7 +27,7 @@
 
 .hero-content {
   position: relative;
-  padding-block: 140px 120px;
+  padding-block: 130px 96px;
   max-width: 980px;
 }
 
@@ -80,7 +82,7 @@
 
 .hero-scroll {
   position: absolute;
-  bottom: 36px;
+  bottom: 22px;
   left: 50%;
   translate: -50% 0;
   display: flex;

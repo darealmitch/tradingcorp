@@ -11,4 +11,8 @@
  */
 export const environment = {
   cmcApiBaseUrl: '/api/cmc',
+  production: false,
+  supabaseUrl: 'https://swzjzwymzjhdatcobibs.supabase.co',
+  supabaseKey: 'sb_publishable_bspPMBm3rYTXcEEsNR1tDQ_dAWwr9gm',
+  cloudinaryCloudName: '',
 };

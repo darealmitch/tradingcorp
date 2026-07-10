@@ -10,12 +10,21 @@
       <a routerLink="/" fragment="resultats" (click)="closeMenu()">Résultats</a>
       <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
       <a routerLink="/facteurs" (click)="closeMenu()">Programme</a>
-      <a class="btn btn-primary nav-cta" routerLink="/" fragment="commencer" (click)="closeMenu()"
-        >Ouvrir un compte</a
-      >
+      @if (!auth.estConnecte()) {
+        <a routerLink="/connexion" (click)="closeMenu()">Connexion</a>
+        <a class="btn btn-primary nav-cta" routerLink="/inscription" (click)="closeMenu()"
+          >Ouvrir un compte</a
+        >
+      } @else {
+        <a class="btn btn-primary nav-cta" routerLink="/espace" (click)="closeMenu()">Mon espace</a>
+      }
     </nav>
 
-    <a class="btn btn-primary header-cta" routerLink="/" fragment="commencer">Ouvrir un compte</a>
+    @if (!auth.estConnecte()) {
+      <a class="btn btn-primary header-cta" routerLink="/inscription">Ouvrir un compte</a>
+    } @else {
+      <a class="btn btn-primary header-cta" routerLink="/espace">Mon espace</a>
+    }
 
     <button
       class="menu-toggle"

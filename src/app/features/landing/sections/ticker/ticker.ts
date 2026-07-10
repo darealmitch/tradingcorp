@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal,
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CryptoService } from '../../../../core/crypto/crypto.service';
