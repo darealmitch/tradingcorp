@@ -1,0 +1,29 @@
+<section class="espace">
+  <div class="container">
+    <header class="espace-tete">
+      <div>
+        <span class="eyebrow">Mon espace</span>
+        <h1 class="espace-titre">
+          Bienvenue<span class="text-gradient">{{
+            auth.profil()?.prenom ? ' ' + auth.profil()!.prenom : ''
+          }}</span>
+        </h1>
+        <p class="espace-sous">
+          {{ auth.session()?.user?.email }}
+          @if (auth.profil(); as profil) {
+            <span class="espace-role">{{ profil.role }}</span>
+          }
+        </p>
+      </div>
+      <button class="btn btn-ghost" type="button" (click)="deconnecter()">Se déconnecter</button>
+    </header>
+
+    <div class="espace-panneau">
+      <h2>Ta formation arrive ici</h2>
+      <p>
+        L'espace d'apprentissage (leçons, ressources, quiz et progression) sera disponible dans
+        cette page une fois le contenu publié.
+      </p>
+    </div>
+  </div>
+</section>
