@@ -10,3 +10,119 @@
 .selecteur-role:disabled {
   opacity: 0.6;
 }
+
+/* ===== Création de compte ===== */
+
+.creation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.creation-champs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.champ-creation {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.champ-creation label {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.champ-creation input {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.champ-creation input:focus {
+  outline: none;
+  border-color: rgba(148, 163, 220, 0.45);
+}
+
+.champ-erreur {
+  font-size: 0.8rem;
+  color: var(--down);
+}
+
+.compte-cree p + p {
+  margin-top: 10px;
+}
+
+.compte-mdp {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.compte-mdp code {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+}
+
+.case-test {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--violet);
+}
+
+/* ===== Correction nom/prénom ===== */
+
+.nom-cellule {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lien-corriger {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.lien-corriger:hover {
+  color: var(--cyan);
+}
+
+.correction {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.correction input {
+  width: 120px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.correction input:focus {
+  outline: none;
+  border-color: rgba(148, 163, 220, 0.45);
+}

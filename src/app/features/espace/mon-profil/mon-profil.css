@@ -2,34 +2,100 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
-  padding-bottom: 22px;
+  gap: 20px;
+  padding-bottom: 24px;
   border-bottom: 1px solid var(--line);
+}
+
+.profil-avatar-bloc {
+  position: relative;
+  width: 72px;
+  height: 72px;
 }
 
 .profil-avatar {
   display: grid;
   place-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
   background: var(--gradient);
   color: #05060b;
   font-family: var(--font-title);
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   letter-spacing: 0.04em;
 }
 
+.profil-avatar.est-image {
+  object-fit: cover;
+}
+
+.profil-avatar-charge {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  border-radius: 20px;
+  background: rgba(5, 6, 11, 0.6);
+}
+
+.profil-avatar-charge::after {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 999px;
+  animation: profil-rotation 0.7s linear infinite;
+}
+
+@keyframes profil-rotation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profil-avatar-charge::after {
+    animation: none;
+  }
+}
+
+.profil-identite-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .profil-nom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
   font-size: 1.25rem;
+}
+
+.profil-surnom-inline {
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.profil-avatar-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+  cursor: pointer;
 }
 
 .profil-role {
   margin-left: auto;
+  align-self: flex-start;
 }
 
+/* ===== Informations en lecture seule ===== */
+
 .profil-details {
-  margin-top: 6px;
+  margin-top: 20px;
 }
 
 .profil-ligne {
@@ -41,6 +107,10 @@
   border-bottom: 1px solid var(--line);
 }
 
+.profil-ligne:last-child {
+  border-bottom: none;
+}
+
 .profil-ligne dt {
   color: var(--muted);
   font-size: 0.9rem;
@@ -50,8 +120,41 @@
   font-weight: 500;
 }
 
-.profil-note {
-  margin-top: 18px;
-  font-size: 0.88rem;
+/* ===== Surnom ===== */
+
+.surnom-intro {
+  margin-bottom: 18px;
+}
+
+.surnom-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.surnom-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.surnom-input:focus {
+  outline: none;
+  border-color: rgba(148, 163, 220, 0.45);
+}
+
+.surnom-input:disabled {
+  opacity: 0.55;
+}
+
+.surnom-delai {
+  margin-top: 14px;
+  font-size: 0.86rem;
   color: var(--muted);
 }

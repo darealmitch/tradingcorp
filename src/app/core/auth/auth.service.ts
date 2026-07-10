@@ -83,6 +83,14 @@ export class AuthService {
     this.profilSig.set(data);
   }
 
+  /** Recharge le profil du compte connecté (après édition prénom/nom/avatar). */
+  async rechargerProfil(): Promise<void> {
+    const session = this.sessionSig();
+    if (session) {
+      await this.chargerProfil(session.user.id);
+    }
+  }
+
   /** Garantit que le profil est chargé (utilisé par le guard de rôle). */
   async assurerProfil(): Promise<Profil | null> {
     await this.attendreInitialisation();
@@ -156,6 +164,23 @@ export class AuthService {
     await this.supabase.auth.signOut();
   }
 
+  /**
+   * Termine l'intégration d'un compte créé par un admin : remplace le mot de
+   * passe temporaire, lève le blocage (RPC) et recharge le profil.
+   */
+  async definirNouveauMotDePasse(mdp: string): Promise<ResultatAuth> {
+    const { error } = await this.supabase.auth.updateUser({ password: mdp });
+    if (error) {
+      return { ok: false, erreur: this.messageErreur(error) };
+    }
+    await this.supabase.rpc('confirmer_changement_mdp');
+    const session = this.sessionSig();
+    if (session) {
+      await this.chargerProfil(session.user.id);
+    }
+    return { ok: true };
+  }
+
   // ===== 2FA (préparation — intégration ultérieure) =====
   // La MFA TOTP est gérée nativement par Supabase Auth. L'enrôlement se fera
   // via supabase.auth.mfa.enroll({ factorType: 'totp' }) puis challenge/verify ;
@@ -187,6 +212,9 @@ export class AuthService {
     }
     if (brut.includes('password should be')) {
       return 'Le mot de passe doit contenir au moins 8 caractères.';
+    }
+    if (brut.includes('different from the old')) {
+      return 'Le nouveau mot de passe doit être différent du mot de passe temporaire.';
     }
     if (brut.includes('rate limit') || brut.includes('too many')) {
       return 'Trop de tentatives. Réessaie dans quelques minutes.';

@@ -1,21 +1,64 @@
 <header class="page-tete">
   <h1 class="page-titre">Profil</h1>
-  <p class="page-sous">Tes informations de compte TradingCorp.</p>
+  <p class="page-sous">
+    Gère ta photo et ton surnom. Ton nom et ton prénom officiels sont gérés par l'administration.
+  </p>
 </header>
+
+@if (message(); as msg) {
+  <p
+    class="alerte"
+    [class.est-succes]="msg.type === 'succes'"
+    [class.est-erreur]="msg.type === 'erreur'"
+  >
+    {{ msg.texte }}
+  </p>
+}
 
 <div class="panneau">
   <div class="profil-identite">
-    <span class="profil-avatar" aria-hidden="true">{{ initiales() }}</span>
-    <div>
-      <h2 class="profil-nom">{{ auth.profil()?.prenom }} {{ auth.profil()?.nom }}</h2>
-      <p class="cellule-discrete">{{ auth.session()?.user?.email }}</p>
+    <div class="profil-avatar-bloc">
+      @if (auth.profil()?.avatar_url; as url) {
+        <img class="profil-avatar est-image" [src]="url" alt="Photo de profil" />
+      } @else {
+        <span class="profil-avatar" aria-hidden="true">{{ initiales() }}</span>
+      }
+      @if (avatarEnCours()) {
+        <span class="profil-avatar-charge" aria-hidden="true"></span>
+      }
     </div>
+
+    <div class="profil-identite-corps">
+      <h2 class="profil-nom">
+        {{ auth.profil()?.prenom }} {{ auth.profil()?.nom }}
+        @if (auth.profil()?.surnom; as surnom) {
+          <span class="profil-surnom-inline">« {{ surnom }} »</span>
+        }
+      </h2>
+      <p class="cellule-discrete">{{ auth.session()?.user?.email }}</p>
+
+      <label class="btn btn-ghost btn-compact profil-avatar-btn">
+        {{ avatarEnCours() ? 'Envoi…' : 'Changer la photo' }}
+        <input
+          type="file"
+          accept="image/*"
+          hidden
+          [disabled]="avatarEnCours()"
+          (change)="avatarChoisi($event)"
+        />
+      </label>
+    </div>
+
     @if (auth.profil(); as profil) {
       <span class="badge-statut est-attente profil-role">{{ profil.role }}</span>
     }
   </div>
 
   <dl class="profil-details">
+    <div class="profil-ligne">
+      <dt>Nom et prénom</dt>
+      <dd class="cellule-discrete">Modifiables uniquement par un administrateur</dd>
+    </div>
     <div class="profil-ligne">
       <dt>Membre depuis</dt>
       <dd>{{ membreDepuis() }}</dd>
@@ -25,11 +68,39 @@
       <dd>E-mail et mot de passe</dd>
     </div>
   </dl>
+</div>
 
-  <p class="profil-note">
-    La modification du profil (prénom, nom, avatar, mot de passe, 2FA) sera branchée dans une
-    prochaine étape.
-  </p>
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Surnom</h2>
+  </div>
+  <p class="page-sous surnom-intro">Ton pseudo public, modifiable une fois tous les 30 jours.</p>
+
+  <form class="surnom-form" (ngSubmit)="changerSurnom()">
+    <input
+      type="text"
+      class="surnom-input"
+      [formControl]="surnomCtrl"
+      maxlength="30"
+      placeholder="Choisis un surnom"
+      aria-label="Surnom"
+    />
+    <button
+      class="btn btn-primary btn-compact"
+      type="submit"
+      [disabled]="!surnomModifiable() || enregistrementSurnom()"
+    >
+      {{ enregistrementSurnom() ? 'Enregistrement…' : 'Enregistrer' }}
+    </button>
+  </form>
+
+  @if (prochaineModif(); as info) {
+    <p class="surnom-delai">
+      Prochaine modification possible le {{ info.date }} (dans {{ info.jours }} jour{{
+        info.jours > 1 ? 's' : ''
+      }}).
+    </p>
+  }
 </div>
 
 <div class="panneau">

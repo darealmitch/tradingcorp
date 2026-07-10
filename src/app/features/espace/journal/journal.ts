@@ -3,6 +3,8 @@ import { AdminService, EntreeJournal } from '../../../core/admin/admin.service';
 
 const LIBELLES_ACTIONS: Record<string, string> = {
   changement_role: 'Changement de rôle',
+  creation_compte: 'Création de compte',
+  correction_identite: 'Correction du nom',
 };
 
 @Component({
