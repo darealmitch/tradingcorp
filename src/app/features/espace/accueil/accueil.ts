@@ -1,102 +1,56 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { AdminService, PaiementLigne } from '../../../core/admin/admin.service';
+import { ProfilAdmin } from '../../../core/admin/profil-admin.model';
 import { AuthService } from '../../../core/auth/auth.service';
+import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
+import {
+  ContenuService,
+  InscriptionRecente,
+  LeconResume,
+  ProgressionResume,
+} from '../../../core/contenu/contenu.service';
+import {
+  CommentaireEnAttente,
+  ModerationService,
+} from '../../../core/moderation/moderation.service';
 import { BarreProgression } from '../../../shared/ui/barre-progression';
 import { Icone } from '../../../shared/ui/icone';
 import { StatCard } from '../../../shared/ui/stat-card';
 
-/* Données simulées en attendant le branchement progressif sur Supabase
-   (progression_lecons, tentatives_quiz, paiements, journal_admin…). */
+interface StatsApprenant {
+  progression: ProgressionResume;
+  quizTotal: number;
+  quizReussis: number;
+  certificats: number;
+  prochaines: LeconResume[];
+}
 
-const PROGRESSION_DEMO = {
-  pourcentage: 35,
-  leconsTerminees: 8,
-  leconsTotal: 23,
-  quizReussis: 1,
-  quizTotal: 4,
-  certificats: 0,
-  derniereLecon: 'Structure de marché : lecture des ranges',
-  prochaines: [
-    { titre: 'Liquidité et zones de déséquilibre', duree: '18 min' },
-    { titre: 'Gestion du risque : position sizing', duree: '24 min' },
-    { titre: 'Quiz — Structure de marché', duree: '10 questions' },
-  ],
-};
+interface StatsFormateur {
+  apprenants: number;
+  lecons: number;
+  commentairesEnAttente: number;
+  noteMoyenne: string | null;
+  commentaires: CommentaireEnAttente[];
+  inscriptions: InscriptionRecente[];
+}
 
-const FORMATEUR_DEMO = {
-  apprenants: 148,
-  leconsPubliees: 23,
-  commentairesEnAttente: 5,
-  noteMoyenne: '4,8 / 5',
-  derniersCommentaires: [
-    {
-      auteur: 'Lucas M.',
-      lecon: 'Gestion du risque',
-      extrait: 'Super clair, merci !',
-      date: 'il y a 1 h',
-    },
-    {
-      auteur: 'Sarah B.',
-      lecon: 'Analyse fondamentale',
-      extrait: 'Une question sur le calcul du ratio…',
-      date: 'il y a 3 h',
-    },
-    {
-      auteur: 'Karim D.',
-      lecon: 'Psychologie du trading',
-      extrait: 'Exactement ce qui me manquait.',
-      date: 'hier',
-    },
-  ],
-  activite: [
-    {
-      titre: '12 leçons terminées',
-      detail: 'par les apprenants ces dernières 24 h',
-      date: 'aujourd’hui',
-    },
-    { titre: '3 quiz réussis', detail: 'dont 2 au premier essai', date: 'aujourd’hui' },
-    { titre: '5 nouveaux apprenants', detail: 'inscrits cette semaine', date: 'cette semaine' },
-  ],
-};
-
-const ADMIN_DEMO = {
-  caMois: '5 982 €',
-  caTotal: '48 550 €',
-  apprenants: 156,
-  certificatsEmis: 31,
-  activite: [
-    {
-      icone: 'paiements',
-      titre: 'Paiement confirmé',
-      detail: 'Formation Trader Pro — 997 €',
-      date: 'il y a 12 min',
-    },
-    {
-      icone: 'profil',
-      titre: 'Nouvel utilisateur',
-      detail: 'm.laurent@exemple.com a créé un compte',
-      date: 'il y a 40 min',
-    },
-    {
-      icone: 'diplome',
-      titre: 'Certificat émis',
-      detail: 'TC-2026-0031 — Julie R.',
-      date: 'il y a 2 h',
-    },
-    {
-      icone: 'moderation',
-      titre: 'Avis en attente',
-      detail: '« Formation exceptionnelle… » — 5 ★',
-      date: 'il y a 4 h',
-    },
-  ],
-  indicateurs: [
-    { libelle: 'Taux de complétion', valeur: 68 },
-    { libelle: 'Taux de réussite aux quiz', valeur: 81 },
-    { libelle: 'Satisfaction (avis approuvés)', valeur: 94 },
-  ],
-};
+interface StatsAdmin {
+  caMois: string;
+  caTotal: string;
+  apprenants: number;
+  certificats: number;
+  paiements: PaiementLigne[];
+  nouveauxComptes: ProfilAdmin[];
+}
 
 @Component({
   selector: 'app-accueil',
@@ -108,18 +62,23 @@ const ADMIN_DEMO = {
 export class Accueil {
   private readonly router = inject(Router);
   private readonly commerce = inject(CommerceService);
+  private readonly contenu = inject(ContenuService);
+  private readonly moderation = inject(ModerationService);
+  private readonly adminService = inject(AdminService);
 
   protected readonly auth = inject(AuthService);
 
-  protected readonly progression = PROGRESSION_DEMO;
-  protected readonly formateur = FORMATEUR_DEMO;
-  protected readonly admin = ADMIN_DEMO;
-
   protected readonly chargement = signal(true);
-  protected readonly inscrites = signal<ReadonlySet<string>>(new Set());
   protected readonly retourAchat = signal<'succes' | 'annule' | null>(null);
 
+  protected readonly inscrites = signal<ReadonlySet<string>>(new Set());
+  protected readonly apprenant = signal<StatsApprenant | null>(null);
+  protected readonly formateur = signal<StatsFormateur | null>(null);
+  protected readonly admin = signal<StatsAdmin | null>(null);
+
   protected readonly possedeFormation = computed(() => this.inscrites().size > 0);
+
+  private roleCharge: Role | null = null;
 
   constructor() {
     // Retour de Stripe Checkout : l'Edge Function redirige vers /espace?achat=…
@@ -128,18 +87,130 @@ export class Accueil {
       this.retourAchat.set(retour);
       void this.router.navigate([], { queryParams: {}, replaceUrl: true });
     }
-    void this.charger(retour === 'succes');
+
+    // Le rôle arrive avec le chargement du profil : on charge le tableau de
+    // bord correspondant dès qu'il est connu, une seule fois.
+    effect(() => {
+      const role = this.auth.role();
+      if (role && this.roleCharge !== role) {
+        this.roleCharge = role;
+        void this.charger(role, retour === 'succes');
+      }
+    });
   }
 
-  private async charger(attendreWebhook: boolean): Promise<void> {
-    const inscriptions = await this.commerce.chargerInscriptions();
-    this.inscrites.set(new Set(inscriptions.map((i) => i.id_formation)));
-    this.chargement.set(false);
-
-    // Au retour de Stripe, le webhook peut mettre quelques secondes à
-    // enregistrer l'inscription : on revérifie une fois.
-    if (attendreWebhook) {
-      setTimeout(() => void this.charger(false), 2500);
+  private async charger(role: Role, attendreWebhook: boolean): Promise<void> {
+    if (role === 'apprenant') {
+      await this.chargerApprenant();
+      // Au retour de Stripe, le webhook peut mettre quelques secondes à
+      // enregistrer l'inscription : on revérifie une fois.
+      if (attendreWebhook) {
+        setTimeout(() => void this.chargerApprenant(), 2500);
+      }
+    } else if (role === 'formateur') {
+      await this.chargerFormateur();
+    } else {
+      await this.chargerAdmin();
     }
+    this.chargement.set(false);
+  }
+
+  private async chargerApprenant(): Promise<void> {
+    const [inscriptions, progression, prochaines, quizTotal, quizReussis, certificats] =
+      await Promise.all([
+        this.commerce.chargerInscriptions(),
+        this.contenu.maProgression(),
+        this.contenu.prochainesLecons(3),
+        this.contenu.compterQuiz(),
+        this.contenu.compterQuizReussis(),
+        this.contenu.compterMesCertificats(),
+      ]);
+    this.inscrites.set(new Set(inscriptions.map((i) => i.id_formation)));
+    this.apprenant.set({ progression, prochaines, quizTotal, quizReussis, certificats });
+  }
+
+  private async chargerFormateur(): Promise<void> {
+    const [apprenants, lecons, commentairesEnAttente, noteMoyenne, commentaires, inscriptions] =
+      await Promise.all([
+        this.contenu.compterApprenants(),
+        this.contenu.compterLecons(),
+        this.moderation.compterCommentairesEnAttente(),
+        this.moderation.noteMoyenne(),
+        this.moderation.commentairesEnAttente(),
+        this.contenu.inscriptionsRecentes(4),
+      ]);
+    this.formateur.set({
+      apprenants,
+      lecons,
+      commentairesEnAttente,
+      noteMoyenne,
+      commentaires: commentaires.slice(0, 3),
+      inscriptions,
+    });
+  }
+
+  private async chargerAdmin(): Promise<void> {
+    const [paiements, profils, certificats] = await Promise.all([
+      this.adminService.listerPaiements(),
+      this.adminService.listerProfils(),
+      this.adminService.compterCertificats(),
+    ]);
+    const reussis = paiements.filter((p) => p.statut === 'reussi');
+    const debutMois = new Date();
+    debutMois.setDate(1);
+    debutMois.setHours(0, 0, 0, 0);
+    const caMois = reussis
+      .filter((p) => new Date(p.date_paiement) >= debutMois)
+      .reduce((somme, p) => somme + p.montant_centimes, 0);
+    const caTotal = reussis.reduce((somme, p) => somme + p.montant_centimes, 0);
+
+    this.admin.set({
+      caMois: this.euros(caMois),
+      caTotal: this.euros(caTotal),
+      apprenants: profils.filter((p) => p.role === 'apprenant').length,
+      certificats,
+      paiements: paiements.slice(0, 4),
+      nouveauxComptes: [...profils]
+        .sort((a, b) => b.date_creation.localeCompare(a.date_creation))
+        .slice(0, 4),
+    });
+  }
+
+  // ===== Aides d'affichage =====
+
+  protected euros(centimes: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+    }).format(centimes / 100);
+  }
+
+  protected pourcentage(progression: ProgressionResume): number {
+    return progression.total === 0
+      ? 0
+      : Math.round((progression.terminees / progression.total) * 100);
+  }
+
+  protected duree(lecon: LeconResume): string {
+    return lecon.duree_s ? `${Math.round(lecon.duree_s / 60)} min` : '—';
+  }
+
+  protected nomComplet(personne: { prenom: string; nom: string } | null): string {
+    return personne ? `${personne.prenom} ${personne.nom}`.trim() : 'Utilisateur supprimé';
+  }
+
+  protected dateCourte(iso: string): string {
+    return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(iso));
+  }
+
+  protected statutPaiement(paiement: PaiementLigne): string {
+    const libelles: Record<PaiementLigne['statut'], string> = {
+      en_attente: 'En attente',
+      reussi: 'Réussi',
+      rembourse: 'Remboursé',
+      echoue: 'Échoué',
+    };
+    return libelles[paiement.statut];
   }
 }

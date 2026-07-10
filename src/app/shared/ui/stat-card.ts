@@ -9,14 +9,6 @@ import { Icone } from './icone';
   template: `
     <div class="stat-tete">
       <span class="stat-icone"><app-icone [nom]="icone()" [taille]="18" /></span>
-      @if (tendance()) {
-        <app-icone
-          class="stat-tendance"
-          [class.est-baisse]="tendance() === 'baisse'"
-          nom="tendance"
-          [taille]="16"
-        />
-      }
     </div>
     <p class="stat-libelle">{{ libelle() }}</p>
     <p class="stat-valeur">{{ valeur() }}</p>
@@ -56,15 +48,6 @@ import { Icone } from './icone';
       background: rgba(56, 225, 255, 0.06);
     }
 
-    .stat-tendance {
-      color: var(--up);
-    }
-
-    .stat-tendance.est-baisse {
-      color: var(--down);
-      transform: scaleY(-1);
-    }
-
     .stat-libelle {
       font-size: 0.85rem;
       color: var(--muted);
@@ -88,6 +71,5 @@ export class StatCard {
   readonly icone = input.required<string>();
   readonly libelle = input.required<string>();
   readonly valeur = input.required<string>();
-  readonly detail = input<string>();
-  readonly tendance = input<'hausse' | 'baisse' | null>(null);
+  readonly detail = input<string | null>(null);
 }

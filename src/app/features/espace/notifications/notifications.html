@@ -13,32 +13,37 @@
         >
       }
     </h2>
-    <div class="panneau-actions">
-      <span class="etiquette-demo">démo</span>
-      <button
-        class="btn btn-ghost btn-compact"
-        type="button"
-        [disabled]="notifications.nonLues() === 0"
-        (click)="notifications.toutMarquerLues()"
-      >
-        Tout marquer comme lu
-      </button>
-    </div>
+    <button
+      class="btn btn-ghost btn-compact"
+      type="button"
+      [disabled]="notifications.nonLues() === 0"
+      (click)="notifications.toutMarquerLues()"
+    >
+      Tout marquer comme lu
+    </button>
   </div>
 
-  @for (notification of notifications.liste(); track notification.id) {
+  @if (notifications.liste().length === 0) {
+    <p class="cellule-discrete">
+      Aucune notification pour l'instant. Les confirmations de paiement et les annonces de nouvelles
+      leçons arriveront ici.
+    </p>
+  }
+  @for (notification of notifications.liste(); track notification.id_notification) {
     <button
       class="notification"
       type="button"
       [class.est-lue]="notification.lue"
-      (click)="notifications.marquerLue(notification.id)"
+      (click)="notifications.marquerLue(notification.id_notification)"
     >
       <span class="liste-icone"><app-icone nom="cloche" [taille]="16" /></span>
       <span class="liste-corps">
         <span class="liste-titre">{{ notification.titre }}</span>
-        <span class="liste-detail">{{ notification.message }}</span>
+        @if (notification.message) {
+          <span class="liste-detail">{{ notification.message }}</span>
+        }
       </span>
-      <span class="liste-date">{{ notification.date }}</span>
+      <span class="liste-date">{{ dateEnvoi(notification.date_envoi) }}</span>
       @if (!notification.lue) {
         <span class="point-non-lue" aria-label="Non lue"></span>
       }

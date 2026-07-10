@@ -1,66 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { AdminService, PaiementLigne } from '../../../core/admin/admin.service';
 import { StatCard } from '../../../shared/ui/stat-card';
-
-interface PaiementDemo {
-  date: string;
-  client: string;
-  montant: string;
-  moyen: string;
-  statut: 'reussi' | 'rembourse' | 'echoue';
-  reference: string;
-}
-
-/* Données simulées en attendant le branchement sur la table paiements. */
-const PAIEMENTS_DEMO: PaiementDemo[] = [
-  {
-    date: '10 juil. 2026',
-    client: 'julie.r@exemple.com',
-    montant: '997 €',
-    moyen: 'card',
-    statut: 'reussi',
-    reference: 'cs_…9f2a',
-  },
-  {
-    date: '9 juil. 2026',
-    client: 'karim.d@exemple.com',
-    montant: '997 €',
-    moyen: 'card',
-    statut: 'reussi',
-    reference: 'cs_…b7e1',
-  },
-  {
-    date: '8 juil. 2026',
-    client: 'sarah.b@exemple.com',
-    montant: '997 €',
-    moyen: 'card',
-    statut: 'reussi',
-    reference: 'cs_…44c8',
-  },
-  {
-    date: '6 juil. 2026',
-    client: 'paul.v@exemple.com',
-    montant: '997 €',
-    moyen: 'card',
-    statut: 'rembourse',
-    reference: 'cs_…d012',
-  },
-  {
-    date: '5 juil. 2026',
-    client: 'lucas.m@exemple.com',
-    montant: '997 €',
-    moyen: 'card',
-    statut: 'reussi',
-    reference: 'cs_…71aa',
-  },
-  {
-    date: '4 juil. 2026',
-    client: 'nora.k@exemple.com',
-    montant: '997 €',
-    moyen: 'card',
-    statut: 'echoue',
-    reference: 'cs_…e39b',
-  },
-];
 
 @Component({
   selector: 'app-paiements',
@@ -70,5 +10,66 @@ const PAIEMENTS_DEMO: PaiementDemo[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Paiements {
-  protected readonly paiements = PAIEMENTS_DEMO;
+  private readonly admin = inject(AdminService);
+
+  protected readonly chargement = signal(true);
+  protected readonly paiements = signal<PaiementLigne[]>([]);
+
+  protected readonly caMois = computed(() => {
+    const debutMois = new Date();
+    debutMois.setDate(1);
+    debutMois.setHours(0, 0, 0, 0);
+    return this.euros(
+      this.reussis()
+        .filter((p) => new Date(p.date_paiement) >= debutMois)
+        .reduce((somme, p) => somme + p.montant_centimes, 0),
+    );
+  });
+
+  protected readonly caTotal = computed(() =>
+    this.euros(this.reussis().reduce((somme, p) => somme + p.montant_centimes, 0)),
+  );
+
+  protected readonly nbReussis = computed(
+    () => `${this.reussis().length} / ${this.paiements().length}`,
+  );
+
+  protected readonly panierMoyen = computed(() => {
+    const reussis = this.reussis();
+    if (reussis.length === 0) {
+      return '—';
+    }
+    const somme = reussis.reduce((total, p) => total + p.montant_centimes, 0);
+    return this.euros(Math.round(somme / reussis.length));
+  });
+
+  private readonly reussis = computed(() => this.paiements().filter((p) => p.statut === 'reussi'));
+
+  constructor() {
+    void this.charger();
+  }
+
+  private async charger(): Promise<void> {
+    this.paiements.set(await this.admin.listerPaiements());
+    this.chargement.set(false);
+  }
+
+  protected euros(centimes: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+    }).format(centimes / 100);
+  }
+
+  protected datePaiement(paiement: PaiementLigne): string {
+    return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }).format(
+      new Date(paiement.date_paiement),
+    );
+  }
+
+  protected reference(paiement: PaiementLigne): string {
+    const ref = paiement.reference_transaction;
+    return ref.length > 12 ? `${ref.slice(0, 6)}…${ref.slice(-4)}` : ref;
+  }
 }

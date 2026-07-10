@@ -79,18 +79,39 @@ Deno.serve(async (req) => {
     return new Response("Échec d'enregistrement du paiement", { status: 500 });
   }
 
-  const { error } = await admin.from('inscriptions').upsert(
-    {
-      id_profil,
-      id_formation,
-      id_paiement: paiement.id_paiement,
-      statut: 'active',
-      source: 'paiement',
-    },
-    { onConflict: 'id_profil,id_formation', ignoreDuplicates: true },
-  );
+  const { data: inscription, error } = await admin
+    .from('inscriptions')
+    .upsert(
+      {
+        id_profil,
+        id_formation,
+        id_paiement: paiement.id_paiement,
+        statut: 'active',
+        source: 'paiement',
+      },
+      { onConflict: 'id_profil,id_formation', ignoreDuplicates: true },
+    )
+    .select('id_inscription')
+    .maybeSingle();
   if (error) {
     return new Response("Échec de création de l'inscription", { status: 500 });
+  }
+
+  // Notification à l'apprenant — uniquement quand l'inscription vient d'être
+  // créée (une relance Stripe retombe sur le doublon et n'en renvoie pas).
+  if (inscription) {
+    const { data: formation } = await admin
+      .from('formations')
+      .select('titre')
+      .eq('id_formation', id_formation)
+      .maybeSingle();
+    await admin.from('notifications').insert({
+      id_profil,
+      titre: 'Paiement confirmé',
+      message: `Ton accès à « ${formation?.titre ?? 'ta formation'} » est actif.`,
+      type: 'succes',
+      lien: '/espace/formations',
+    });
   }
 
   return new Response('OK', { status: 200 });

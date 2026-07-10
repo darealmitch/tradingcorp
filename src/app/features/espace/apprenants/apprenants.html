@@ -1,40 +1,48 @@
 <header class="page-tete">
   <h1 class="page-titre">Apprenants</h1>
-  <p class="page-sous">Progression et activité des inscrits à la formation.</p>
+  <p class="page-sous">Progression des comptes apprenants et accès à la formation.</p>
 </header>
 
 <div class="panneau">
   <div class="panneau-tete">
     <h2 class="panneau-titre">Suivi de progression</h2>
-    <span class="etiquette-demo">démo</span>
   </div>
-  <div class="tableau-defile">
-    <table class="tableau">
-      <thead>
-        <tr>
-          <th>Apprenant</th>
-          <th>E-mail</th>
-          <th>Progression</th>
-          <th>Quiz</th>
-          <th>Dernière activité</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (apprenant of apprenants; track apprenant.email) {
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (apprenants().length === 0) {
+    <p class="cellule-discrete">Aucun compte apprenant pour l'instant.</p>
+  } @else {
+    <div class="tableau-defile">
+      <table class="tableau">
+        <thead>
           <tr>
-            <td>{{ apprenant.nom }}</td>
-            <td class="cellule-discrete">{{ apprenant.email }}</td>
-            <td>
-              <div class="cellule-progression">
-                <app-barre-progression [valeur]="apprenant.progression" />
-                <span class="cellule-discrete">{{ apprenant.progression }} %</span>
-              </div>
-            </td>
-            <td class="cellule-discrete">{{ apprenant.quiz }}</td>
-            <td class="cellule-discrete">{{ apprenant.activite }}</td>
+            <th>Apprenant</th>
+            <th>Compte créé le</th>
+            <th>Formation</th>
+            <th>Leçons terminées</th>
+            <th>Progression</th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @for (apprenant of apprenants(); track apprenant.id_profil) {
+            <tr>
+              <td>{{ apprenant.prenom }} {{ apprenant.nom }}</td>
+              <td class="cellule-discrete">{{ inscritLe(apprenant) }}</td>
+              <td>
+                @if (apprenant.inscrit) {
+                  <span class="badge-statut est-succes">Accès actif</span>
+                } @else {
+                  <span class="badge-statut">Sans accès</span>
+                }
+              </td>
+              <td class="cellule-discrete">{{ apprenant.terminees }} / {{ apprenant.total }}</td>
+              <td>
+                <app-barre-progression [valeur]="pourcentage(apprenant)" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

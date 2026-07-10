@@ -108,11 +108,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
         }
-        @case ('telechargement') {
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        }
         @case ('etoile') {
           <polygon
             points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"

@@ -1,16 +1,27 @@
 <header class="page-tete">
   <h1 class="page-titre">Contenus</h1>
   <p class="page-sous">
-    Sections, leçons, vidéos et ressources de la formation. L'édition sera branchée à l'étape «
-    contenu pédagogique » — la structure ci-dessous est une démonstration.
+    Sections, leçons, vidéos et ressources de la formation. L'éditeur (création, publication) arrive
+    à l'étape « contenu pédagogique ».
   </p>
 </header>
 
-@for (section of sections; track section.titre) {
+@if (chargement()) {
+  <p class="cellule-discrete">Chargement…</p>
+} @else if (sections().length === 0) {
+  <div class="panneau">
+    <h2 class="panneau-titre">Aucune section pour l'instant</h2>
+    <p class="page-sous">
+      La structure du programme (sections, leçons, vidéos, ressources) apparaîtra ici dès que les
+      premières lignes seront créées dans la base.
+    </p>
+  </div>
+}
+
+@for (section of sections(); track section.id_section) {
   <section class="panneau">
     <div class="panneau-tete">
       <h2 class="panneau-titre">{{ section.titre }}</h2>
-      <span class="etiquette-demo">démo</span>
     </div>
     <div class="tableau-defile">
       <table class="tableau">
@@ -18,23 +29,17 @@
           <tr>
             <th>Leçon</th>
             <th>Durée</th>
-            <th>Statut</th>
+            <th>Vidéo</th>
             <th>Aperçu gratuit</th>
           </tr>
         </thead>
         <tbody>
-          @for (lecon of section.lecons; track lecon.titre) {
+          @for (lecon of section.lecons; track lecon.id_lecon) {
             <tr>
               <td>{{ lecon.titre }}</td>
-              <td class="cellule-discrete">{{ lecon.duree }}</td>
-              <td>
-                @if (lecon.statut === 'publiee') {
-                  <span class="badge-statut est-succes">Publiée</span>
-                } @else {
-                  <span class="badge-statut">Brouillon</span>
-                }
-              </td>
-              <td class="cellule-discrete">{{ lecon.apercuGratuit ? 'Oui' : '—' }}</td>
+              <td class="cellule-discrete">{{ duree(lecon) }}</td>
+              <td class="cellule-discrete">{{ lecon.video_provider }}</td>
+              <td class="cellule-discrete">{{ lecon.apercu_gratuit ? 'Oui' : '—' }}</td>
             </tr>
           }
         </tbody>
