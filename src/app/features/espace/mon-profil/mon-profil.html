@@ -1,7 +1,7 @@
 <header class="page-tete">
   <h1 class="page-titre">Profil</h1>
   <p class="page-sous">
-    Gère ta photo et ton surnom. Ton nom et ton prénom officiels sont gérés par l'administration.
+    Gère ton surnom. Ton nom et ton prénom officiels sont gérés par l'administration.
   </p>
 </header>
 
@@ -17,17 +17,6 @@
 
 <div class="panneau">
   <div class="profil-identite">
-    <div class="profil-avatar-bloc">
-      @if (auth.profil()?.avatar_url; as url) {
-        <img class="profil-avatar est-image" [src]="url" alt="Photo de profil" />
-      } @else {
-        <span class="profil-avatar" aria-hidden="true">{{ initiales() }}</span>
-      }
-      @if (avatarEnCours()) {
-        <span class="profil-avatar-charge" aria-hidden="true"></span>
-      }
-    </div>
-
     <div class="profil-identite-corps">
       <h2 class="profil-nom">
         {{ auth.profil()?.prenom }} {{ auth.profil()?.nom }}
@@ -36,17 +25,6 @@
         }
       </h2>
       <p class="cellule-discrete">{{ auth.session()?.user?.email }}</p>
-
-      <label class="btn btn-ghost btn-compact profil-avatar-btn">
-        {{ avatarEnCours() ? 'Envoi…' : 'Changer la photo' }}
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          [disabled]="avatarEnCours()"
-          (change)="avatarChoisi($event)"
-        />
-      </label>
     </div>
 
     @if (auth.profil(); as profil) {

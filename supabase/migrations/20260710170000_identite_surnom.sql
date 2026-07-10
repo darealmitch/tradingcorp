@@ -1,24 +1,40 @@
 -- =============================================================================
--- TradingCorp — Nom/prénom officiels, surnom limité, correction admin
+-- TradingCorp — Surnom (30 j), nom/prénom officiels, retrait de l'avatar
 --
---   Nom et prénom = informations officielles : l'utilisateur ne peut plus les
---   modifier (privilège de colonne retiré). Seul un admin les corrige, via une
---   RPC journalisée. L'utilisateur ne garde en écriture directe que avatar_url.
+-- Évolution de la table `profils` EXISTANTE : uniquement des ALTER idempotents,
+-- jamais de CREATE TABLE (ne recrée ni ne supprime la table, préserve les
+-- données).
 --
---   Surnom (pseudo) : modifiable une fois tous les 30 jours. La règle vit dans
---   une RPC SECURITY DEFINER — impossible à contourner en modifiant le front,
---   la colonne n'étant jamais accessible en écriture directe au client.
+--   • surnom / surnom_modifie_le : pseudo modifiable une fois tous les 30 jours,
+--     via la RPC changer_surnom (contrôle serveur, infalsifiable côté front).
+--   • avatar_url supprimée : le profil ne gère plus aucune image. Le bucket
+--     Supabase Storage d'avatars est démonté ci-dessous. Les médias du projet
+--     (captures, images de formation, illustrations, ressources) passeront par
+--     Cloudinary et seront stockés dans les tables métier, jamais dans profils.
+--   • nom / prénom : plus aucune écriture directe par l'utilisateur ; seul un
+--     admin les corrige via corriger_identite (journalisé).
 -- =============================================================================
 
-alter table profils add column surnom text;
-alter table profils add column surnom_modifie_le timestamptz;
+-- 1. Colonnes surnom (ajout idempotent) --------------------------------------
+alter table profils add column if not exists surnom text;
+alter table profils add column if not exists surnom_modifie_le timestamptz;
 
--- L'utilisateur ne peut plus modifier directement que son avatar.
+-- 2. Retrait de l'avatar ------------------------------------------------------
+alter table profils drop column if exists avatar_url;
+
+-- Plus aucune colonne de profils modifiable en direct par l'utilisateur :
+--   surnom -> RPC changer_surnom ; nom/prénom -> RPC corriger_identite (admin).
 revoke update on profils from authenticated;
-grant update (avatar_url) on profils to authenticated;
 
--- --- Surnom : une modification par période de 30 jours -----------------------
+-- 3. Démontage du stockage d'avatars (Supabase Storage) ----------------------
+drop policy if exists "avatars_lecture_publique" on storage.objects;
+drop policy if exists "avatars_insert_proprietaire" on storage.objects;
+drop policy if exists "avatars_update_proprietaire" on storage.objects;
+drop policy if exists "avatars_delete_proprietaire" on storage.objects;
+delete from storage.objects where bucket_id = 'avatars';
+delete from storage.buckets where id = 'avatars';
 
+-- 4. Surnom : une modification par période de 30 jours -----------------------
 create or replace function public.changer_surnom(p_surnom text)
 returns void
 language plpgsql security definer set search_path = public
@@ -46,8 +62,7 @@ begin
 end;
 $$;
 
--- --- Correction du nom/prénom par un administrateur --------------------------
-
+-- 5. Correction du nom/prénom par un administrateur --------------------------
 create or replace function public.corriger_identite(p_id_profil uuid, p_prenom text, p_nom text)
 returns void
 language plpgsql security definer set search_path = public

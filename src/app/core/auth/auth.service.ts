@@ -83,7 +83,7 @@ export class AuthService {
     this.profilSig.set(data);
   }
 
-  /** Recharge le profil du compte connecté (après édition prénom/nom/avatar). */
+  /** Recharge le profil du compte connecté (après changement de surnom, etc.). */
   async rechargerProfil(): Promise<void> {
     const session = this.sessionSig();
     if (session) {

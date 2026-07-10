@@ -7,60 +7,6 @@
   border-bottom: 1px solid var(--line);
 }
 
-.profil-avatar-bloc {
-  position: relative;
-  width: 72px;
-  height: 72px;
-}
-
-.profil-avatar {
-  display: grid;
-  place-content: center;
-  width: 72px;
-  height: 72px;
-  border-radius: 20px;
-  background: var(--gradient);
-  color: #05060b;
-  font-family: var(--font-title);
-  font-size: 1.5rem;
-  letter-spacing: 0.04em;
-}
-
-.profil-avatar.est-image {
-  object-fit: cover;
-}
-
-.profil-avatar-charge {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  border-radius: 20px;
-  background: rgba(5, 6, 11, 0.6);
-}
-
-.profil-avatar-charge::after {
-  content: '';
-  width: 22px;
-  height: 22px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 999px;
-  animation: profil-rotation 0.7s linear infinite;
-}
-
-@keyframes profil-rotation {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .profil-avatar-charge::after {
-    animation: none;
-  }
-}
-
 .profil-identite-corps {
   display: flex;
   flex-direction: column;
@@ -79,12 +25,6 @@
   font-size: 0.95rem;
   font-weight: 400;
   color: var(--muted);
-}
-
-.profil-avatar-btn {
-  align-self: flex-start;
-  margin-top: 4px;
-  cursor: pointer;
 }
 
 .profil-role {
