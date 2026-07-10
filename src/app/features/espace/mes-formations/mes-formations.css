@@ -1,0 +1,37 @@
+.formations-liste {
+  display: grid;
+  gap: 16px;
+}
+
+.formation-carte {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 28px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.formation-infos h3 {
+  font-size: 1.15rem;
+}
+
+.formation-infos p {
+  max-width: 480px;
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.formation-carte .btn:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.formation-note {
+  margin-top: 20px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}

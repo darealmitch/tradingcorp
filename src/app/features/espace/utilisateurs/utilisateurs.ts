@@ -1,18 +1,18 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { AdminService } from '../../core/admin/admin.service';
-import { ProfilAdmin } from '../../core/admin/profil-admin.model';
-import { AuthService } from '../../core/auth/auth.service';
-import { Role } from '../../core/auth/profil.model';
+import { AdminService } from '../../../core/admin/admin.service';
+import { ProfilAdmin } from '../../../core/admin/profil-admin.model';
+import { AuthService } from '../../../core/auth/auth.service';
+import { Role } from '../../../core/auth/profil.model';
 
 const ROLES: Role[] = ['apprenant', 'formateur', 'admin'];
 
 @Component({
-  selector: 'app-admin',
-  templateUrl: './admin.html',
-  styleUrl: './admin.css',
+  selector: 'app-utilisateurs',
+  templateUrl: './utilisateurs.html',
+  styleUrls: ['../espace-pages.css', './utilisateurs.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Admin {
+export class Utilisateurs {
   private readonly admin = inject(AdminService);
 
   protected readonly auth = inject(AuthService);

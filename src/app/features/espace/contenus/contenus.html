@@ -1,0 +1,44 @@
+<header class="page-tete">
+  <h1 class="page-titre">Contenus</h1>
+  <p class="page-sous">
+    Sections, leçons, vidéos et ressources de la formation. L'édition sera branchée à l'étape «
+    contenu pédagogique » — la structure ci-dessous est une démonstration.
+  </p>
+</header>
+
+@for (section of sections; track section.titre) {
+  <section class="panneau">
+    <div class="panneau-tete">
+      <h2 class="panneau-titre">{{ section.titre }}</h2>
+      <span class="etiquette-demo">démo</span>
+    </div>
+    <div class="tableau-defile">
+      <table class="tableau">
+        <thead>
+          <tr>
+            <th>Leçon</th>
+            <th>Durée</th>
+            <th>Statut</th>
+            <th>Aperçu gratuit</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (lecon of section.lecons; track lecon.titre) {
+            <tr>
+              <td>{{ lecon.titre }}</td>
+              <td class="cellule-discrete">{{ lecon.duree }}</td>
+              <td>
+                @if (lecon.statut === 'publiee') {
+                  <span class="badge-statut est-succes">Publiée</span>
+                } @else {
+                  <span class="badge-statut">Brouillon</span>
+                }
+              </td>
+              <td class="cellule-discrete">{{ lecon.apercuGratuit ? 'Oui' : '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

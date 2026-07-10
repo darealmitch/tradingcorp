@@ -1,0 +1,51 @@
+.panneau-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panneau-titre .badge-statut {
+  margin-left: 8px;
+}
+
+.notification {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.notification.est-lue {
+  opacity: 0.55;
+}
+
+.liste-corps {
+  display: flex;
+  flex-direction: column;
+}
+
+.point-non-lue {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cyan);
+}
+
+.btn-compact:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}

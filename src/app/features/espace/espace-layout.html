@@ -1,0 +1,74 @@
+<div class="espace-layout">
+  <aside class="lateral" [class.est-replie]="replie()">
+    <a class="marque" routerLink="/espace" title="Tableau de bord">
+      <span class="marque-logo" aria-hidden="true">TC</span>
+      <span class="marque-texte">
+        <span class="marque-nom">TradingCorp</span>
+        <span class="marque-role">{{ auth.profil()?.role }}</span>
+      </span>
+    </a>
+
+    <nav class="lateral-nav" aria-label="Navigation de l'espace">
+      @for (element of elements(); track element.lien) {
+        <a
+          class="lateral-lien"
+          [routerLink]="element.lien"
+          routerLinkActive="est-actif"
+          [routerLinkActiveOptions]="{ exact: element.exact ?? false }"
+          [title]="element.libelle"
+        >
+          <span class="lien-icone"><app-icone [nom]="element.icone" [taille]="18" /></span>
+          <span class="lien-libelle">{{ element.libelle }}</span>
+        </a>
+      }
+
+      <div class="lateral-separation" aria-hidden="true"></div>
+
+      <a
+        class="lateral-lien"
+        routerLink="/espace/notifications"
+        routerLinkActive="est-actif"
+        title="Notifications"
+      >
+        <span class="lien-icone"><app-icone nom="cloche" [taille]="18" /></span>
+        <span class="lien-libelle">Notifications</span>
+        @if (notifications.nonLues(); as compte) {
+          <span class="pastille">{{ compte }}</span>
+        }
+      </a>
+      <a
+        class="lateral-lien"
+        routerLink="/espace/profil"
+        routerLinkActive="est-actif"
+        title="Profil"
+      >
+        <span class="lien-icone"><app-icone nom="profil" [taille]="18" /></span>
+        <span class="lien-libelle">Profil</span>
+      </a>
+    </nav>
+
+    <div class="lateral-pied">
+      <button class="lateral-lien" type="button" (click)="deconnecter()" title="Déconnexion">
+        <span class="lien-icone"><app-icone nom="deconnexion" [taille]="18" /></span>
+        <span class="lien-libelle">Déconnexion</span>
+      </button>
+      <button
+        class="lateral-lien replier"
+        type="button"
+        (click)="basculer()"
+        [title]="replie() ? 'Déplier le menu' : 'Réduire le menu'"
+      >
+        <span class="lien-icone chevrons" [class.est-retourne]="!replie()">
+          <app-icone nom="chevrons" [taille]="18" />
+        </span>
+        <span class="lien-libelle">Réduire</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="contenu">
+    <div class="contenu-interieur">
+      <router-outlet />
+    </div>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+.panneau-titre app-icone {
+  color: var(--cyan);
+}
+
+.moderation-ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.moderation-ligne:last-child {
+  border-bottom: none;
+}
+
+.moderation-contenu {
+  margin: 4px 0;
+  max-width: 560px;
+  color: var(--muted);
+}
+
+.moderation-note {
+  margin-left: 8px;
+  color: var(--cyan);
+  letter-spacing: 0.15em;
+}
+
+.moderation-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.est-rejet {
+  color: var(--down);
+  border-color: rgba(255, 92, 122, 0.35);
+}
+
+.est-rejet:hover {
+  border-color: rgba(255, 92, 122, 0.6);
+}

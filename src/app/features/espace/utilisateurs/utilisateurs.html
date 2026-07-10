@@ -1,0 +1,56 @@
+<header class="page-tete">
+  <h1 class="page-titre">Utilisateurs</h1>
+  <p class="page-sous">
+    Attribue les rôles formateur et admin. Le rôle change immédiatement, sans confirmation.
+  </p>
+</header>
+
+@if (erreur(); as message) {
+  <p class="alerte est-erreur">{{ message }}</p>
+}
+
+<div class="panneau">
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (profils().length === 0) {
+    <p class="cellule-discrete">Aucun profil pour l'instant.</p>
+  } @else {
+    <div class="tableau-defile">
+      <table class="tableau">
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>E-mail</th>
+            <th>Inscrit le</th>
+            <th>Rôle</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (profil of profils(); track profil) {
+            <tr>
+              <td>{{ profil.prenom }} {{ profil.nom }}</td>
+              <td class="cellule-discrete">{{ profil.email }}</td>
+              <td class="cellule-discrete">{{ inscritLe(profil) }}</td>
+              <td>
+                @if (profil.id_profil === auth.profil()?.id_profil) {
+                  <span class="cellule-discrete">{{ profil.role }} (toi)</span>
+                } @else {
+                  <select
+                    class="selecteur-role"
+                    [disabled]="enregistrement()"
+                    (change)="changerRole(profil, $any($event.target).value)"
+                    [attr.aria-label]="'Rôle de ' + profil.prenom + ' ' + profil.nom"
+                  >
+                    @for (role of roles; track role) {
+                      <option [value]="role" [selected]="role === profil.role">{{ role }}</option>
+                    }
+                  </select>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -1,0 +1,47 @@
+<header class="page-tete">
+  <h1 class="page-titre">Notifications</h1>
+  <p class="page-sous">Paiements, nouvelles leçons, quiz et annonces de la plateforme.</p>
+</header>
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">
+      Boîte de réception
+      @if (notifications.nonLues(); as compte) {
+        <span class="badge-statut est-attente"
+          >{{ compte }} non lue{{ compte > 1 ? 's' : '' }}</span
+        >
+      }
+    </h2>
+    <div class="panneau-actions">
+      <span class="etiquette-demo">démo</span>
+      <button
+        class="btn btn-ghost btn-compact"
+        type="button"
+        [disabled]="notifications.nonLues() === 0"
+        (click)="notifications.toutMarquerLues()"
+      >
+        Tout marquer comme lu
+      </button>
+    </div>
+  </div>
+
+  @for (notification of notifications.liste(); track notification.id) {
+    <button
+      class="notification"
+      type="button"
+      [class.est-lue]="notification.lue"
+      (click)="notifications.marquerLue(notification.id)"
+    >
+      <span class="liste-icone"><app-icone nom="cloche" [taille]="16" /></span>
+      <span class="liste-corps">
+        <span class="liste-titre">{{ notification.titre }}</span>
+        <span class="liste-detail">{{ notification.message }}</span>
+      </span>
+      <span class="liste-date">{{ notification.date }}</span>
+      @if (!notification.lue) {
+        <span class="point-non-lue" aria-label="Non lue"></span>
+      }
+    </button>
+  }
+</div>

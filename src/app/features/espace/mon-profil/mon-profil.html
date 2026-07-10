@@ -1,0 +1,42 @@
+<header class="page-tete">
+  <h1 class="page-titre">Profil</h1>
+  <p class="page-sous">Tes informations de compte TradingCorp.</p>
+</header>
+
+<div class="panneau">
+  <div class="profil-identite">
+    <span class="profil-avatar" aria-hidden="true">{{ initiales() }}</span>
+    <div>
+      <h2 class="profil-nom">{{ auth.profil()?.prenom }} {{ auth.profil()?.nom }}</h2>
+      <p class="cellule-discrete">{{ auth.session()?.user?.email }}</p>
+    </div>
+    @if (auth.profil(); as profil) {
+      <span class="badge-statut est-attente profil-role">{{ profil.role }}</span>
+    }
+  </div>
+
+  <dl class="profil-details">
+    <div class="profil-ligne">
+      <dt>Membre depuis</dt>
+      <dd>{{ membreDepuis() }}</dd>
+    </div>
+    <div class="profil-ligne">
+      <dt>Authentification</dt>
+      <dd>E-mail et mot de passe</dd>
+    </div>
+  </dl>
+
+  <p class="profil-note">
+    La modification du profil (prénom, nom, avatar, mot de passe, 2FA) sera branchée dans une
+    prochaine étape.
+  </p>
+</div>
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Session</h2>
+  </div>
+  <button class="btn btn-ghost btn-compact" type="button" (click)="deconnecter()">
+    Se déconnecter
+  </button>
+</div>
