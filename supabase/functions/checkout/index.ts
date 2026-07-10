@@ -51,6 +51,17 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
+    // Les comptes formateur et admin ne sont jamais clients : leurs paiements
+    // fausseraient le chiffre d'affaires.
+    const { data: profil } = await admin
+      .from('profils')
+      .select('role')
+      .eq('id_profil', user.id)
+      .maybeSingle();
+    if (profil?.role !== 'apprenant') {
+      return json({ erreur: 'Les comptes formateur et admin ne passent pas par l’achat.' }, 403);
+    }
+
     const { data: formation } = await admin
       .from('formations')
       .select('id_formation, titre, prix_centimes, devise, est_publiee')

@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateChildFn, CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { Role } from './profil.model';
 
@@ -20,6 +20,28 @@ export const inviteGuard: CanActivateFn = async () => {
   const router = inject(Router);
   await auth.attendreInitialisation();
   return auth.estConnecte() ? router.createUrlTree(['/espace']) : true;
+};
+
+/**
+ * Compte créé par un admin : tant que le mot de passe temporaire n'a pas été
+ * remplacé, tout l'espace redirige vers la page de changement obligatoire.
+ */
+export const motDePasseGuard: CanActivateChildFn = async () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  const profil = await auth.assurerProfil();
+  return profil?.doit_changer_mdp ? router.createUrlTree(['/nouveau-mot-de-passe']) : true;
+};
+
+/** Page de changement obligatoire : sans blocage actif, retour à l'espace. */
+export const changementMdpRequisGuard: CanActivateFn = async () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  const profil = await auth.assurerProfil();
+  if (!profil) {
+    return router.createUrlTree(['/connexion']);
+  }
+  return profil.doit_changer_mdp ? true : router.createUrlTree(['/espace']);
 };
 
 /**

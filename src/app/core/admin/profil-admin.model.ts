@@ -8,4 +8,8 @@ export interface ProfilAdmin {
   email: string;
   role: Role;
   date_creation: string;
+  /** Mot de passe temporaire pas encore remplacé (activation en attente). */
+  doit_changer_mdp: boolean;
+  /** Compte de démonstration, exclu des statistiques. */
+  est_test: boolean;
 }

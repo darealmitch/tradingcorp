@@ -61,6 +61,8 @@ Deno.serve(async (req) => {
         moyen_paiement: session.payment_method_types?.[0] ?? null,
         reference_transaction: session.id,
         email: session.customer_details?.email ?? null,
+        // livemode false = clé de test Stripe : exclu du chiffre d'affaires.
+        mode_test: !evenement.livemode,
       },
       { onConflict: 'reference_transaction', ignoreDuplicates: true },
     )

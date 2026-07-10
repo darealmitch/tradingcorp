@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { AdminService, PaiementLigne } from '../../../core/admin/admin.service';
+import { AdminService, PaiementLigne, compteDansCa } from '../../../core/admin/admin.service';
 import { StatCard } from '../../../shared/ui/stat-card';
 
 @Component({
@@ -15,35 +15,38 @@ export class Paiements {
   protected readonly chargement = signal(true);
   protected readonly paiements = signal<PaiementLigne[]>([]);
 
+  /** Paiements comptant dans le CA : réussis, hors test Stripe et comptes test/staff. */
+  private readonly reels = computed(() => this.paiements().filter(compteDansCa));
+
   protected readonly caMois = computed(() => {
     const debutMois = new Date();
     debutMois.setDate(1);
     debutMois.setHours(0, 0, 0, 0);
     return this.euros(
-      this.reussis()
+      this.reels()
         .filter((p) => new Date(p.date_paiement) >= debutMois)
         .reduce((somme, p) => somme + p.montant_centimes, 0),
     );
   });
 
   protected readonly caTotal = computed(() =>
-    this.euros(this.reussis().reduce((somme, p) => somme + p.montant_centimes, 0)),
+    this.euros(this.reels().reduce((somme, p) => somme + p.montant_centimes, 0)),
   );
 
-  protected readonly nbReussis = computed(
-    () => `${this.reussis().length} / ${this.paiements().length}`,
+  protected readonly comptabilises = computed(
+    () => `${this.reels().length} / ${this.paiements().length}`,
   );
 
   protected readonly panierMoyen = computed(() => {
-    const reussis = this.reussis();
-    if (reussis.length === 0) {
+    const reels = this.reels();
+    if (reels.length === 0) {
       return '—';
     }
-    const somme = reussis.reduce((total, p) => total + p.montant_centimes, 0);
-    return this.euros(Math.round(somme / reussis.length));
+    const somme = reels.reduce((total, p) => total + p.montant_centimes, 0);
+    return this.euros(Math.round(somme / reels.length));
   });
 
-  private readonly reussis = computed(() => this.paiements().filter((p) => p.statut === 'reussi'));
+  protected readonly exclus = computed(() => this.paiements().length - this.reels().length);
 
   constructor() {
     void this.charger();
@@ -52,6 +55,10 @@ export class Paiements {
   private async charger(): Promise<void> {
     this.paiements.set(await this.admin.listerPaiements());
     this.chargement.set(false);
+  }
+
+  protected estReel(paiement: PaiementLigne): boolean {
+    return compteDansCa(paiement);
   }
 
   protected euros(centimes: number): string {

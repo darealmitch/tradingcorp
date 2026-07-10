@@ -1,5 +1,11 @@
 import { Routes } from '@angular/router';
-import { authGuard, inviteGuard, roleGuard } from './core/auth/auth.guards';
+import {
+  authGuard,
+  changementMdpRequisGuard,
+  inviteGuard,
+  motDePasseGuard,
+  roleGuard,
+} from './core/auth/auth.guards';
 
 export const routes: Routes = [
   {
@@ -31,9 +37,17 @@ export const routes: Routes = [
     title: 'TradingCorp — Connexion en cours',
   },
   {
+    path: 'nouveau-mot-de-passe',
+    loadComponent: () =>
+      import('./features/auth/nouveau-mdp/nouveau-mdp').then((m) => m.NouveauMdp),
+    canActivate: [changementMdpRequisGuard],
+    title: 'TradingCorp — Nouveau mot de passe',
+  },
+  {
     path: 'espace',
     loadComponent: () => import('./features/espace/espace-layout').then((m) => m.EspaceLayout),
     canActivate: [authGuard],
+    canActivateChild: [motDePasseGuard],
     children: [
       {
         path: '',
