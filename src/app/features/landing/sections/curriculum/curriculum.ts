@@ -11,7 +11,6 @@ const TOPICS = [
   'Analyse fondamentale',
   'Investissement',
   'Optimisation',
-  "L'immobilier",
 ];
 
 @Component({
