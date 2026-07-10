@@ -14,5 +14,6 @@ export const environment = {
   production: false,
   supabaseUrl: 'https://swzjzwymzjhdatcobibs.supabase.co',
   supabaseKey: 'sb_publishable_bspPMBm3rYTXcEEsNR1tDQ_dAWwr9gm',
-  cloudinaryCloudName: '',
+  cloudinaryCloudName: 'tradingcorp',
+  cloudinaryKey: '286468734477574',
 };
