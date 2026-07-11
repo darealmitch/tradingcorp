@@ -1,26 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { SUPABASE } from '../supabase/supabase.client';
+import { LeconDetail, LeconResume, Module, ProgressionResume } from './apprentissage.model';
 
-export interface LeconResume {
-  id_lecon: string;
-  titre: string;
-  duree_s: number | null;
-  position: number;
-  apercu_gratuit: boolean;
-  video_provider: string;
-}
-
-export interface SectionAvecLecons {
-  id_section: string;
-  titre: string;
-  position: number;
-  lecons: LeconResume[];
-}
-
-export interface ProgressionResume {
-  terminees: number;
-  total: number;
-}
+export type {
+  LeconDetail,
+  LeconResume,
+  Module,
+  ProgressionResume,
+  Ressource,
+} from './apprentissage.model';
 
 export interface ApprenantSuivi {
   id_profil: string;
@@ -44,16 +32,67 @@ export interface InscriptionRecente {
 export class ContenuService {
   private readonly supabase = inject(SUPABASE);
 
-  /** Sections et leçons, dans l'ordre du programme. */
-  async chargerStructure(): Promise<SectionAvecLecons[]> {
+  /** Modules (sections) et leurs étapes, dans l'ordre du programme. */
+  async chargerStructure(): Promise<Module[]> {
     const { data } = await this.supabase
       .from('sections')
       .select(
-        'id_section, titre, position, lecons(id_lecon, titre, duree_s, position, apercu_gratuit, video_provider)',
+        'id_section, titre, description, position, est_publiee, ' +
+          'lecons(id_lecon, titre, position, duree_s, est_publiee, apercu_gratuit, ' +
+          'video_provider, video_provider_id, pdf_public_id)',
       )
       .order('position')
       .order('position', { referencedTable: 'lecons' });
-    return (data as SectionAvecLecons[] | null) ?? [];
+    return (data as Module[] | null) ?? [];
+  }
+
+  /** Une leçon complète avec ses ressources (vue étape). RLS : gating standard. */
+  async chargerLecon(idLecon: string): Promise<LeconDetail | null> {
+    const { data } = await this.supabase
+      .from('lecons')
+      .select(
+        'id_lecon, id_section, titre, description, contenu, position, duree_s, est_publiee, ' +
+          'apercu_gratuit, video_provider, video_provider_id, pdf_public_id, ' +
+          'ressources(id_ressource, nom, type_mime, cloudinary_public_id, chemin_storage, taille)',
+      )
+      .eq('id_lecon', idLecon)
+      .maybeSingle();
+    return (data as LeconDetail | null) ?? null;
+  }
+
+  /** Marque une étape comme terminée (validation). RLS : `progression_all_self`. */
+  async marquerTerminee(idLecon: string): Promise<void> {
+    const idProfil = await this.idProfilCourant();
+    if (!idProfil) {
+      return;
+    }
+    await this.supabase
+      .from('progression_lecons')
+      .upsert(
+        { id_profil: idProfil, id_lecon: idLecon, terminee_le: new Date().toISOString() },
+        { onConflict: 'id_profil,id_lecon' },
+      );
+  }
+
+  /** Sauvegarde la position de lecture vidéo (reprise). */
+  async enregistrerPosition(idLecon: string, secondes: number): Promise<void> {
+    const idProfil = await this.idProfilCourant();
+    if (!idProfil) {
+      return;
+    }
+    await this.supabase
+      .from('progression_lecons')
+      .upsert(
+        { id_profil: idProfil, id_lecon: idLecon, position_video_s: Math.floor(secondes) },
+        { onConflict: 'id_profil,id_lecon' },
+      );
+  }
+
+  private async idProfilCourant(): Promise<string | null> {
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
+    return user?.id ?? null;
   }
 
   /** Progression du profil connecté : leçons terminées / leçons accessibles. */

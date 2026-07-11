@@ -52,6 +52,11 @@ export class MediaService {
     return this.cld.video(publicId).addTransformation('f_auto,q_auto').toURL();
   }
 
+  /** URL de livraison d'un PDF (documents pédagogiques). */
+  pdfUrl(publicId: string): string {
+    return this.cld.image(publicId).toURL();
+  }
+
   /**
    * Téléverse un média (réservé au staff). Demande une signature à l'Edge
    * Function, puis POST direct vers Cloudinary. Retourne null en cas d'échec.

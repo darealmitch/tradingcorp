@@ -1,49 +1,67 @@
 <header class="page-tete">
   <h1 class="page-titre">Contenus</h1>
   <p class="page-sous">
-    Sections, leçons, vidéos et ressources de la formation. L'éditeur (création, publication) arrive
-    à l'étape « contenu pédagogique ».
+    Modules, étapes et médias de la formation. L'édition (création, upload vidéo/PDF, publication)
+    arrivera avec la gestion de contenu ; la structure ci-dessous reflète la base.
   </p>
 </header>
 
 @if (chargement()) {
   <p class="cellule-discrete">Chargement…</p>
-} @else if (sections().length === 0) {
+} @else if (modules().length === 0) {
   <div class="panneau">
-    <h2 class="panneau-titre">Aucune section pour l'instant</h2>
+    <h2 class="panneau-titre">Aucun module pour l'instant</h2>
     <p class="page-sous">
-      La structure du programme (sections, leçons, vidéos, ressources) apparaîtra ici dès que les
-      premières lignes seront créées dans la base.
+      Les modules (Développement personnel, Trading…) et leurs étapes apparaîtront ici une fois
+      créés en base.
     </p>
   </div>
 }
 
-@for (section of sections(); track section.id_section) {
+@for (module of modules(); track module.id_section) {
   <section class="panneau">
     <div class="panneau-tete">
-      <h2 class="panneau-titre">{{ section.titre }}</h2>
+      <h2 class="panneau-titre">{{ module.titre }}</h2>
+      @if (module.est_publiee) {
+        <span class="badge-statut est-succes">Publié</span>
+      } @else {
+        <span class="badge-statut">Brouillon</span>
+      }
     </div>
-    <div class="tableau-defile">
-      <table class="tableau">
-        <thead>
-          <tr>
-            <th>Leçon</th>
-            <th>Durée</th>
-            <th>Vidéo</th>
-            <th>Aperçu gratuit</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (lecon of section.lecons; track lecon.id_lecon) {
+
+    @if (module.lecons.length === 0) {
+      <p class="cellule-discrete">Aucune étape dans ce module.</p>
+    } @else {
+      <div class="tableau-defile">
+        <table class="tableau">
+          <thead>
             <tr>
-              <td>{{ lecon.titre }}</td>
-              <td class="cellule-discrete">{{ duree(lecon) }}</td>
-              <td class="cellule-discrete">{{ lecon.video_provider }}</td>
-              <td class="cellule-discrete">{{ lecon.apercu_gratuit ? 'Oui' : '—' }}</td>
+              <th>Étape</th>
+              <th>Durée</th>
+              <th>Médias</th>
+              <th>Aperçu gratuit</th>
+              <th>Statut</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (lecon of module.lecons; track lecon.id_lecon) {
+              <tr>
+                <td>{{ lecon.titre }}</td>
+                <td class="cellule-discrete">{{ duree(lecon) }}</td>
+                <td class="cellule-discrete">{{ medias(lecon) }}</td>
+                <td class="cellule-discrete">{{ lecon.apercu_gratuit ? 'Oui' : '—' }}</td>
+                <td>
+                  @if (lecon.est_publiee) {
+                    <span class="badge-statut est-succes">Publiée</span>
+                  } @else {
+                    <span class="badge-statut">Brouillon</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </section>
 }
