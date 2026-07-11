@@ -11,7 +11,7 @@
         <div class="trainer-halo" aria-hidden="true"></div>
         <div class="trainer-portrait" #portrait>
           <img
-            src="tradingcorp/images/formateur/andre.png"
+            [src]="media.url('tradingcorp/landing/formateur/andre')"
             alt="Portrait de Keryan André, formateur TradingCorp"
           />
         </div>
@@ -90,11 +90,11 @@
       <div class="testimonials">
         <span class="testimonials-label">Ce qu'ils en disent après un appel avec Keryan</span>
         <ul class="testimonials-row">
-          @for (video of testimonials; track video.src) {
+          @for (video of testimonials; track video.url) {
             <li>
-              <button type="button" class="testimonial-card" (click)="openVideo(video.src, $event)">
+              <button type="button" class="testimonial-card" (click)="openVideo(video.url, $event)">
                 <video
-                  [src]="video.src + '#t=0.1'"
+                  [src]="video.url + '#t=0.1'"
                   muted
                   playsinline
                   preload="metadata"

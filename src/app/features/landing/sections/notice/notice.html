@@ -12,7 +12,7 @@
       <div class="gallery-track" #track>
         @for (item of avis; track item.img; let i = $index) {
           <button type="button" class="gallery-card" (click)="openAvis(i, $event)">
-            <img [src]="item.img" [alt]="item.alt" loading="lazy" />
+            <img [src]="media.url(item.img)" [alt]="item.alt" loading="lazy" />
           </button>
         }
       </div>
@@ -53,7 +53,7 @@
         <span aria-hidden="true"></span>
       </button>
       @for (frame of [activeIndex()]; track frame) {
-        <img class="avis-modal-img" [src]="item.img" [alt]="item.alt" />
+        <img class="avis-modal-img" [src]="media.url(item.img)" [alt]="item.alt" />
       }
     </div>
 

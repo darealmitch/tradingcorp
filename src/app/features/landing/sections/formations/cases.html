@@ -15,7 +15,7 @@
     @for (item of cases; track item.id) {
       <article class="case-slide">
         @if (item.visuel) {
-          <img class="slide-visual" [src]="item.visuel" alt="" loading="lazy" />
+          <img class="slide-visual" [src]="media.url(item.visuel)" alt="" loading="lazy" />
         } @else {
           <span class="slide-number" aria-hidden="true">
             {{ item.id < 10 ? '0' + item.id : item.id }}

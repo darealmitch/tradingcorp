@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 
 /** Un avis : capture d'écran + texte alternatif. */
@@ -21,31 +22,31 @@ interface Avis {
 
 /** ✏️ Ajoute ou retire des captures ici — la longueur du défilement s'adapte seule. */
 const AVIS: Avis[] = [
-  { img: 'images/avis-01.png', alt: 'Retour membre TradingCorp' },
-  { img: 'images/avis-02.png', alt: 'Performance trading membre' },
-  { img: 'images/avis-03.png', alt: 'Avis membre TradingCorp' },
-  { img: 'images/avis-04.png', alt: 'Résultat trading élève' },
-  { img: 'images/avis-05.png', alt: 'Témoignage Discord' },
-  { img: 'images/avis-06.png', alt: 'Gain trading membre' },
-  { img: 'images/avis-07.png', alt: "Retour d'expérience élève" },
-  { img: 'images/avis-08.png', alt: 'Discussion Discord TradingCorp' },
-  { img: 'images/avis-09.png', alt: 'Message de satisfaction membre' },
-  { img: 'images/avis-10.jpg', alt: 'Avis WhatsApp membre' },
-  { img: 'images/avis-11.jpg', alt: 'Discussion WhatsApp membre' },
-  { img: 'images/avis-12.jpg', alt: 'Retour WhatsApp élève' },
-  { img: 'images/avis-13.jpg', alt: 'Capture WhatsApp satisfaction' },
-  { img: 'images/avis-14.jpg', alt: 'Retour SMS membre' },
-  { img: 'images/avis-15.jpg', alt: 'Retour SMS membre' },
-  { img: 'images/avis-16.jpg', alt: 'Retour SMS membre' },
-  { img: 'images/avis-17.jpg', alt: 'Retour SMS membre' },
-  { img: 'images/avis-18.jpg', alt: 'Retour SMS membre' },
-  { img: 'images/avis-19.png', alt: 'Retour formation' },
-  { img: 'images/avis-20.png', alt: 'Retour formation fiscalité' },
-  { img: 'images/avis-21.png', alt: 'Retour formation TradingCorp' },
-  { img: 'images/avis-22.png', alt: 'Retour formation TradingCorp' },
-  { img: 'images/avis-23.png', alt: 'Retour formation TradingCorp' },
-  { img: 'images/avis-24.png', alt: 'Retour formation TradingCorp' },
-  { img: 'images/avis-25.png', alt: 'Retour formation TradingCorp' },
+  { img: 'tradingcorp/landing/avis/avis-01', alt: 'Retour membre TradingCorp' },
+  { img: 'tradingcorp/landing/avis/avis-02', alt: 'Performance trading membre' },
+  { img: 'tradingcorp/landing/avis/avis-03', alt: 'Avis membre TradingCorp' },
+  { img: 'tradingcorp/landing/avis/avis-04', alt: 'Résultat trading élève' },
+  { img: 'tradingcorp/landing/avis/avis-05', alt: 'Témoignage Discord' },
+  { img: 'tradingcorp/landing/avis/avis-06', alt: 'Gain trading membre' },
+  { img: 'tradingcorp/landing/avis/avis-07', alt: "Retour d'expérience élève" },
+  { img: 'tradingcorp/landing/avis/avis-08', alt: 'Discussion Discord TradingCorp' },
+  { img: 'tradingcorp/landing/avis/avis-09', alt: 'Message de satisfaction membre' },
+  { img: 'tradingcorp/landing/avis/avis-10', alt: 'Avis WhatsApp membre' },
+  { img: 'tradingcorp/landing/avis/avis-11', alt: 'Discussion WhatsApp membre' },
+  { img: 'tradingcorp/landing/avis/avis-12', alt: 'Retour WhatsApp élève' },
+  { img: 'tradingcorp/landing/avis/avis-13', alt: 'Capture WhatsApp satisfaction' },
+  { img: 'tradingcorp/landing/avis/avis-14', alt: 'Retour SMS membre' },
+  { img: 'tradingcorp/landing/avis/avis-15', alt: 'Retour SMS membre' },
+  { img: 'tradingcorp/landing/avis/avis-16', alt: 'Retour SMS membre' },
+  { img: 'tradingcorp/landing/avis/avis-17', alt: 'Retour SMS membre' },
+  { img: 'tradingcorp/landing/avis/avis-18', alt: 'Retour SMS membre' },
+  { img: 'tradingcorp/landing/avis/avis-19', alt: 'Retour formation' },
+  { img: 'tradingcorp/landing/avis/avis-20', alt: 'Retour formation fiscalité' },
+  { img: 'tradingcorp/landing/avis/avis-21', alt: 'Retour formation TradingCorp' },
+  { img: 'tradingcorp/landing/avis/avis-22', alt: 'Retour formation TradingCorp' },
+  { img: 'tradingcorp/landing/avis/avis-23', alt: 'Retour formation TradingCorp' },
+  { img: 'tradingcorp/landing/avis/avis-24', alt: 'Retour formation TradingCorp' },
+  { img: 'tradingcorp/landing/avis/avis-25', alt: 'Retour formation TradingCorp' },
 ];
 
 /** Touches qui provoquent un défilement vertical, neutralisées pendant la modal. */
@@ -63,6 +64,7 @@ export class Notice {
   private readonly track = viewChild.required<ElementRef<HTMLElement>>('track');
   private readonly destroyRef = inject(DestroyRef);
 
+  protected readonly media = inject(MediaService);
   protected readonly avis = AVIS;
 
   /** Avec prefers-reduced-motion : bande défilable au doigt, sans épinglage. */

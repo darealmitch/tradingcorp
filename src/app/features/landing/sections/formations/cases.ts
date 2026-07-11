@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { MediaService } from '../../../../core/media/media.service';
 
 /**
  * Une case : un identifiant (affiché en 01, 02, …), un titre court et son message.
@@ -33,7 +34,7 @@ const CASES: CaseItem[] = [
     message:
       'Grâce à des vidéos éducatives et des supports écrits, ' +
       'tu auras à ta disposition tous les outils dont tu as besoin pour performer sur les marchés.',
-    visuel: 'images/pexels-jakubzerdzicki-26841237.jpg',
+    visuel: 'tradingcorp/landing/cases/pexels-jakubzerdzicki-26841237',
   },
   {
     id: 2,
@@ -42,13 +43,13 @@ const CASES: CaseItem[] = [
       'Avec la communauté, tes réussites comme tes pertes, ' +
       "tes questionnements et tes certitudes évoluent au sein d'une communauté engagée, " +
       'composée de traders déjà compétents et rentables, dont moi.',
-    visuel: 'images/vitaly-gariev-Y32qbykD69g-unsplash.jpg',
+    visuel: 'tradingcorp/landing/cases/vitaly-gariev-Y32qbykD69g-unsplash',
   },
   {
     id: 3,
     titre: 'Évolue & Progresse',
     message: "Et si tu fais partie des meilleurs, tu auras l'opportunité de travailler avec nous.",
-    visuel: 'images/adeolu-eletu-E7RLgUjjazc-unsplash.jpg',
+    visuel: 'tradingcorp/landing/cases/adeolu-eletu-E7RLgUjjazc-unsplash',
   },
 ];
 
@@ -70,6 +71,7 @@ export class Cases {
   private readonly tunnel = viewChild.required<ElementRef<HTMLCanvasElement>>('tunnel');
   private readonly destroyRef = inject(DestroyRef);
 
+  protected readonly media = inject(MediaService);
   protected readonly cases = CASES;
   protected readonly total = String(CASES.length).padStart(2, '0');
 
