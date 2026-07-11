@@ -56,3 +56,9 @@ __screenshots__/
 Thumbs.db
 docs/browser/images/formateur/presentation.mp4
 
+# Supabase CLI (état local du lien projet, jamais partagé)
+supabase/.temp/
+
+# Notes internes (personnel, pas destiné au dépôt)
+AUDIT-ARCHITECTURE.md
+
