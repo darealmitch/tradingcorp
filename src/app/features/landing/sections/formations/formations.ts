@@ -8,6 +8,7 @@ import {
   signal,
   viewChildren,
 } from '@angular/core';
+import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 import { Cases } from './cases';
 
@@ -23,6 +24,8 @@ const IMPACT_TARGETS = [90, 161_115_493, 150];
 export class Formations {
   private readonly figures = viewChildren<ElementRef<HTMLElement>>('impactFigure');
   private readonly destroyRef = inject(DestroyRef);
+
+  protected readonly media = inject(MediaService);
 
   protected readonly values = signal(IMPACT_TARGETS.map(() => '0'));
 

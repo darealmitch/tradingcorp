@@ -9,6 +9,7 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
+import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 
 /** Un chiffre-clé animé du parcours. */
@@ -81,9 +82,9 @@ const MILESTONES: Milestone[] = [
 
 /** Retours clients filmés après un entretien téléphonique avec Keryan. */
 const TESTIMONIALS = [
-  { src: 'images/formateur/keryan-01.mp4', alt: 'Retour client après entretien — 1' },
-  { src: 'images/formateur/keryan-02.mp4', alt: 'Retour client après entretien — 2' },
-  { src: 'images/formateur/keryan-03.mp4', alt: 'Retour client après entretien — 3' },
+  { pid: 'keryan-01_okdcno', alt: 'Retour client après entretien — 1' },
+  { pid: 'keryan-02_nkju0c', alt: 'Retour client après entretien — 2' },
+  { pid: 'keryan-03_sbfiwm', alt: 'Retour client après entretien — 3' },
 ];
 
 @Component({
@@ -98,9 +99,14 @@ export class Trainer {
   private readonly statEls = viewChildren<ElementRef<HTMLElement>>('statValue');
   private readonly destroyRef = inject(DestroyRef);
 
+  protected readonly media = inject(MediaService);
   protected readonly stats = STATS;
   protected readonly milestones = MILESTONES;
-  protected readonly testimonials = TESTIMONIALS;
+  // URLs Cloudinary résolues une fois via MediaService (source unique).
+  protected readonly testimonials = TESTIMONIALS.map((t) => ({
+    ...t,
+    url: this.media.videoUrl(t.pid),
+  }));
 
   /** Valeurs affichées des compteurs (formatées). */
   protected readonly values = signal(STATS.map(() => '0'));

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 
 /** ✏️ Les matières du programme, dans l'ordre d'affichage. */
@@ -23,6 +24,7 @@ const TOPICS = [
 export class Curriculum {
   private readonly destroyRef = inject(DestroyRef);
 
+  protected readonly media = inject(MediaService);
   protected readonly topics = TOPICS;
 
   /** Certificat affiché en grand (lightbox) ou non. */

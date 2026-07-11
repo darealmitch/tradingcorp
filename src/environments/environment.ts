@@ -14,6 +14,9 @@ export const environment = {
   production: false,
   supabaseUrl: 'https://swzjzwymzjhdatcobibs.supabase.co',
   supabaseKey: 'sb_publishable_bspPMBm3rYTXcEEsNR1tDQ_dAWwr9gm',
-  cloudinaryCloudName: 'tradingcorp',
-  cloudinaryKey: '286468734477574',
+  // Cloudinary — médias du projet. SEUL le Cloud Name (public) vit ici : il
+  // sert à construire les URLs de livraison. L'API Key et l'API Secret sont des
+  // secrets d'Edge Function (voir supabase/functions/.env.example) et ne
+  // doivent JAMAIS être embarqués dans le build Angular.
+  cloudinaryCloudName: 'xzqyu82g',
 };
