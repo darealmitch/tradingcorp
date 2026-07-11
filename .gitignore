@@ -54,7 +54,7 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
-docs/browser/images/formateur/presentation.mp4
+docs/images/formateur/presentation.mp4
 
 # Supabase CLI (état local du lien projet, jamais partagé)
 supabase/.temp/
