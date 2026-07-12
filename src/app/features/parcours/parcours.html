@@ -1,0 +1,30 @@
+@if (chargement()) {
+  <div class="parcours-etat">
+    <p class="cellule-discrete">Chargement du parcours…</p>
+  </div>
+} @else if (parcours(); as p) {
+  @if (annonce(); as message) {
+    <p class="parcours-annonce" role="status">{{ message }}</p>
+  }
+
+  <app-parcours-hero [titre]="p.titre" [total]="p.modules.length" />
+
+  @if (p.modules.length > 0) {
+    <app-parcours-roadmap [modules]="p.modules" (ouvrir)="ouvrir($event)" />
+    <app-parcours-progression [modules]="p.modules" />
+  } @else {
+    <section class="parcours-vide">
+      <h2>Le parcours se prépare</h2>
+      <p class="page-sous">
+        Les modules de « {{ p.titre }} » apparaîtront ici dès qu'ils seront créés et publiés.
+      </p>
+    </section>
+  }
+
+  <app-parcours-cta [inscrit]="p.inscrit" />
+} @else {
+  <div class="parcours-etat">
+    <h2>Aucun parcours disponible</h2>
+    <p class="page-sous">Aucune formation publiée pour le moment.</p>
+  </div>
+}

@@ -1,11 +1,21 @@
 import { Injectable, inject } from '@angular/core';
 import { SUPABASE } from '../supabase/supabase.client';
-import { LeconDetail, LeconResume, Module, ProgressionResume } from './apprentissage.model';
-
-export type {
+import {
   LeconDetail,
   LeconResume,
   Module,
+  ModuleParcours,
+  Parcours,
+  ProgressionResume,
+} from './apprentissage.model';
+
+export type {
+  EtatModule,
+  LeconDetail,
+  LeconResume,
+  Module,
+  ModuleParcours,
+  Parcours,
   ProgressionResume,
   Ressource,
 } from './apprentissage.model';
@@ -31,6 +41,48 @@ export interface InscriptionRecente {
 @Injectable({ providedIn: 'root' })
 export class ContenuService {
   private readonly supabase = inject(SUPABASE);
+
+  /**
+   * Parcours de l'utilisateur : sa formation (inscription active, sinon la
+   * 1re formation publiée en teaser) + les états des modules calculés côté
+   * serveur (RPC etats_modules). Le front ne fait qu'afficher ces états.
+   */
+  async chargerParcours(): Promise<Parcours | null> {
+    const { data: inscription } = await this.supabase
+      .from('inscriptions')
+      .select('id_formation, formations(titre)')
+      .eq('statut', 'active')
+      .limit(1)
+      .maybeSingle();
+
+    let idFormation = (inscription as { id_formation?: string } | null)?.id_formation ?? null;
+    let titre =
+      (inscription as { formations?: { titre: string } | null } | null)?.formations?.titre ?? null;
+    const inscrit = idFormation !== null;
+
+    if (!idFormation) {
+      const { data: formation } = await this.supabase
+        .from('formations')
+        .select('id_formation, titre')
+        .eq('est_publiee', true)
+        .order('prix_centimes')
+        .limit(1)
+        .maybeSingle();
+      idFormation = (formation as { id_formation?: string } | null)?.id_formation ?? null;
+      titre = (formation as { titre?: string } | null)?.titre ?? null;
+    }
+    if (!idFormation) {
+      return null;
+    }
+
+    const { data } = await this.supabase.rpc('etats_modules', { p_id_formation: idFormation });
+    return {
+      id_formation: idFormation,
+      titre: titre ?? 'Formation',
+      inscrit,
+      modules: (data as ModuleParcours[] | null) ?? [],
+    };
+  }
 
   /** Modules (sections) et leurs étapes, dans l'ordre du programme. */
   async chargerStructure(): Promise<Module[]> {
