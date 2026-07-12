@@ -55,3 +55,25 @@ export interface ProgressionResume {
   terminees: number;
   total: number;
 }
+
+/** État d'un module, calculé exclusivement côté serveur (RPC etats_modules). */
+export type EtatModule = 'verrouille' | 'debloque' | 'en_cours' | 'termine';
+
+/** Module tel qu'affiché dans le parcours, avec son état serveur. */
+export interface ModuleParcours {
+  id_section: string;
+  titre: string;
+  description: string | null;
+  position: number;
+  total_lecons: number;
+  lecons_terminees: number;
+  etat: EtatModule;
+}
+
+/** Parcours complet d'un apprenant : formation + modules ordonnés. */
+export interface Parcours {
+  id_formation: string;
+  titre: string;
+  inscrit: boolean;
+  modules: ModuleParcours[];
+}

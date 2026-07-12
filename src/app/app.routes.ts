@@ -61,6 +61,11 @@ export const routes: Routes = [
         title: 'TradingCorp — Ma formation',
       },
       {
+        path: 'parcours',
+        loadComponent: () => import('./features/parcours/parcours').then((m) => m.Parcours),
+        title: 'TradingCorp — Mon parcours',
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import('./features/espace/notifications/notifications').then((m) => m.Notifications),

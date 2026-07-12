@@ -1,0 +1,57 @@
+<div class="roadmap" #stage [class.est-statique]="reducedMotion()">
+  <div class="roadmap-aura" #aura aria-hidden="true"></div>
+
+  <header class="roadmap-entete">
+    <span class="eyebrow">Le parcours</span>
+    <h2>Ta progression, <span class="text-gradient">module par module</span></h2>
+  </header>
+
+  <div class="roadmap-rail" aria-hidden="true">
+    <span class="roadmap-rail-fill" #railFill></span>
+  </div>
+
+  <div class="piste">
+    @for (module of modules(); track module.id_section; let i = $index) {
+      <article
+        class="module-carte"
+        #carte
+        [class.est-actif]="estActif(i)"
+        [attr.data-etat]="module.etat"
+      >
+        <div class="module-tete">
+          <span class="module-numero">{{ numero(i) }}</span>
+          <span class="module-etat">
+            <app-icone [nom]="icone(module)" [taille]="14" />
+            {{ label(module) }}
+          </span>
+        </div>
+
+        <h3 class="module-titre">{{ module.titre }}</h3>
+        @if (module.description) {
+          <p class="module-desc">{{ module.description }}</p>
+        }
+
+        <div class="module-barre" [style.--p]="pourcent(module) + '%'" aria-hidden="true"></div>
+
+        <div class="module-pied">
+          <span class="module-compteur">
+            {{ module.lecons_terminees }} / {{ module.total_lecons }} étapes
+          </span>
+          <button
+            class="module-action"
+            type="button"
+            [disabled]="module.etat === 'verrouille'"
+            (click)="activer(module, i)"
+          >
+            {{ action(module) }}
+            @if (module.etat !== 'verrouille') {
+              <app-icone nom="fleche" [taille]="16" />
+            }
+          </button>
+        </div>
+      </article>
+    }
+  </div>
+
+  <p class="roadmap-indice" aria-hidden="true">Défile pour avancer dans le parcours</p>
+</div>
