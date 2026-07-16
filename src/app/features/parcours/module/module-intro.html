@@ -1,0 +1,79 @@
+@if (chargement()) {
+  <div class="module-etat"><p class="discret">Chargement du module…</p></div>
+} @else if (module(); as m) {
+  <article class="module">
+    <!-- Halo discret : profondeur, pas de décor -->
+    <div class="module-halo" aria-hidden="true"></div>
+
+    <a class="module-retour" routerLink="/espace/parcours">
+      <app-icone nom="chevrons" [taille]="16" />
+      Retour au parcours
+    </a>
+
+    <header class="module-tete" appReveal>
+      <span class="module-eyebrow">Module {{ numero(m) }}</span>
+      <h1 class="module-titre">{{ m.titre }}</h1>
+      @if (m.accroche) {
+        <p class="module-accroche">{{ m.accroche }}</p>
+      }
+      <span class="module-etiquette" [class]="'est-' + m.etat">{{ label(m) }}</span>
+    </header>
+
+    @if (paragraphes(m).length > 0) {
+      <section class="module-intro" appReveal revealDelay="80">
+        @for (p of paragraphes(m); track p; let first = $first) {
+          <p [class.est-lead]="first">{{ p }}</p>
+        }
+      </section>
+    }
+
+    @if (m.objectifs?.length) {
+      <section class="module-objectifs" appReveal revealDelay="140">
+        <h2 class="module-sous-titre">Ce que tu vas en retirer</h2>
+        <ul>
+          @for (objectif of m.objectifs; track objectif; let i = $index) {
+            <li appReveal [revealDelay]="180 + i * 70">
+              <span class="objectif-puce" aria-hidden="true">{{ i + 1 }}</span>
+              <span>{{ objectif }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <section class="module-pied" appReveal revealDelay="220">
+      @if (m.total_lecons > 0) {
+        <div class="module-avancee">
+          <div class="avancee-rail"><span [style.width.%]="pourcent(m)"></span></div>
+          <p class="discret">
+            {{ m.lecons_terminees }} / {{ m.total_lecons }} étapes — {{ pourcent(m) }} %
+          </p>
+        </div>
+      } @else {
+        <p class="discret">
+          Les étapes de ce module seront publiées prochainement. Tu seras notifié dès leur mise en
+          ligne.
+        </p>
+      }
+
+      <button
+        class="btn btn-primary module-cta"
+        type="button"
+        [disabled]="actionDesactivee(m)"
+        (click)="demarrer(m)"
+      >
+        {{ action(m) }}
+      </button>
+
+      @if (annonce(); as message) {
+        <p class="module-annonce" role="status">{{ message }}</p>
+      }
+    </section>
+  </article>
+} @else {
+  <div class="module-etat">
+    <h2>Module introuvable</h2>
+    <p class="discret">Ce module n'existe pas ou n'est pas encore accessible.</p>
+    <a class="btn btn-ghost" routerLink="/espace/parcours">Retour au parcours</a>
+  </div>
+}

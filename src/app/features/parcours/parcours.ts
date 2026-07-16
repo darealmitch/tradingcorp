@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { ModuleParcours, Parcours as ParcoursData } from '../../core/contenu/apprentissage.model';
 import { ContenuService } from '../../core/contenu/contenu.service';
 import { ParcoursCta } from './scenes/cta';
@@ -15,10 +16,10 @@ import { ParcoursRoadmap } from './scenes/roadmap/roadmap';
 })
 export class Parcours {
   private readonly contenu = inject(ContenuService);
+  private readonly router = inject(Router);
 
   protected readonly chargement = signal(true);
   protected readonly parcours = signal<ParcoursData | null>(null);
-  protected readonly annonce = signal<string | null>(null);
 
   constructor() {
     void this.charger();
@@ -30,15 +31,10 @@ export class Parcours {
   }
 
   /**
-   * Le lecteur de leçons arrivera avec les vrais contenus. Tant qu'un module
-   * n'a pas d'étape, on l'annonce sans rien inventer. L'accès reste gouverné
-   * par le serveur (états RPC + RLS) : ce clic n'ouvre jamais un verrouillé.
+   * Ouvre l'introduction du module. La roadmap n'émet que pour un module
+   * ouvrable : l'accès reste gouverné par le serveur (états RPC + RLS).
    */
   protected ouvrir(module: ModuleParcours): void {
-    this.annonce.set(
-      module.total_lecons > 0
-        ? `« ${module.titre} » — le lecteur de leçons arrive bientôt.`
-        : `« ${module.titre} » — le contenu de ce module est en préparation.`,
-    );
+    void this.router.navigate(['/espace/parcours', module.id_section]);
   }
 }

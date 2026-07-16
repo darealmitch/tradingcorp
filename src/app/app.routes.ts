@@ -66,6 +66,12 @@ export const routes: Routes = [
         title: 'TradingCorp — Mon parcours',
       },
       {
+        path: 'parcours/:id',
+        loadComponent: () =>
+          import('./features/parcours/module/module-intro').then((m) => m.ModuleIntro),
+        title: 'TradingCorp — Module',
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import('./features/espace/notifications/notifications').then((m) => m.Notifications),
