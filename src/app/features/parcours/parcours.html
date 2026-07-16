@@ -3,10 +3,6 @@
     <p class="cellule-discrete">Chargement du parcours…</p>
   </div>
 } @else if (parcours(); as p) {
-  @if (annonce(); as message) {
-    <p class="parcours-annonce" role="status">{{ message }}</p>
-  }
-
   <app-parcours-hero [titre]="p.titre" [total]="p.modules.length" />
 
   @if (p.modules.length > 0) {

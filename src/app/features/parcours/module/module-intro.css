@@ -1,0 +1,269 @@
+/* Introduction de module — lecture posée, espace négatif, lumière discrète.
+   Reprend la DA existante (variables globales, Anton, verre sombre). */
+
+.module {
+  position: relative;
+  max-width: 760px;
+  margin-inline: auto;
+  padding-block: 8px 96px;
+}
+
+/* Lueur unique en haut de page : profondeur, sans décor. */
+.module-halo {
+  position: absolute;
+  top: -140px;
+  left: 50%;
+  width: min(680px, 90vw);
+  height: 420px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(124, 108, 255, 0.18), transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.module-etat {
+  max-width: 620px;
+  margin-inline: auto;
+  padding-block: 80px;
+  text-align: center;
+}
+
+.module-etat h2 {
+  margin-bottom: 10px;
+  font-size: 1.4rem;
+}
+
+.discret {
+  color: var(--muted);
+}
+
+/* ===== Retour ===== */
+
+.module-retour {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  transition: color 0.2s;
+}
+
+.module-retour app-icone {
+  transform: rotate(180deg);
+}
+
+.module-retour:hover {
+  color: var(--text);
+}
+
+/* ===== Tête ===== */
+
+.module-tete {
+  position: relative;
+  margin-bottom: 56px;
+}
+
+.module-eyebrow {
+  display: block;
+  margin-bottom: 14px;
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.module-titre {
+  font-family: var(--font-title);
+  font-size: clamp(2.4rem, 7vw, 4.2rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.module-accroche {
+  max-width: 620px;
+  margin-top: 20px;
+  font-size: clamp(1.02rem, 2.2vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.module-etiquette {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 5px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.module-etiquette.est-debloque {
+  border-color: rgba(56, 225, 255, 0.4);
+  color: var(--cyan);
+}
+
+.module-etiquette.est-en_cours {
+  border-color: rgba(124, 108, 255, 0.45);
+  color: var(--violet);
+}
+
+.module-etiquette.est-termine {
+  border-color: rgba(52, 226, 154, 0.4);
+  color: var(--up);
+}
+
+/* ===== Introduction ===== */
+
+.module-intro {
+  position: relative;
+  padding: 34px 36px;
+  border: 1px solid var(--line);
+  border-left: 2px solid transparent;
+  border-radius: 18px;
+  /* Filet dégradé à gauche : accent sobre, sans aplat coloré. */
+  background:
+    linear-gradient(var(--bg-soft), var(--bg-soft)) padding-box,
+    var(--gradient) border-box;
+  background-clip: padding-box, border-box;
+}
+
+.module-intro p {
+  color: var(--muted);
+  line-height: 1.85;
+}
+
+.module-intro p + p {
+  margin-top: 20px;
+}
+
+.module-intro p.est-lead {
+  font-size: clamp(1.05rem, 2.4vw, 1.28rem);
+  line-height: 1.7;
+  color: var(--text);
+}
+
+/* ===== Objectifs ===== */
+
+.module-objectifs {
+  margin-top: 64px;
+}
+
+.module-sous-titre {
+  margin-bottom: 28px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.module-objectifs ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+
+.module-objectifs li {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.02rem;
+}
+
+.module-objectifs li:last-child {
+  border-bottom: none;
+}
+
+.objectif-puce {
+  display: grid;
+  place-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--cyan);
+}
+
+/* ===== Pied / CTA ===== */
+
+.module-pied {
+  margin-top: 64px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
+}
+
+.module-avancee {
+  margin-bottom: 24px;
+}
+
+.avancee-rail {
+  height: 4px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 220, 0.14);
+  overflow: hidden;
+}
+
+.avancee-rail span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient);
+  transition: width 0.6s var(--ease-out);
+}
+
+.module-cta {
+  margin-top: 8px;
+  height: 52px;
+  padding-inline: 34px;
+}
+
+.module-cta:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.module-annonce {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: var(--cyan);
+}
+
+@media (max-width: 720px) {
+  .module {
+    padding-bottom: 64px;
+  }
+
+  .module-tete {
+    margin-bottom: 40px;
+  }
+
+  .module-intro {
+    padding: 26px 22px;
+  }
+
+  .module-objectifs {
+    margin-top: 48px;
+  }
+
+  .module-cta {
+    width: 100%;
+  }
+}

@@ -84,6 +84,15 @@ export class ContenuService {
     };
   }
 
+  /**
+   * Un module du parcours (contenu d'intro + état). Passe par la même RPC :
+   * le serveur reste l'unique autorité, le front ne débloque jamais rien.
+   */
+  async chargerModule(idSection: string): Promise<ModuleParcours | null> {
+    const parcours = await this.chargerParcours();
+    return parcours?.modules.find((m) => m.id_section === idSection) ?? null;
+  }
+
   /** Modules (sections) et leurs étapes, dans l'ordre du programme. */
   async chargerStructure(): Promise<Module[]> {
     const { data } = await this.supabase
