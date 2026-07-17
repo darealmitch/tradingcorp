@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EtatModule, ModuleParcours } from '../../../core/contenu/apprentissage.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { Reveal } from '../../../shared/reveal';
@@ -35,10 +35,12 @@ const ETAT_ACTION: Record<EtatModule, string> = {
 export class ModuleIntro {
   private readonly contenu = inject(ContenuService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   protected readonly chargement = signal(true);
   protected readonly module = signal<ModuleParcours | null>(null);
   protected readonly annonce = signal<string | null>(null);
+  protected readonly ouverture = signal(false);
 
   constructor() {
     void this.charger(this.route.snapshot.paramMap.get('id'));
@@ -80,7 +82,16 @@ export class ModuleIntro {
     return m.total_lecons > 0 ? Math.round((m.lecons_terminees / m.total_lecons) * 100) : 0;
   }
 
-  protected demarrer(m: ModuleParcours): void {
-    this.annonce.set(`« ${m.titre} » — le lecteur de leçons arrive bientôt.`);
+  /** Ouvre la première étape vidéo du module (jamais celles verrouillées). */
+  protected async demarrer(m: ModuleParcours): Promise<void> {
+    this.ouverture.set(true);
+    const etapes = await this.contenu.etatsLecons(m.id_section);
+    const premiere = etapes[0];
+    if (premiere) {
+      await this.router.navigate(['/espace/parcours', m.id_section, 'lecon', premiere.id_lecon]);
+    } else {
+      this.annonce.set(`« ${m.titre} » — le contenu de ce module est en préparation.`);
+    }
+    this.ouverture.set(false);
   }
 }

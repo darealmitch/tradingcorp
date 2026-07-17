@@ -59,10 +59,10 @@
       <button
         class="btn btn-primary module-cta"
         type="button"
-        [disabled]="actionDesactivee(m)"
+        [disabled]="actionDesactivee(m) || ouverture()"
         (click)="demarrer(m)"
       >
-        {{ action(m) }}
+        {{ ouverture() ? 'Ouverture…' : action(m) }}
       </button>
 
       @if (annonce(); as message) {

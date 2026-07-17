@@ -114,10 +114,12 @@ Deno.serve(async (req) => {
     });
 
     if (reussi && quiz.id_lecon) {
-      await admin.from('progression_lecons').upsert(
-        { id_profil: user.id, id_lecon: quiz.id_lecon, terminee_le: new Date().toISOString() },
-        { onConflict: 'id_profil,id_lecon' },
-      );
+      await admin
+        .from('progression_lecons')
+        .upsert(
+          { id_profil: user.id, id_lecon: quiz.id_lecon, terminee_le: new Date().toISOString() },
+          { onConflict: 'id_profil,id_lecon' },
+        );
     }
 
     return json({ reussi, score, score_requis: quiz.score_requis }, 200);

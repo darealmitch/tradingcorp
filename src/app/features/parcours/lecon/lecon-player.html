@@ -1,0 +1,174 @@
+@if (chargement()) {
+  <div class="lecon-etat"><p class="discret">Chargement de l'étape…</p></div>
+} @else if (lecon(); as l) {
+  <div class="lecon">
+    <a class="lecon-retour" [routerLink]="['/espace/parcours', idSection]">
+      <app-icone nom="chevrons" [taille]="16" />
+      Retour au module
+    </a>
+
+    @if (avertissement(); as message) {
+      <p class="lecon-avertissement" role="status">{{ message }}</p>
+    }
+
+    <!-- Timeline des étapes du module -->
+    @if (etapes().length > 1) {
+      <nav class="lecon-timeline" aria-label="Étapes du module">
+        @for (e of etapes(); track e.id_lecon) {
+          <button
+            type="button"
+            class="timeline-point"
+            [class.est-actif]="e.id_lecon === l.id_lecon"
+            [class.est-verrouille]="e.etat === 'verrouille'"
+            [class.est-termine]="e.etat === 'termine'"
+            [title]="e.titre"
+            (click)="ouvrirEtape(e)"
+          >
+            @if (e.etat === 'termine') {
+              <app-icone nom="coche" [taille]="12" />
+            } @else if (e.etat === 'verrouille') {
+              <app-icone nom="cadenas" [taille]="12" />
+            } @else {
+              <span>{{ e.position }}</span>
+            }
+          </button>
+        }
+      </nav>
+    }
+
+    <header class="lecon-tete">
+      <span class="lecon-eyebrow">Étape {{ l.position }}</span>
+      <h1 class="lecon-titre">{{ l.titre }}</h1>
+      @if (l.description) {
+        <p class="lecon-description">{{ l.description }}</p>
+      }
+    </header>
+
+    <!-- Vidéo -->
+    <section class="lecon-video">
+      @if (videoUrl(l); as src) {
+        <video
+          #lecteur
+          [src]="src"
+          controls
+          playsinline
+          preload="metadata"
+          (loadedmetadata)="reprendre(l)"
+          (timeupdate)="sauverPosition()"
+          (ended)="videoTerminee()"
+        ></video>
+      } @else if (videoNonSupportee(l)) {
+        <div class="lecon-video-fallback">
+          <p>Le lecteur pour ce fournisseur vidéo n'est pas encore intégré.</p>
+        </div>
+      } @else {
+        <div class="lecon-video-fallback">
+          <p>Aucune vidéo n'est encore associée à cette étape.</p>
+        </div>
+      }
+
+      @if (!l.video_terminee_le) {
+        <button class="btn btn-ghost lecon-fin-manuelle" type="button" (click)="videoTerminee()">
+          J'ai terminé cette vidéo
+        </button>
+      }
+    </section>
+
+    <!-- PDF : visible uniquement une fois la vidéo terminée (redaction serveur) -->
+    @if (pdfUrl(l); as pdf) {
+      <section class="lecon-pdf">
+        <h2 class="lecon-sous-titre">Support PDF</h2>
+        <a class="btn btn-primary" [href]="pdf" target="_blank" rel="noopener"> Ouvrir le PDF </a>
+      </section>
+    }
+
+    <!-- Quiz : n'apparaît qu'une fois la vidéo terminée (id_quiz redigé sinon) -->
+    @if (l.terminee_le) {
+      <section class="lecon-quiz est-validee">
+        <app-icone nom="coche" [taille]="20" />
+        <p>Étape validée — quiz réussi.</p>
+      </section>
+    } @else if (l.id_quiz) {
+      <section class="lecon-quiz">
+        <h2 class="lecon-sous-titre">Quiz de validation</h2>
+
+        @if (chargementQuiz()) {
+          <p class="discret">Chargement du quiz…</p>
+        } @else if (questions().length === 0) {
+          <p class="discret">Le quiz de cette étape n'est pas encore configuré.</p>
+        } @else if (resultatQuiz(); as resultat) {
+          @if (resultat.reussi) {
+            <div class="quiz-resultat est-succes">
+              <p>Quiz réussi — {{ resultat.score }} % (seuil {{ resultat.score_requis }} %).</p>
+              <p class="discret">L'étape est validée, la suivante est débloquée.</p>
+            </div>
+          } @else {
+            <div class="quiz-resultat est-echec">
+              <p>
+                Score {{ resultat.score }} % — {{ resultat.score_requis }} % requis pour valider.
+              </p>
+              <button class="btn btn-ghost" type="button" (click)="reessayerQuiz()">
+                Réessayer
+              </button>
+            </div>
+          }
+        } @else {
+          @for (q of questions(); track q.id_question) {
+            <fieldset class="quiz-question">
+              <legend>{{ q.libelle }}</legend>
+              @for (opt of q.reponses; track opt.id_reponse) {
+                <label class="quiz-option" [for]="opt.id_reponse">
+                  @if (q.type === 'choix_unique') {
+                    <input
+                      [id]="opt.id_reponse"
+                      type="radio"
+                      [name]="q.id_question"
+                      [checked]="estCochee(q.id_question, opt.id_reponse)"
+                      (change)="repondreUnique(q.id_question, opt.id_reponse)"
+                    />
+                  } @else {
+                    <input
+                      [id]="opt.id_reponse"
+                      type="checkbox"
+                      [checked]="estCochee(q.id_question, opt.id_reponse)"
+                      (change)="basculerMultiple(q.id_question, opt.id_reponse)"
+                    />
+                  }
+                  <span>{{ opt.contenu }}</span>
+                </label>
+              }
+            </fieldset>
+          }
+          <button
+            class="btn btn-primary"
+            type="button"
+            [disabled]="!toutesRepondues() || envoiQuiz()"
+            (click)="soumettreQuiz()"
+          >
+            {{ envoiQuiz() ? 'Envoi…' : 'Valider mes réponses' }}
+          </button>
+        }
+      </section>
+    } @else if (l.video_terminee_le) {
+      <section class="lecon-quiz">
+        <p class="discret">Aucun quiz n'est encore associé à cette étape.</p>
+      </section>
+    }
+
+    @if (etapeSuivante(); as suivante) {
+      <button
+        class="btn btn-ghost lecon-suivante"
+        type="button"
+        [disabled]="!l.terminee_le && suivante.etat === 'verrouille'"
+        (click)="allerSuivante()"
+      >
+        Étape suivante : {{ suivante.titre }}
+      </button>
+    }
+  </div>
+} @else {
+  <div class="lecon-etat">
+    <h2>Étape inaccessible</h2>
+    <p class="discret">Cette étape n'existe pas ou n'est pas encore déverrouillée.</p>
+  </div>
+}
