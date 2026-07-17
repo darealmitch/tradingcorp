@@ -1,22 +1,29 @@
 import { Injectable, inject } from '@angular/core';
 import { SUPABASE } from '../supabase/supabase.client';
 import {
-  LeconDetail,
+  LeconEtape,
+  LeconJouable,
   LeconResume,
   Module,
   ModuleParcours,
   Parcours,
   ProgressionResume,
+  Ressource,
 } from './apprentissage.model';
 
 export type {
+  EtatLecon,
   EtatModule,
-  LeconDetail,
+  LeconEtape,
+  LeconJouable,
   LeconResume,
   Module,
   ModuleParcours,
+  OptionReponse,
   Parcours,
   ProgressionResume,
+  QuestionQuiz,
+  ResultatQuiz,
   Ressource,
 } from './apprentissage.model';
 
@@ -107,22 +114,38 @@ export class ContenuService {
     return (data as Module[] | null) ?? [];
   }
 
-  /** Une leçon complète avec ses ressources (vue étape). RLS : gating standard. */
-  async chargerLecon(idLecon: string): Promise<LeconDetail | null> {
-    const { data } = await this.supabase
-      .from('lecons')
-      .select(
-        'id_lecon, id_section, titre, description, contenu, position, duree_s, est_publiee, ' +
-          'apercu_gratuit, video_provider, video_provider_id, pdf_public_id, ' +
-          'ressources(id_ressource, nom, type_mime, cloudinary_public_id, chemin_storage, taille)',
-      )
-      .eq('id_lecon', idLecon)
-      .maybeSingle();
-    return (data as LeconDetail | null) ?? null;
+  /** Étapes d'un module avec leur état (RPC `etats_lecons` — stepper/timeline). */
+  async etatsLecons(idSection: string): Promise<LeconEtape[]> {
+    const { data } = await this.supabase.rpc('etats_lecons', { p_id_section: idSection });
+    return (data as LeconEtape[] | null) ?? [];
   }
 
-  /** Marque une étape comme terminée (validation). RLS : `progression_all_self`. */
-  async marquerTerminee(idLecon: string): Promise<void> {
+  /**
+   * Contenu jouable d'une étape (RPC `lecon_contenu`) : seule voie de lecture.
+   * Aucune ligne si l'étape n'est pas déverrouillée ; PDF/quiz redigés tant
+   * que la vidéo n'est pas terminée. Les ressources complémentaires suivent
+   * leur propre RLS (déjà gatée par le même déblocage séquentiel).
+   */
+  async chargerLeconJouable(idLecon: string): Promise<LeconJouable | null> {
+    const [{ data: lecon }, { data: ressources }] = await Promise.all([
+      this.supabase.rpc('lecon_contenu', { p_id_lecon: idLecon }).maybeSingle(),
+      this.supabase
+        .from('ressources')
+        .select('id_ressource, nom, type_mime, cloudinary_public_id, chemin_storage, taille')
+        .eq('id_lecon', idLecon),
+    ]);
+    if (!lecon) {
+      return null;
+    }
+    return { ...(lecon as LeconJouable), ressources: (ressources as Ressource[] | null) ?? [] };
+  }
+
+  /**
+   * Signale que la vidéo est terminée — déverrouille PDF et quiz. Signal
+   * client (comme la reprise vidéo), non sécuritaire : la validation réelle
+   * de l'étape (terminee_le) n'est posée que par corriger-quiz.
+   */
+  async marquerVideoTerminee(idLecon: string): Promise<void> {
     const idProfil = await this.idProfilCourant();
     if (!idProfil) {
       return;
@@ -130,7 +153,7 @@ export class ContenuService {
     await this.supabase
       .from('progression_lecons')
       .upsert(
-        { id_profil: idProfil, id_lecon: idLecon, terminee_le: new Date().toISOString() },
+        { id_profil: idProfil, id_lecon: idLecon, video_terminee_le: new Date().toISOString() },
         { onConflict: 'id_profil,id_lecon' },
       );
   }

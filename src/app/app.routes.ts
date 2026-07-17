@@ -72,6 +72,12 @@ export const routes: Routes = [
         title: 'TradingCorp — Module',
       },
       {
+        path: 'parcours/:id/lecon/:idLecon',
+        loadComponent: () =>
+          import('./features/parcours/lecon/lecon-player').then((m) => m.LeconPlayer),
+        title: 'TradingCorp — Étape',
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import('./features/espace/notifications/notifications').then((m) => m.Notifications),
