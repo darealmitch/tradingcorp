@@ -41,6 +41,32 @@
       </section>
     }
 
+    @if (etapes().length > 0) {
+      <section class="module-chapitres" appReveal revealDelay="200">
+        <h2 class="module-sous-titre">Chapitres du module</h2>
+        <ol class="chapitres-liste">
+          <li class="chapitre est-intro">
+            <span class="chapitre-titre">Présentation du module</span>
+            <span class="chapitre-type">Article</span>
+          </li>
+          @for (e of etapes(); track e.id_lecon) {
+            <li class="chapitre" [class]="'est-' + e.etat">
+              <button
+                type="button"
+                class="chapitre-lien"
+                [disabled]="e.etat === 'verrouille'"
+                (click)="ouvrirEtape(m, e)"
+              >
+                <app-icone [nom]="iconeEtape(e)" [taille]="16" />
+                <span class="chapitre-titre">{{ e.titre }}</span>
+                <span class="chapitre-type">{{ typeLabel(e) }}</span>
+              </button>
+            </li>
+          }
+        </ol>
+      </section>
+    }
+
     <section class="module-pied" appReveal revealDelay="220">
       @if (m.total_lecons > 0) {
         <div class="module-avancee">

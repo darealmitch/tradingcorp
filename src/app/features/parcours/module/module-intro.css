@@ -246,9 +246,91 @@
   color: var(--cyan);
 }
 
+.module-chapitres {
+  margin-top: 56px;
+}
+
+.chapitres-liste {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chapitre {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.chapitre.est-termine {
+  border-color: rgba(52, 226, 154, 0.4);
+}
+
+.chapitre.est-verrouille {
+  opacity: 0.5;
+}
+
+.chapitre-lien,
+.chapitre.est-intro {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+}
+
+.chapitre-lien {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.chapitre-lien:hover:not(:disabled) {
+  background: rgba(148, 163, 220, 0.08);
+}
+
+.chapitre-lien:disabled {
+  cursor: not-allowed;
+}
+
+.chapitre.est-intro {
+  color: var(--cyan);
+}
+
+.chapitre-titre {
+  flex: 1;
+}
+
+.chapitre-type {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 220, 0.85);
+}
+
+.chapitre.est-termine .chapitre-type {
+  border-color: rgba(52, 226, 154, 0.4);
+  color: var(--vert, #34e29a);
+}
+
 @media (max-width: 720px) {
   .module {
     padding-bottom: 64px;
+  }
+
+  .module-chapitres {
+    margin-top: 44px;
   }
 
   .module-tete {

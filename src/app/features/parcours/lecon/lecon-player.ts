@@ -50,8 +50,18 @@ export class LeconPlayer {
 
   protected idSection = '';
 
+  private readonly typesLabel: Record<LeconJouable['type'], string> = {
+    article: 'Article',
+    video: 'Vidéo',
+    quiz: 'Quiz',
+  };
+
   constructor() {
     void this.charger();
+  }
+
+  protected typeLabel(l: LeconJouable): string {
+    return this.typesLabel[l.type];
   }
 
   private async charger(): Promise<void> {
@@ -82,8 +92,15 @@ export class LeconPlayer {
     this.chargementQuiz.set(false);
   }
 
-  /** URL de lecture selon le fournisseur — seul Cloudinary a un lecteur natif ici. */
+  /**
+   * URL de lecture, hébergeur agnostique : une URL externe (Bunny/MP4/HLS
+   * direct) est prioritaire ; à défaut on retombe sur Cloudinary. Aucune
+   * dépendance à un hébergeur particulier.
+   */
   protected videoUrl(l: LeconJouable): string | null {
+    if (l.video_url) {
+      return l.video_url;
+    }
     if (l.video_provider === 'cloudinary' && l.video_provider_id) {
       return this.media.videoUrl(l.video_provider_id);
     }
@@ -91,11 +108,42 @@ export class LeconPlayer {
   }
 
   protected videoNonSupportee(l: LeconJouable): boolean {
-    return l.video_provider !== 'cloudinary' && !!l.video_provider_id;
+    return !this.videoUrl(l) && !!l.video_provider_id;
   }
 
   protected pdfUrl(l: LeconJouable): string | null {
     return l.pdf_public_id ? this.media.pdfUrl(l.pdf_public_id) : null;
+  }
+
+  /** Paragraphes d'un chapitre article (séparés par une ligne vide). */
+  protected paragraphes(l: LeconJouable): string[] {
+    return (l.contenu ?? '')
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+  }
+
+  /** Recharge le chapitre courant + la timeline (après une validation). */
+  private async rafraichir(idLecon: string): Promise<void> {
+    const [maj, etapes] = await Promise.all([
+      this.contenu.chargerLeconJouable(idLecon),
+      this.contenu.etatsLecons(this.idSection),
+    ]);
+    this.lecon.set(maj);
+    this.etapes.set(etapes);
+    if (maj?.id_quiz) {
+      await this.chargerQuiz(maj.id_quiz);
+    }
+  }
+
+  /** Valide un chapitre article (« marquer comme lu »). */
+  protected async terminerArticle(): Promise<void> {
+    const l = this.lecon();
+    if (!l || l.terminee_le) {
+      return;
+    }
+    await this.contenu.terminerLecon(l.id_lecon);
+    await this.rafraichir(l.id_lecon);
   }
 
   /** Reprise : position enregistrée au chargement du lecteur natif. */
@@ -114,19 +162,19 @@ export class LeconPlayer {
     }
   }
 
-  /** Déclenché à la fin de la vidéo native, ou via le bouton de secours. */
+  /**
+   * Fin d'un chapitre vidéo (fin native ou bouton de secours) : révèle le PDF
+   * et valide le chapitre — un chapitre vidéo n'a pas de quiz, le quiz est un
+   * chapitre distinct.
+   */
   protected async videoTerminee(): Promise<void> {
     const l = this.lecon();
-    if (!l || l.video_terminee_le) {
+    if (!l || l.terminee_le) {
       return;
     }
     await this.contenu.marquerVideoTerminee(l.id_lecon);
-    // Recharge : le serveur peut désormais révéler pdf_public_id / id_quiz.
-    const misAJour = await this.contenu.chargerLeconJouable(l.id_lecon);
-    this.lecon.set(misAJour);
-    if (misAJour?.id_quiz) {
-      await this.chargerQuiz(misAJour.id_quiz);
-    }
+    await this.contenu.terminerLecon(l.id_lecon);
+    await this.rafraichir(l.id_lecon);
   }
 
   protected repondreUnique(idQuestion: string, idReponse: string): void {
@@ -168,9 +216,7 @@ export class LeconPlayer {
     this.envoiQuiz.set(false);
 
     if (resultat?.reussi) {
-      const misAJour = await this.contenu.chargerLeconJouable(l.id_lecon);
-      this.lecon.set(misAJour);
-      this.etapes.set(await this.contenu.etatsLecons(this.idSection));
+      await this.rafraichir(l.id_lecon);
     }
   }
 

@@ -25,6 +25,7 @@ export type {
   QuestionQuiz,
   ResultatQuiz,
   Ressource,
+  TypeChapitre,
 } from './apprentissage.model';
 
 export interface ApprenantSuivi {
@@ -141,9 +142,18 @@ export class ContenuService {
   }
 
   /**
-   * Signale que la vidéo est terminée — déverrouille PDF et quiz. Signal
-   * client (comme la reprise vidéo), non sécuritaire : la validation réelle
-   * de l'étape (terminee_le) n'est posée que par corriger-quiz.
+   * Valide un chapitre vidéo ou article (pose terminee_le côté serveur, ce qui
+   * déverrouille le chapitre suivant). Interdit pour un chapitre quiz : celui-ci
+   * se valide uniquement via corriger-quiz. Le client ne peut pas écrire
+   * terminee_le en direct — la RPC vérifie le type et le déblocage.
+   */
+  async terminerLecon(idLecon: string): Promise<void> {
+    await this.supabase.rpc('terminer_lecon', { p_id_lecon: idLecon });
+  }
+
+  /**
+   * Signale que la vidéo est terminée — déverrouille le PDF. Signal client
+   * (comme la reprise vidéo), non sécuritaire.
    */
   async marquerVideoTerminee(idLecon: string): Promise<void> {
     const idProfil = await this.idProfilCourant();

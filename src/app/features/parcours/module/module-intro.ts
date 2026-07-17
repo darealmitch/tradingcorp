@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { EtatModule, ModuleParcours } from '../../../core/contenu/apprentissage.model';
+import {
+  EtatLecon,
+  EtatModule,
+  LeconEtape,
+  ModuleParcours,
+} from '../../../core/contenu/apprentissage.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { Reveal } from '../../../shared/reveal';
 import { Icone } from '../../../shared/ui/icone';
@@ -10,6 +15,13 @@ const ETAT_LABEL: Record<EtatModule, string> = {
   debloque: 'À découvrir',
   en_cours: 'En cours',
   termine: 'Terminé',
+};
+
+const ETAT_LECON_ICONE: Record<EtatLecon, string> = {
+  verrouille: 'cadenas',
+  debloque: 'lecture',
+  en_cours: 'lecture',
+  termine: 'coche',
 };
 
 const ETAT_ACTION: Record<EtatModule, string> = {
@@ -39,6 +51,7 @@ export class ModuleIntro {
 
   protected readonly chargement = signal(true);
   protected readonly module = signal<ModuleParcours | null>(null);
+  protected readonly etapes = signal<LeconEtape[]>([]);
   protected readonly annonce = signal<string | null>(null);
   protected readonly ouverture = signal(false);
 
@@ -48,9 +61,37 @@ export class ModuleIntro {
 
   private async charger(id: string | null): Promise<void> {
     if (id) {
-      this.module.set(await this.contenu.chargerModule(id));
+      const [module, etapes] = await Promise.all([
+        this.contenu.chargerModule(id),
+        this.contenu.etatsLecons(id),
+      ]);
+      this.module.set(module);
+      this.etapes.set(etapes);
     }
     this.chargement.set(false);
+  }
+
+  private readonly typesLabel: Record<LeconEtape['type'], string> = {
+    article: 'Article',
+    video: 'Vidéo',
+    quiz: 'Quiz',
+  };
+
+  protected iconeEtape(e: LeconEtape): string {
+    return ETAT_LECON_ICONE[e.etat];
+  }
+
+  protected typeLabel(e: LeconEtape): string {
+    return this.typesLabel[e.type];
+  }
+
+  /** Ouvre une étape depuis la liste — jamais une étape verrouillée. */
+  protected async ouvrirEtape(m: ModuleParcours, e: LeconEtape): Promise<void> {
+    if (e.etat === 'verrouille') {
+      this.annonce.set('Termine les étapes précédentes pour y accéder.');
+      return;
+    }
+    await this.router.navigate(['/espace/parcours', m.id_section, 'lecon', e.id_lecon]);
   }
 
   protected numero(m: ModuleParcours): string {
