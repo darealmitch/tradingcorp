@@ -6,6 +6,9 @@
 
 export type VideoProvider = 'youtube' | 'bunny' | 'cloudinary';
 
+/** Type d'un chapitre : contenu texte, vidéo, ou quiz autonome. */
+export type TypeChapitre = 'article' | 'video' | 'quiz';
+
 /** Ressource complémentaire d'une leçon (PDF, image, fichier…). */
 export interface Ressource {
   id_ressource: string;
@@ -52,11 +55,16 @@ export interface LeconJouable {
   id_lecon: string;
   id_section: string;
   titre: string;
+  type: TypeChapitre;
   description: string | null;
   contenu: string | null;
   duree_s: number | null;
   video_provider: VideoProvider;
   video_provider_id: string | null;
+  /** URL de lecture externe (Bunny/MP4/HLS direct) — prioritaire sur Cloudinary. */
+  video_url: string | null;
+  /** Métadonnées libres du lecteur (durée réelle, résolutions, id Bunny…). */
+  video_metadata: Record<string, unknown> | null;
   /** null tant que la vidéo n'est pas terminée (redaction serveur). */
   pdf_public_id: string | null;
   position: number;
@@ -76,6 +84,7 @@ export type EtatLecon = 'verrouille' | 'debloque' | 'en_cours' | 'termine';
 export interface LeconEtape {
   id_lecon: string;
   titre: string;
+  type: TypeChapitre;
   position: number;
   duree_s: number | null;
   a_pdf: boolean;

@@ -200,6 +200,29 @@
   color: var(--muted);
 }
 
+.lecon-article {
+  margin-bottom: 40px;
+  padding: 32px 34px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--bg-soft);
+}
+
+.lecon-article p {
+  margin-bottom: 18px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.lecon-article p.est-lead {
+  font-size: 1.1rem;
+  color: var(--text-strong, var(--text));
+}
+
+.lecon-lu {
+  margin-top: 10px;
+}
+
 .quiz-question {
   margin-bottom: 24px;
   padding: 0;
