@@ -50,7 +50,7 @@
         aria-label="Fermer"
         autofocus
       >
-        <span aria-hidden="true"></span>
+        <app-icone nom="fermer" [taille]="18" />
       </button>
       @for (frame of [activeIndex()]; track frame) {
         <img class="avis-modal-img" [src]="media.url(item.img)" [alt]="item.alt" />

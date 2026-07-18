@@ -13,6 +13,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
+import { Icone } from '../../../../shared/ui/icone';
 
 /** Un avis : capture d'écran + texte alternatif. */
 interface Avis {
@@ -56,7 +57,7 @@ const SCROLL_KEYS = new Set([' ', 'PageUp', 'PageDown', 'Home', 'End', 'ArrowUp'
   selector: 'app-notice',
   templateUrl: './notice.html',
   styleUrl: './notice.css',
-  imports: [Reveal],
+  imports: [Reveal, Icone],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Notice {

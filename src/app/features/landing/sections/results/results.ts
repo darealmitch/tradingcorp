@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
+import { Icone } from '../../../../shared/ui/icone';
 
 /** Une capture de résultats affichée dans le carrousel. */
 interface Result {
@@ -222,7 +223,7 @@ const CONSTATS = [
   selector: 'app-results',
   templateUrl: './results.html',
   styleUrl: './results.css',
-  imports: [Reveal],
+  imports: [Reveal, Icone],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Results {

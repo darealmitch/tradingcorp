@@ -93,7 +93,13 @@ Deno.serve(async (req) => {
       email,
       password: motDePasse,
       email_confirm: true,
-      user_metadata: { prenom: corps.prenom?.trim() ?? '', nom: corps.nom?.trim() ?? '' },
+      // cree_par_admin : le trigger handle_new_user saute le contrôle de
+      // majorité pour les comptes créés par un admin (aucune date de naissance).
+      user_metadata: {
+        prenom: corps.prenom?.trim() ?? '',
+        nom: corps.nom?.trim() ?? '',
+        cree_par_admin: 'true',
+      },
     });
     if (erreurCreation || !cree.user) {
       const existe = erreurCreation?.message.toLowerCase().includes('already');

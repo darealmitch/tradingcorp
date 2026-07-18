@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
+import { Icone } from '../../../../shared/ui/icone';
 
 /** ✏️ Les matières du programme, dans l'ordre d'affichage. */
 const TOPICS = [
@@ -18,7 +19,7 @@ const TOPICS = [
   selector: 'app-curriculum',
   templateUrl: './curriculum.html',
   styleUrl: './curriculum.css',
-  imports: [Reveal],
+  imports: [Reveal, Icone],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Curriculum {
