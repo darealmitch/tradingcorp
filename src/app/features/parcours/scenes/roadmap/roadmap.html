@@ -1,4 +1,8 @@
-<div class="roadmap" #stage [class.est-statique]="reducedMotion()">
+<!-- Piste haute (hauteur posée par le composant) : le viewport .roadmap y est
+     collé en position:sticky — fixation NATIVE pendant le défilement, sans pin
+     JS (fin des sauts d'accroche/décroche du pin GSAP). -->
+<div class="roadmap-track" #track [class.est-statique]="reducedMotion()">
+  <div class="roadmap" #stage [class.est-statique]="reducedMotion()">
   <div class="roadmap-aura" #aura aria-hidden="true"></div>
 
   <header class="roadmap-entete">
@@ -57,5 +61,6 @@
     }
   </div>
 
-  <p class="roadmap-indice" aria-hidden="true">Défile pour avancer dans le parcours</p>
+    <p class="roadmap-indice" aria-hidden="true">Défile pour avancer dans le parcours</p>
+  </div>
 </div>
