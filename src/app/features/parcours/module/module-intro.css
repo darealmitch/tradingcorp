@@ -308,6 +308,11 @@
   flex: 1;
 }
 
+.chapitre .verrou {
+  --verrou-taille: 26px;
+  flex-shrink: 0;
+}
+
 .chapitre-type {
   flex-shrink: 0;
   padding: 3px 10px;
