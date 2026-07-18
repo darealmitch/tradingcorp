@@ -60,6 +60,9 @@
                 <app-icone [nom]="iconeEtape(e)" [taille]="16" />
                 <span class="chapitre-titre">{{ e.titre }}</span>
                 <span class="chapitre-type">{{ typeLabel(e) }}</span>
+                @if (e.etat === 'verrouille') {
+                  <app-verrou [taille]="13" />
+                }
               </button>
             </li>
           }

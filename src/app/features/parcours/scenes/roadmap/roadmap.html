@@ -18,6 +18,10 @@
         [class.est-actif]="estActif(i)"
         [attr.data-etat]="module.etat"
       >
+        @if (module.etat === 'verrouille') {
+          <app-verrou class="carte-verrou" [taille]="18" />
+        }
+
         <div class="module-tete">
           <span class="module-numero">{{ numero(i) }}</span>
           <span class="module-etat">

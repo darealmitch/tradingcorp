@@ -151,11 +151,30 @@
   padding: 24px;
 }
 
-.lecon-fin-manuelle {
-  margin-top: 14px;
-  height: 40px;
-  padding-inline: 18px;
-  font-size: 0.84rem;
+/* ===== Validation de la leçon vidéo ===== */
+
+.lecon-validation {
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lecon-valider {
+  height: 48px;
+  padding-inline: 30px;
+}
+
+.lecon-valider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.lecon-validation-aide {
+  margin: 0;
+  font-size: 0.85rem;
 }
 
 /* ===== PDF ===== */

@@ -214,6 +214,14 @@
   color: var(--muted);
 }
 
+/* Cadenas superposé au coin de la carte verrouillée. */
+.carte-verrou {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 4;
+}
+
 /* Carte active : point focal, halo gradient. */
 .module-carte.est-actif {
   border-color: rgba(124, 108, 255, 0.5);

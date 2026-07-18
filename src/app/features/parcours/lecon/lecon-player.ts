@@ -48,6 +48,12 @@ export class LeconPlayer {
   protected readonly envoiQuiz = signal(false);
   protected readonly resultatQuiz = signal<ResultatQuiz | null>(null);
 
+  /** La vidéo courante vient d'atteindre sa fin dans cette session. */
+  protected readonly videoFinie = signal(false);
+  protected readonly validation = signal(false);
+  /** Point le plus avancé réellement visionné (anti-avance au 1er visionnage). */
+  private tempsMax = 0;
+
   protected idSection = '';
 
   private readonly typesLabel: Record<LeconJouable['type'], string> = {
@@ -72,6 +78,8 @@ export class LeconPlayer {
       return;
     }
     this.idSection = idSection;
+    this.videoFinie.set(false);
+    this.tempsMax = 0;
 
     const [lecon, etapes] = await Promise.all([
       this.contenu.chargerLeconJouable(idLecon),
@@ -152,29 +160,83 @@ export class LeconPlayer {
     if (el && l.position_video_s > 0) {
       el.currentTime = l.position_video_s;
     }
+    // La reprise fait déjà foi comme point le plus avancé déjà visionné.
+    this.tempsMax = Math.max(this.tempsMax, l.position_video_s);
+  }
+
+  /** Une leçon vidéo déjà validée se consulte librement (avance autorisée). */
+  private avanceLibre(l: LeconJouable): boolean {
+    return !!l.terminee_le;
   }
 
   protected sauverPosition(): void {
     const el = this.lecteur()?.nativeElement;
     const l = this.lecon();
-    if (el && l) {
-      void this.contenu.enregistrerPosition(l.id_lecon, el.currentTime);
+    if (!el || !l) {
+      return;
+    }
+    // Progression naturelle : on repousse le point le plus avancé visionné.
+    if (el.currentTime <= this.tempsMax + 1) {
+      this.tempsMax = Math.max(this.tempsMax, el.currentTime);
+    }
+    void this.contenu.enregistrerPosition(l.id_lecon, el.currentTime);
+  }
+
+  /**
+   * Premier visionnage : empêche d'avancer au-delà du point réellement atteint
+   * (impossible de glisser jusqu'à la fin pour valider sans regarder). Le retour
+   * en arrière reste libre, comme l'avance une fois la leçon validée.
+   */
+  protected surSeek(): void {
+    const el = this.lecteur()?.nativeElement;
+    const l = this.lecon();
+    if (!el || !l || this.avanceLibre(l)) {
+      return;
+    }
+    if (el.currentTime > this.tempsMax + 0.5) {
+      el.currentTime = this.tempsMax;
     }
   }
 
   /**
-   * Fin d'un chapitre vidéo (fin native ou bouton de secours) : révèle le PDF
-   * et valide le chapitre — un chapitre vidéo n'a pas de quiz, le quiz est un
-   * chapitre distinct.
+   * Fin réelle de la vidéo : on mémorise l'atteinte de la fin (active le bouton
+   * de validation) et on persiste video_terminee_le (révèle le PDF, robuste au
+   * rechargement). La leçon n'est PAS validée ici : c'est le bouton qui valide.
    */
   protected async videoTerminee(): Promise<void> {
     const l = this.lecon();
     if (!l || l.terminee_le) {
       return;
     }
+    this.videoFinie.set(true);
+    await this.contenu.marquerVideoTerminee(l.id_lecon);
+    // Recharge : le serveur peut désormais révéler pdf_public_id.
+    const maj = await this.contenu.chargerLeconJouable(l.id_lecon);
+    if (maj) {
+      this.lecon.set(maj);
+    }
+  }
+
+  /** Le bouton de validation n'est actif qu'une fois la vidéo réellement finie. */
+  protected peutValider(l: LeconJouable): boolean {
+    return !l.terminee_le && (this.videoFinie() || l.video_terminee_le !== null);
+  }
+
+  /**
+   * Validation de la leçon vidéo au clic : enregistre la progression et
+   * déverrouille l'étape suivante (règles serveur existantes), sans rechargement.
+   */
+  protected async validerLecon(): Promise<void> {
+    const l = this.lecon();
+    if (!l || l.terminee_le || !this.peutValider(l) || this.validation()) {
+      return;
+    }
+    this.validation.set(true);
+    // Garantit video_terminee_le côté serveur avant la validation (anti-course).
     await this.contenu.marquerVideoTerminee(l.id_lecon);
     await this.contenu.terminerLecon(l.id_lecon);
     await this.rafraichir(l.id_lecon);
+    this.validation.set(false);
   }
 
   protected repondreUnique(idQuestion: string, idReponse: string): void {

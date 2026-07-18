@@ -57,6 +57,7 @@
               preload="metadata"
               (loadedmetadata)="reprendre(l)"
               (timeupdate)="sauverPosition()"
+              (seeking)="surSeek()"
               (ended)="videoTerminee()"
             ></video>
           } @else if (videoNonSupportee(l)) {
@@ -67,16 +68,6 @@
             <div class="lecon-video-fallback">
               <p>Aucune vidéo n'est encore associée à ce chapitre.</p>
             </div>
-          }
-
-          @if (!l.terminee_le) {
-            <button
-              class="btn btn-ghost lecon-fin-manuelle"
-              type="button"
-              (click)="videoTerminee()"
-            >
-              J'ai terminé cette vidéo
-            </button>
           }
         </section>
 
@@ -90,10 +81,27 @@
           </section>
         }
 
+        <!-- Validation : active uniquement quand la vidéo est réellement finie -->
         @if (l.terminee_le) {
           <section class="lecon-quiz est-validee">
             <app-icone nom="coche" [taille]="20" />
             <p>Chapitre validé.</p>
+          </section>
+        } @else {
+          <section class="lecon-validation">
+            <button
+              class="btn btn-primary lecon-valider"
+              type="button"
+              [disabled]="!peutValider(l) || validation()"
+              (click)="validerLecon()"
+            >
+              {{ validation() ? 'Validation…' : 'Valider la leçon' }}
+            </button>
+            @if (!peutValider(l)) {
+              <p class="discret lecon-validation-aide">
+                Regarde la vidéo jusqu'à la fin pour valider la leçon.
+              </p>
+            }
           </section>
         }
       }

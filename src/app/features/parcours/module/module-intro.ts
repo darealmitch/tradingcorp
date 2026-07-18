@@ -9,6 +9,7 @@ import {
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { Reveal } from '../../../shared/reveal';
 import { Icone } from '../../../shared/ui/icone';
+import { Verrou } from '../../../shared/ui/verrou';
 
 const ETAT_LABEL: Record<EtatModule, string> = {
   verrouille: 'Verrouillé',
@@ -41,7 +42,7 @@ const ETAT_ACTION: Record<EtatModule, string> = {
   selector: 'app-module-intro',
   templateUrl: './module-intro.html',
   styleUrl: './module-intro.css',
-  imports: [RouterLink, Reveal, Icone],
+  imports: [RouterLink, Reveal, Icone, Verrou],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModuleIntro {

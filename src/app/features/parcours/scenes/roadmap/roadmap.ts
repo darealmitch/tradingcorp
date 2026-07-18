@@ -15,6 +15,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { EtatModule, ModuleParcours } from '../../../../core/contenu/apprentissage.model';
 import { Icone } from '../../../../shared/ui/icone';
+import { Verrou } from '../../../../shared/ui/verrou';
 
 const ETAT_LABEL: Record<EtatModule, string> = {
   verrouille: 'Verrouillé',
@@ -47,7 +48,7 @@ const ETAT_ICONE: Record<EtatModule, string> = {
   selector: 'app-parcours-roadmap',
   templateUrl: './roadmap.html',
   styleUrl: './roadmap.css',
-  imports: [Icone],
+  imports: [Icone, Verrou],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParcoursRoadmap {

@@ -1,6 +1,6 @@
 // Types des API intégrées au runtime Edge de Supabase (Deno.serve, Deno.env).
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 // Création manuelle de comptes par un administrateur (formateur, apprenant
 // privilégié, migration d'un ancien client) : mot de passe temporaire généré
