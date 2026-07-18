@@ -121,18 +121,30 @@ export class ParcoursRoadmap {
     gsap.registerPlugin(ScrollTrigger);
     const n = cartes.length;
 
+    // Le pin + scrub pilotent le défilement : on neutralise le scroll-behavior
+    // global (smooth) pour éviter les saccades avec les refresh/sauts de GSAP
+    // (même convention que la galerie d'avis de la landing).
+    const root = document.documentElement;
+    root.style.scrollBehavior = 'auto';
+
     const trigger = ScrollTrigger.create({
       trigger: this.stage().nativeElement,
-      start: 'top top',
+      // Épinglage SOUS le header fixe (72px) pour éviter que l'en-tête de la
+      // roadmap glisse derrière lui pendant toute la durée du pin.
+      start: 'top 72px',
       end: `+=${n * 62}%`,
       pin: true,
       scrub: 0.6,
+      anticipatePin: 0.5,
       onUpdate: (self) => {
         this.camera = self.progress * (n - 1);
         this.render(cartes);
       },
     });
-    this.destroyRef.onDestroy(() => trigger.kill());
+    this.destroyRef.onDestroy(() => {
+      trigger.kill();
+      root.style.scrollBehavior = '';
+    });
     this.render(cartes);
   }
 

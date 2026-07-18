@@ -78,7 +78,7 @@
     </button>
 
     <div class="lightbox-inner" (click)="$event.stopPropagation()">
-      <button type="button" class="lightbox-close" (click)="close()" aria-label="Fermer" autofocus>
+      <button class="bouton-fermeture" type="button" (click)="close()" aria-label="Fermer" autofocus>
         <span aria-hidden="true"></span>
       </button>
       @for (frame of [activeIndex()]; track frame) {

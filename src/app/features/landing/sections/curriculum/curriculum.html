@@ -70,8 +70,8 @@
     (keydown.escape)="closeCert()"
   >
     <div class="cert-lightbox-inner" (click)="$event.stopPropagation()">
-      <button type="button" class="cert-close" (click)="closeCert()" aria-label="Fermer" autofocus>
-        <span aria-hidden="true"></span>
+      <button class="bouton-fermeture" type="button" (click)="closeCert()" aria-label="Fermer" autofocus>
+        <app-icone nom="fermer" [taille]="18" />
       </button>
       <img
         [src]="media.url('tradingcorp/landing/diplome')"

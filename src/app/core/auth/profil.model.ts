@@ -6,12 +6,10 @@ export interface Profil {
   id_profil: string;
   prenom: string;
   nom: string;
-  /** Pseudo public, modifiable par l'utilisateur une fois tous les 30 jours. */
-  surnom: string | null;
-  /** Dernière modification du surnom (fenêtre des 30 jours). */
-  surnom_modifie_le: string | null;
   role: Role;
   date_creation: string;
+  /** Date de naissance (majorité vérifiée à l'inscription) — null si inconnue. */
+  date_naissance: string | null;
   /** Compte créé par un admin : mot de passe temporaire à remplacer. */
   doit_changer_mdp: boolean;
   /** Compte de démonstration, exclu des statistiques. */

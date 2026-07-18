@@ -14,7 +14,7 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   return router.createUrlTree(['/connexion'], { queryParams: { retour: state.url } });
 };
 
-/** Routes réservées aux visiteurs (connexion/inscription) : déjà connecté → espace. */
+/** Routes réservées aux visiteurs (landing, facteurs, connexion, inscription) : déjà connecté → espace. */
 export const inviteGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
   const router = inject(Router);

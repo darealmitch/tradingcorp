@@ -1,29 +1,12 @@
 <header class="page-tete">
   <h1 class="page-titre">Profil</h1>
-  <p class="page-sous">
-    Gère ton surnom. Ton nom et ton prénom officiels sont gérés par l'administration.
-  </p>
+  <p class="page-sous">Ton nom et ton prénom officiels sont gérés par l'administration.</p>
 </header>
-
-@if (message(); as msg) {
-  <p
-    class="alerte"
-    [class.est-succes]="msg.type === 'succes'"
-    [class.est-erreur]="msg.type === 'erreur'"
-  >
-    {{ msg.texte }}
-  </p>
-}
 
 <div class="panneau">
   <div class="profil-identite">
     <div class="profil-identite-corps">
-      <h2 class="profil-nom">
-        {{ auth.profil()?.prenom }} {{ auth.profil()?.nom }}
-        @if (auth.profil()?.surnom; as surnom) {
-          <span class="profil-surnom-inline">« {{ surnom }} »</span>
-        }
-      </h2>
+      <h2 class="profil-nom">{{ auth.profil()?.prenom }} {{ auth.profil()?.nom }}</h2>
       <p class="cellule-discrete">{{ auth.session()?.user?.email }}</p>
     </div>
 
@@ -46,39 +29,6 @@
       <dd>E-mail et mot de passe</dd>
     </div>
   </dl>
-</div>
-
-<div class="panneau">
-  <div class="panneau-tete">
-    <h2 class="panneau-titre">Surnom</h2>
-  </div>
-  <p class="page-sous surnom-intro">Ton pseudo public, modifiable une fois tous les 30 jours.</p>
-
-  <form class="surnom-form" (ngSubmit)="changerSurnom()">
-    <input
-      type="text"
-      class="surnom-input"
-      [formControl]="surnomCtrl"
-      maxlength="30"
-      placeholder="Choisis un surnom"
-      aria-label="Surnom"
-    />
-    <button
-      class="btn btn-primary btn-compact"
-      type="submit"
-      [disabled]="!surnomModifiable() || enregistrementSurnom()"
-    >
-      {{ enregistrementSurnom() ? 'Enregistrement…' : 'Enregistrer' }}
-    </button>
-  </form>
-
-  @if (prochaineModif(); as info) {
-    <p class="surnom-delai">
-      Prochaine modification possible le {{ info.date }} (dans {{ info.jours }} jour{{
-        info.jours > 1 ? 's' : ''
-      }}).
-    </p>
-  }
 </div>
 
 <div class="panneau">
