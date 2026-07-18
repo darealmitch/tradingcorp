@@ -1,18 +1,8 @@
-<!-- Piste haute (hauteur posée par le composant) : le viewport .roadmap y est
-     collé en position:sticky — fixation NATIVE pendant le défilement, sans pin
-     JS (fin des sauts d'accroche/décroche du pin GSAP). -->
-<div class="roadmap-track" #track [class.est-statique]="reducedMotion()">
-  <div class="roadmap" #stage [class.est-statique]="reducedMotion()">
-  <div class="roadmap-aura" #aura aria-hidden="true"></div>
-
+<div class="roadmap" [class.est-statique]="reducedMotion()">
   <header class="roadmap-entete">
     <span class="eyebrow">Le parcours</span>
     <h2>Ta progression, <span class="text-gradient">module par module</span></h2>
   </header>
-
-  <div class="roadmap-rail" aria-hidden="true">
-    <span class="roadmap-rail-fill" #railFill></span>
-  </div>
 
   <div class="piste">
     @for (module of modules(); track module.id_section; let i = $index) {
@@ -59,8 +49,5 @@
         </div>
       </article>
     }
-  </div>
-
-    <p class="roadmap-indice" aria-hidden="true">Défile pour avancer dans le parcours</p>
   </div>
 </div>

@@ -8,11 +8,9 @@ import {
   input,
   output,
   signal,
-  viewChild,
   viewChildren,
 } from '@angular/core';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { EtatModule, ModuleParcours } from '../../../../core/contenu/apprentissage.model';
 import { Icone } from '../../../../shared/ui/icone';
 import { Verrou } from '../../../../shared/ui/verrou';
@@ -39,10 +37,13 @@ const ETAT_ICONE: Record<EtatModule, string> = {
 };
 
 /**
- * Roadmap immersive : les modules défilent comme des plans traversés par une
- * caméra (pin + scrub GSAP). Le module au centre devient le point focal, les
- * autres reculent en profondeur. Les états viennent du serveur (RPC) : le
- * clic n'ouvre que ce que le serveur autorise, jamais ne « débloque ».
+ * Roadmap du parcours : les modules forment une liste verticale qui défile
+ * NATURELLEMENT — aucune capture du scroll, la molette agit comme partout
+ * ailleurs. En passant devant le centre du viewport, chaque carte gagne en
+ * présence (échelle / opacité / légère inclinaison) et recule aux bords : un
+ * effet de profondeur LIÉ à la position de défilement, jamais une caméra qui
+ * immobilise la page. Les états viennent du serveur (RPC) : le clic n'ouvre
+ * que ce que le serveur autorise, jamais ne « débloque ».
  */
 @Component({
   selector: 'app-parcours-roadmap',
@@ -55,17 +56,14 @@ export class ParcoursRoadmap {
   readonly modules = input.required<ModuleParcours[]>();
   readonly ouvrir = output<ModuleParcours>();
 
-  private readonly track = viewChild.required<ElementRef<HTMLElement>>('track');
-  private readonly stage = viewChild.required<ElementRef<HTMLElement>>('stage');
-  private readonly aura = viewChild.required<ElementRef<HTMLElement>>('aura');
-  private readonly railFill = viewChild.required<ElementRef<HTMLElement>>('railFill');
   private readonly cartes = viewChildren<ElementRef<HTMLElement>>('carte');
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly reducedMotion = signal(false);
   protected readonly actifIndex = signal(0);
 
-  private camera = 0;
+  /** rAF en attente (throttle du recalcul au défilement). */
+  private rafId = 0;
 
   constructor() {
     afterNextRender(() => this.init());
@@ -116,76 +114,63 @@ export class ParcoursRoadmap {
       return;
     }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      this.reducedMotion.set(true); // rendu statique (CSS .est-statique)
+      this.reducedMotion.set(true); // liste nette, sans effet de profondeur
       return;
     }
 
-    gsap.registerPlugin(ScrollTrigger);
-    const n = cartes.length;
-
-    // Le scrub pilote la caméra : on neutralise le scroll-behavior global
-    // (smooth) pour éviter les saccades avec les sauts programmés (même
-    // convention que la galerie d'avis de la landing).
-    const root = document.documentElement;
-    root.style.scrollBehavior = 'auto';
-
-    // Fixation NATIVE : la piste fournit la distance de défilement, le
-    // viewport .roadmap y reste collé en position:sticky (CSS). Aucun pin JS —
-    // c'était lui qui produisait les sauts d'accroche/décroche. ScrollTrigger
-    // ne fait plus que LIRE la progression de la piste pour animer les cartes.
-    const track = this.track().nativeElement;
-    track.style.height = `calc(100svh - 72px + ${n * 85}svh)`;
-
-    const trigger = ScrollTrigger.create({
-      trigger: track,
-      // De l'accroche du sticky (haut de piste sous le header de 72px)…
-      start: 'top 72px',
-      // …à son relâchement (bas de piste au bas du viewport).
-      end: 'bottom bottom',
-      scrub: 0.9,
-      onUpdate: (self) => {
-        this.camera = self.progress * (n - 1);
+    // Effet piloté par le défilement NATIF de la page (throttle rAF). Aucune
+    // fixation, aucun pin : on lit seulement la position des cartes.
+    const planifier = (): void => {
+      if (this.rafId) {
+        return;
+      }
+      this.rafId = requestAnimationFrame(() => {
+        this.rafId = 0;
         this.render(cartes);
-      },
-    });
+      });
+    };
+    window.addEventListener('scroll', planifier, { passive: true });
+    window.addEventListener('resize', planifier, { passive: true });
     this.destroyRef.onDestroy(() => {
-      trigger.kill();
-      root.style.scrollBehavior = '';
+      window.removeEventListener('scroll', planifier);
+      window.removeEventListener('resize', planifier);
+      if (this.rafId) {
+        cancelAnimationFrame(this.rafId);
+      }
     });
     this.render(cartes);
   }
 
-  /** Positionne chaque carte selon sa distance à la caméra (profondeur). */
+  /**
+   * Profondeur de chaque carte selon la distance de son centre au centre
+   * visible du viewport (sous le header de 72px). On ne touche JAMAIS à x/y :
+   * la carte reste dans le flux, seuls échelle / opacité / inclinaison varient.
+   */
   private render(cartes: HTMLElement[]): void {
-    const cam = this.camera;
-    const n = cartes.length;
+    const focal = (72 + window.innerHeight) / 2;
+    const demi = window.innerHeight / 2;
+    let actif = 0;
+    let minAbs = Infinity;
 
     cartes.forEach((el, i) => {
-      const d = i - cam;
-      const abs = Math.abs(d);
-      // Flou plafonné et quantifié (pas de 0,5 px) : `filter: blur` recalculé
-      // en continu sur chaque carte était la première cause de saccades.
-      const flou = Math.round(Math.min(3, abs * 1.2) * 2) / 2;
+      const rect = el.getBoundingClientRect();
+      const centre = rect.top + rect.height / 2;
+      const d = demi > 0 ? (centre - focal) / demi : 0; // ~ -1 (haut) .. +1 (bas)
+      const abs = Math.min(Math.abs(d), 1);
+      const flou = Math.round(Math.min(2, abs * 1.4) * 2) / 2;
       gsap.set(el, {
-        xPercent: -50,
-        yPercent: -50,
-        y: d * 132,
-        scale: 1 / (1 + abs * 0.17),
-        opacity: Math.max(0, 1 - abs * 0.3),
-        rotateX: Math.max(-22, Math.min(22, d * -6)),
+        scale: 1 - abs * 0.13,
+        opacity: Math.max(0.4, 1 - abs * 0.4),
+        rotateX: Math.max(-14, Math.min(14, d * -7)),
         filter: flou > 0 ? `blur(${flou}px)` : 'none',
-        zIndex: 200 - Math.round(abs * 10),
+        zIndex: 100 - Math.round(abs * 10),
       });
+      if (abs < minAbs) {
+        minAbs = abs;
+        actif = i;
+      }
     });
 
-    const p = n > 1 ? cam / (n - 1) : 0;
-    gsap.set(this.aura().nativeElement, {
-      yPercent: -50 + p * 10,
-      opacity: 0.45 + Math.sin(p * Math.PI) * 0.35,
-    });
-    gsap.set(this.railFill().nativeElement, { scaleY: p });
-
-    const actif = Math.round(cam);
     if (actif !== this.actifIndex()) {
       this.actifIndex.set(actif);
     }
