@@ -46,11 +46,38 @@
       }
     </div>
 
-    @if (inscrites().size > 0) {
-      <p class="formation-note">
-        Le lecteur de leçons (vidéos, ressources, quiz et progression) arrive dans la prochaine
-        étape — ton accès est déjà enregistré.
-      </p>
-    }
   }
 </div>
+
+<!-- Modules du programme : accès direct aux chapitres (états serveur) -->
+@if (modules().length > 0) {
+  <div class="panneau">
+    <div class="panneau-tete">
+      <h2 class="panneau-titre">Les modules du programme</h2>
+    </div>
+    @for (m of modules(); track m.id_section) {
+      <button
+        type="button"
+        class="module-ligne"
+        [class.est-verrouille]="m.etat === 'verrouille'"
+        [disabled]="m.etat === 'verrouille'"
+        (click)="ouvrirModule(m)"
+      >
+        <span class="module-ligne-numero">{{ numero(m) }}</span>
+        <span class="liste-corps">
+          <span class="liste-titre">{{ m.titre }}</span>
+          <span class="liste-detail">
+            {{ m.lecons_terminees }} / {{ m.total_lecons }} étapes terminées
+          </span>
+        </span>
+        @if (m.etat === 'verrouille') {
+          <app-verrou [taille]="13" />
+        } @else if (m.etat === 'termine') {
+          <span class="badge-statut est-succes">Terminé</span>
+        } @else {
+          <app-icone nom="fleche" [taille]="16" />
+        }
+      </button>
+    }
+  </div>
+}

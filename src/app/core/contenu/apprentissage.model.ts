@@ -23,6 +23,7 @@ export interface Ressource {
 /** Étape / leçon — version allégée pour les listes (structure du programme). */
 export interface LeconResume {
   id_lecon: string;
+  id_section: string;
   titre: string;
   position: number;
   duree_s: number | null;

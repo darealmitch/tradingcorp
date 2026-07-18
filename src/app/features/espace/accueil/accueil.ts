@@ -28,9 +28,6 @@ import { StatCard } from '../../../shared/ui/stat-card';
 
 interface StatsApprenant {
   progression: ProgressionResume;
-  quizTotal: number;
-  quizReussis: number;
-  certificats: number;
   prochaines: LeconResume[];
 }
 
@@ -116,17 +113,13 @@ export class Accueil {
   }
 
   private async chargerApprenant(): Promise<void> {
-    const [inscriptions, progression, prochaines, quizTotal, quizReussis, certificats] =
-      await Promise.all([
-        this.commerce.chargerInscriptions(),
-        this.contenu.maProgression(),
-        this.contenu.prochainesLecons(3),
-        this.contenu.compterQuiz(),
-        this.contenu.compterQuizReussis(),
-        this.contenu.compterMesCertificats(),
-      ]);
+    const [inscriptions, progression, prochaines] = await Promise.all([
+      this.commerce.chargerInscriptions(),
+      this.contenu.maProgression(),
+      this.contenu.prochainesLecons(1),
+    ]);
     this.inscrites.set(new Set(inscriptions.map((i) => i.id_formation)));
-    this.apprenant.set({ progression, prochaines, quizTotal, quizReussis, certificats });
+    this.apprenant.set({ progression, prochaines });
   }
 
   private async chargerFormateur(): Promise<void> {
@@ -192,10 +185,6 @@ export class Accueil {
     return progression.total === 0
       ? 0
       : Math.round((progression.terminees / progression.total) * 100);
-  }
-
-  protected duree(lecon: LeconResume): string {
-    return lecon.duree_s ? `${Math.round(lecon.duree_s / 60)} min` : '—';
   }
 
   protected nomComplet(personne: { prenom: string; nom: string } | null): string {

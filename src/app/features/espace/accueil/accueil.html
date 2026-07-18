@@ -30,70 +30,43 @@
         Découvrir la formation
       </a>
     </div>
-  } @else {
-    <div class="grille-stats">
-      <app-stat-card
-        icone="stats"
-        libelle="Progression"
-        [valeur]="pourcentage(stats.progression) + ' %'"
-        detail="de la formation terminée"
-      />
-      <app-stat-card
-        icone="lecture"
-        libelle="Leçons terminées"
-        [valeur]="stats.progression.terminees + ' / ' + stats.progression.total"
-      />
-      <app-stat-card
-        icone="liste"
-        libelle="Quiz réussis"
-        [valeur]="stats.quizReussis + ' / ' + stats.quizTotal"
-      />
-      <app-stat-card icone="diplome" libelle="Certificats" [valeur]="'' + stats.certificats" />
+  } @else if (stats.prochaines.length === 0) {
+    <div class="panneau">
+      <h2 class="panneau-titre">Le contenu arrive</h2>
+      <p class="page-sous">
+        Ton accès est actif. Les premières leçons sont en préparation — tu seras notifié dès leur
+        publication.
+      </p>
     </div>
-
-    @if (stats.prochaines.length === 0) {
-      <div class="panneau">
-        <h2 class="panneau-titre">Le contenu arrive</h2>
-        <p class="page-sous">
-          Ton accès est actif. Les premières leçons sont en préparation — tu seras notifié dès leur
-          publication.
-        </p>
+  } @else {
+    <!-- Raccourci d'accueil — le suivi détaillé vit dans « Mon parcours ». -->
+    <section class="panneau">
+      <div class="panneau-tete">
+        <h2 class="panneau-titre">Reprendre où tu t'es arrêté</h2>
       </div>
-    } @else {
-      <div class="grille-deux">
-        <section class="panneau">
-          <div class="panneau-tete">
-            <h2 class="panneau-titre">Reprendre où tu t'es arrêté</h2>
-          </div>
-          <div class="reprendre">
-            <span class="liste-icone"><app-icone nom="lecture" [taille]="18" /></span>
-            <div class="liste-corps">
-              <p class="liste-titre">{{ stats.prochaines[0].titre }}</p>
-              <p class="liste-detail">
-                Leçon {{ stats.progression.terminees + 1 }} sur {{ stats.progression.total }}
-              </p>
-            </div>
-            <a class="btn btn-primary btn-compact" routerLink="/espace/formations">Reprendre</a>
-          </div>
-          <app-barre-progression [valeur]="pourcentage(stats.progression)" />
-        </section>
-
-        <section class="panneau">
-          <div class="panneau-tete">
-            <h2 class="panneau-titre">À suivre</h2>
-          </div>
-          @for (lecon of stats.prochaines; track lecon.id_lecon) {
-            <div class="ligne-liste">
-              <span class="liste-icone"><app-icone nom="horloge" [taille]="16" /></span>
-              <div class="liste-corps">
-                <p class="liste-titre">{{ lecon.titre }}</p>
-              </div>
-              <span class="liste-date">{{ duree(lecon) }}</span>
-            </div>
-          }
-        </section>
+      <div class="reprendre">
+        <span class="liste-icone"><app-icone nom="lecture" [taille]="18" /></span>
+        <div class="liste-corps">
+          <p class="liste-titre">{{ stats.prochaines[0].titre }}</p>
+          <p class="liste-detail">
+            Leçon {{ stats.progression.terminees + 1 }} sur {{ stats.progression.total }}
+          </p>
+        </div>
+        <a
+          class="btn btn-primary btn-compact"
+          [routerLink]="[
+            '/espace/parcours',
+            stats.prochaines[0].id_section,
+            'lecon',
+            stats.prochaines[0].id_lecon,
+          ]"
+        >
+          Reprendre
+        </a>
       </div>
-    }
+      <app-barre-progression [valeur]="pourcentage(stats.progression)" />
+      <a class="panneau-lien" routerLink="/espace/parcours">Voir mon parcours</a>
+    </section>
   }
 }
 

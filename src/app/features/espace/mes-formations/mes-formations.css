@@ -30,8 +30,39 @@
   pointer-events: none;
 }
 
-.formation-note {
-  margin-top: 20px;
-  font-size: 0.88rem;
+/* ===== Modules du programme ===== */
+
+.module-ligne {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 4px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.module-ligne:last-child {
+  border-bottom: none;
+}
+
+.module-ligne:hover:not(:disabled) {
+  background: rgba(148, 163, 220, 0.06);
+}
+
+.module-ligne.est-verrouille {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.module-ligne-numero {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
   color: var(--muted);
 }
