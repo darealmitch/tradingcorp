@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
+import { Icone } from '../../../../shared/ui/icone';
 
 /** Un chiffre-clé animé du parcours. */
 interface Stat {
@@ -91,7 +92,7 @@ const TESTIMONIALS = [
   selector: 'app-trainer',
   templateUrl: './trainer.html',
   styleUrl: './trainer.css',
-  imports: [Reveal],
+  imports: [Reveal, Icone],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Trainer {

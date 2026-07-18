@@ -211,9 +211,9 @@ h3 {
 }
 
 /* ===== Bouton de fermeture des modales média (image / vidéo) =====
-   Unifié pour toutes les modales : une seule taille et un seul offset. La
-   croix est construite en pur CSS. Le conteneur .*-inner doit rester
-   position:relative pour ancrer la croix dans le coin. */
+   Unifié pour toutes les modales : une seule taille, un seul offset, une vraie
+   croix SVG (composant Icone). Le conteneur .*-inner doit rester
+   position:relative pour ancrer le bouton dans le coin. */
 
 .bouton-fermeture {
   position: absolute;
@@ -226,34 +226,19 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
+  color: var(--text);
   cursor: pointer;
   transition:
     transform 0.25s var(--ease-out),
-    border-color 0.25s;
+    border-color 0.25s,
+    color 0.25s;
 }
 
 .bouton-fermeture:hover,
 .bouton-fermeture:focus-visible {
   transform: scale(1.08);
   border-color: color-mix(in srgb, var(--violet) 55%, transparent);
-}
-
-.bouton-fermeture span,
-.bouton-fermeture span::before {
-  position: absolute;
-  width: 17px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--text);
-}
-
-.bouton-fermeture span {
-  transform: rotate(45deg);
-}
-
-.bouton-fermeture span::before {
-  content: '';
-  transform: rotate(-90deg);
+  color: var(--violet);
 }
 
 @media (max-width: 560px) {

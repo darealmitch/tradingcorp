@@ -79,7 +79,7 @@
 
     <div class="lightbox-inner" (click)="$event.stopPropagation()">
       <button class="bouton-fermeture" type="button" (click)="close()" aria-label="Fermer" autofocus>
-        <span aria-hidden="true"></span>
+        <app-icone nom="fermer" [taille]="18" />
       </button>
       @for (frame of [activeIndex()]; track frame) {
         <img class="lightbox-img" [src]="media.url(item.img)" [alt]="item.alt" />
