@@ -1,6 +1,6 @@
 .roadmap {
   position: relative;
-  min-height: 100svh;
+  min-height: calc(100svh - 72px);
   display: flex;
   flex-direction: column;
   align-items: center;

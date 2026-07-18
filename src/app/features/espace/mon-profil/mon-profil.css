@@ -21,12 +21,6 @@
   font-size: 1.25rem;
 }
 
-.profil-surnom-inline {
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: var(--muted);
-}
-
 .profil-role {
   margin-left: auto;
   align-self: flex-start;
@@ -58,43 +52,4 @@
 
 .profil-ligne dd {
   font-weight: 500;
-}
-
-/* ===== Surnom ===== */
-
-.surnom-intro {
-  margin-bottom: 18px;
-}
-
-.surnom-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-}
-
-.surnom-input {
-  flex: 1;
-  min-width: 200px;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-}
-
-.surnom-input:focus {
-  outline: none;
-  border-color: rgba(148, 163, 220, 0.45);
-}
-
-.surnom-input:disabled {
-  opacity: 0.55;
-}
-
-.surnom-delai {
-  margin-top: 14px;
-  font-size: 0.86rem;
-  color: var(--muted);
 }

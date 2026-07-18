@@ -11,11 +11,13 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./features/landing/landing').then((m) => m.Landing),
+    canActivate: [inviteGuard],
     title: 'TradingCorp — La plateforme de trading nouvelle génération',
   },
   {
     path: 'facteurs',
     loadComponent: () => import('./features/factors/factors').then((m) => m.Factors),
+    canActivate: [inviteGuard],
     title: 'TradingCorp — Les 5 facteurs qui changeront votre vie',
   },
   {

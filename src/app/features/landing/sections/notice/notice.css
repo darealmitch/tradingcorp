@@ -173,47 +173,6 @@
   margin-right: 4px;
 }
 
-.avis-modal-close {
-  position: absolute;
-  top: -16px;
-  right: -16px;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  cursor: pointer;
-  transition:
-    transform 0.25s var(--ease-out),
-    border-color 0.25s;
-}
-
-.avis-modal-close:hover,
-.avis-modal-close:focus-visible {
-  transform: scale(1.08);
-  border-color: rgba(124, 108, 255, 0.55);
-}
-
-/* Croix en pur CSS */
-.avis-modal-close span,
-.avis-modal-close span::before {
-  position: absolute;
-  width: 16px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--text);
-}
-
-.avis-modal-close span {
-  transform: rotate(45deg);
-}
-
-.avis-modal-close span::before {
-  content: '';
-  transform: rotate(-90deg);
-}
 
 @keyframes avis-fade {
   from {

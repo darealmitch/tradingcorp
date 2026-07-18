@@ -83,7 +83,7 @@ export class AuthService {
     this.profilSig.set(data);
   }
 
-  /** Recharge le profil du compte connecté (après changement de surnom, etc.). */
+  /** Recharge le profil du compte connecté (après une mise à jour de ses données). */
   async rechargerProfil(): Promise<void> {
     const session = this.sessionSig();
     if (session) {
@@ -120,17 +120,22 @@ export class AuthService {
 
   // ===== Opérations =====
 
-  /** Le trigger SQL handle_new_user lit prenom/nom dans les métadonnées. */
+  /**
+   * Le trigger SQL handle_new_user lit prenom/nom/date_naissance dans les
+   * métadonnées et refuse la création d'un compte de moins de 18 ans (verrou
+   * serveur infalsifiable, en plus de la validation du formulaire).
+   */
   async inscription(
     email: string,
     mdp: string,
     prenom: string,
     nom: string,
+    dateNaissance: string,
   ): Promise<ResultatAuth> {
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password: mdp,
-      options: { data: { prenom, nom } },
+      options: { data: { prenom, nom, date_naissance: dateNaissance } },
     });
     if (error) {
       return { ok: false, erreur: this.messageErreur(error) };
@@ -218,6 +223,9 @@ export class AuthService {
     }
     if (brut.includes('rate limit') || brut.includes('too many')) {
       return 'Trop de tentatives. Réessaie dans quelques minutes.';
+    }
+    if (brut.includes('18 ans') || brut.includes('majeur')) {
+      return 'Tu dois avoir au moins 18 ans pour t’inscrire.';
     }
     return 'Une erreur est survenue. Réessaie.';
   }

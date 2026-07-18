@@ -33,6 +33,22 @@
         </div>
 
         <div class="champ">
+          <label for="date_naissance">Date de naissance</label>
+          <input
+            id="date_naissance"
+            type="date"
+            formControlName="dateNaissance"
+            autocomplete="bday"
+            [max]="dateMaxMajeur"
+          />
+          @if (mineur()) {
+            <p class="champ-erreur">Tu dois avoir au moins 18 ans pour t’inscrire.</p>
+          } @else if (invalide('dateNaissance')) {
+            <p class="champ-erreur">Date de naissance requise.</p>
+          }
+        </div>
+
+        <div class="champ">
           <label for="email">E-mail</label>
           <input
             id="email"
