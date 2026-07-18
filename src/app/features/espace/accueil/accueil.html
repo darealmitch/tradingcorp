@@ -55,7 +55,7 @@
         <a
           class="btn btn-primary btn-compact"
           [routerLink]="[
-            '/espace/parcours',
+            '/parcours',
             stats.prochaines[0].id_section,
             'lecon',
             stats.prochaines[0].id_lecon,
@@ -65,7 +65,7 @@
         </a>
       </div>
       <app-barre-progression [valeur]="pourcentage(stats.progression)" />
-      <a class="panneau-lien" routerLink="/espace/parcours">Voir mon parcours</a>
+      <a class="panneau-lien" routerLink="/parcours">Voir mon parcours</a>
     </section>
   }
 }

@@ -35,6 +35,6 @@ export class Parcours {
    * ouvrable : l'accès reste gouverné par le serveur (états RPC + RLS).
    */
   protected ouvrir(module: ModuleParcours): void {
-    void this.router.navigate(['/espace/parcours', module.id_section]);
+    void this.router.navigate(['/parcours', module.id_section]);
   }
 }

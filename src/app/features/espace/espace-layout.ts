@@ -17,12 +17,6 @@ interface ElementNav {
 
 const ELEMENTS_NAV: ElementNav[] = [
   { libelle: 'Tableau de bord', icone: 'maison', lien: '/espace', exact: true },
-  {
-    libelle: 'Mon parcours',
-    icone: 'lecture',
-    lien: '/espace/parcours',
-    roles: ['apprenant', 'formateur', 'admin'],
-  },
   { libelle: 'Ma formation', icone: 'formation', lien: '/espace/formations', roles: ['apprenant'] },
   {
     libelle: 'Contenus',

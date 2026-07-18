@@ -42,6 +42,10 @@
   color: var(--text);
 }
 
+.header-nav a.est-actif:not(.nav-cta) {
+  color: var(--text);
+}
+
 .nav-deconnexion {
   padding: 0;
   border: 0;

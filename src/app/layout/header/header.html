@@ -1,6 +1,6 @@
 <header
   class="site-header"
-  [class.is-scrolled]="scrolled() || surEspace()"
+  [class.is-scrolled]="scrolled() || pageInterne()"
   [class.is-open]="menuOpen()"
 >
   <div class="container header-inner">
@@ -20,6 +20,9 @@
           >Ouvrir un compte</a
         >
       } @else {
+        <a routerLink="/parcours" routerLinkActive="est-actif" (click)="closeMenu()"
+          >Mon parcours</a
+        >
         <a routerLink="/espace/notifications" (click)="closeMenu()">Notifications</a>
         <a routerLink="/espace/profil" (click)="closeMenu()">Profil</a>
         <button class="nav-deconnexion" type="button" (click)="deconnecter()">Déconnexion</button>

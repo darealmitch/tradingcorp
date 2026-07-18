@@ -99,7 +99,7 @@ export class ModuleIntro {
     if (m.etat === 'verrouille') {
       return;
     }
-    await this.router.navigate(['/espace/parcours', m.id_section]);
+    await this.router.navigate(['/parcours', m.id_section]);
   }
 
   private readonly typesLabel: Record<LeconEtape['type'], string> = {
@@ -122,7 +122,7 @@ export class ModuleIntro {
       this.annonce.set('Termine les étapes précédentes pour y accéder.');
       return;
     }
-    await this.router.navigate(['/espace/parcours', m.id_section, 'lecon', e.id_lecon]);
+    await this.router.navigate(['/parcours', m.id_section, 'lecon', e.id_lecon]);
   }
 
   protected numero(m: ModuleParcours): string {
@@ -160,7 +160,7 @@ export class ModuleIntro {
     const etapes = await this.contenu.etatsLecons(m.id_section);
     const premiere = etapes[0];
     if (premiere) {
-      await this.router.navigate(['/espace/parcours', m.id_section, 'lecon', premiere.id_lecon]);
+      await this.router.navigate(['/parcours', m.id_section, 'lecon', premiere.id_lecon]);
     } else {
       this.annonce.set(`« ${m.titre} » — le contenu de ce module est en préparation.`);
     }

@@ -68,7 +68,7 @@ export class MesFormations {
     if (m.etat === 'verrouille') {
       return;
     }
-    await this.router.navigate(['/espace/parcours', m.id_section]);
+    await this.router.navigate(['/parcours', m.id_section]);
   }
 
   protected numero(m: ModuleParcours): string {

@@ -1,6 +1,12 @@
 /* Introduction de module — lecture posée, espace négatif, lumière discrète.
    Reprend la DA existante (variables globales, Anton, verre sombre). */
 
+/* Page entière : dégage le header fixe (72px) + gouttières (plus de gabarit espace). */
+:host {
+  display: block;
+  padding: 108px 24px 0;
+}
+
 .module {
   position: relative;
   max-width: 760px;
