@@ -1,5 +1,7 @@
 :host {
   display: block;
+  /* Page entière : dégage le header fixe (72px) — plus de gabarit espace. */
+  padding-top: 72px;
 }
 
 .parcours-annonce {

@@ -14,11 +14,14 @@ import { Header } from './layout/header/header';
 export class App {
   private readonly router = inject(Router);
 
-  /** Le footer marketing n'a pas sa place dans l'espace connecté. */
-  protected readonly surEspace = toSignal(
+  /** Le footer marketing n'a pas sa place dans les pages connectées (espace + parcours). */
+  protected readonly pageInterne = toSignal(
     this.router.events.pipe(
       filter((evenement): evenement is NavigationEnd => evenement instanceof NavigationEnd),
-      map((evenement) => evenement.urlAfterRedirects.startsWith('/espace')),
+      map((evenement) => {
+        const url = evenement.urlAfterRedirects;
+        return url.startsWith('/espace') || url.startsWith('/parcours');
+      }),
     ),
     { initialValue: false },
   );

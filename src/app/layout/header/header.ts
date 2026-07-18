@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -8,7 +8,7 @@ import { AuthService } from '../../core/auth/auth.service';
   selector: 'app-header',
   templateUrl: './header.html',
   styleUrl: './header.css',
-  imports: [RouterLink],
+  imports: [RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(window:scroll)': 'onScroll()',
@@ -23,11 +23,14 @@ export class Header {
   protected readonly scrolled = signal(false);
   protected readonly menuOpen = signal(false);
 
-  /** Dans l'espace, le fond du header reste opaque (la sidebar passe dessous). */
-  protected readonly surEspace = toSignal(
+  /** Sur les pages connectées (espace + parcours), le fond du header reste opaque. */
+  protected readonly pageInterne = toSignal(
     this.router.events.pipe(
       filter((evenement): evenement is NavigationEnd => evenement instanceof NavigationEnd),
-      map((evenement) => evenement.urlAfterRedirects.startsWith('/espace')),
+      map((evenement) => {
+        const url = evenement.urlAfterRedirects;
+        return url.startsWith('/espace') || url.startsWith('/parcours');
+      }),
     ),
     { initialValue: false },
   );

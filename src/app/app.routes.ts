@@ -45,6 +45,32 @@ export const routes: Routes = [
     canActivate: [changementMdpRequisGuard],
     title: 'TradingCorp — Nouveau mot de passe',
   },
+  // Parcours pédagogique : page ENTIÈRE, hors du gabarit espace (pas de
+  // sidebar). Accessible depuis le header. Mêmes gardes que l'espace.
+  {
+    path: 'parcours',
+    canActivate: [authGuard],
+    canActivateChild: [motDePasseGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/parcours/parcours').then((m) => m.Parcours),
+        title: 'TradingCorp — Mon parcours',
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./features/parcours/module/module-intro').then((m) => m.ModuleIntro),
+        title: 'TradingCorp — Module',
+      },
+      {
+        path: ':id/lecon/:idLecon',
+        loadComponent: () =>
+          import('./features/parcours/lecon/lecon-player').then((m) => m.LeconPlayer),
+        title: 'TradingCorp — Étape',
+      },
+    ],
+  },
   {
     path: 'espace',
     loadComponent: () => import('./features/espace/espace-layout').then((m) => m.EspaceLayout),
@@ -61,23 +87,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/espace/mes-formations/mes-formations').then((m) => m.MesFormations),
         title: 'TradingCorp — Ma formation',
-      },
-      {
-        path: 'parcours',
-        loadComponent: () => import('./features/parcours/parcours').then((m) => m.Parcours),
-        title: 'TradingCorp — Mon parcours',
-      },
-      {
-        path: 'parcours/:id',
-        loadComponent: () =>
-          import('./features/parcours/module/module-intro').then((m) => m.ModuleIntro),
-        title: 'TradingCorp — Module',
-      },
-      {
-        path: 'parcours/:id/lecon/:idLecon',
-        loadComponent: () =>
-          import('./features/parcours/lecon/lecon-player').then((m) => m.LeconPlayer),
-        title: 'TradingCorp — Étape',
       },
       {
         path: 'notifications',

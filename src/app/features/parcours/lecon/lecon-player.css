@@ -1,6 +1,12 @@
 /* Lecteur d'étape — même DA que l'introduction de module (espace négatif,
    verre sombre, accents dégradé discrets). */
 
+/* Page entière : dégage le header fixe (72px) + gouttières (plus de gabarit espace). */
+:host {
+  display: block;
+  padding: 108px 24px 0;
+}
+
 .lecon {
   max-width: 820px;
   margin-inline: auto;

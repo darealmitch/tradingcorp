@@ -315,7 +315,7 @@ export class LeconPlayer {
     if (!suivante || suivante.etat === 'verrouille') {
       return;
     }
-    await this.router.navigate(['/espace/parcours', this.idSection, 'lecon', suivante.id_lecon]);
+    await this.router.navigate(['/parcours', this.idSection, 'lecon', suivante.id_lecon]);
   }
 
   /** Navigation directe sur une étape de la timeline — jamais une verrouillée. */
@@ -325,6 +325,6 @@ export class LeconPlayer {
       setTimeout(() => this.avertissement.set(null), 2500);
       return;
     }
-    await this.router.navigate(['/espace/parcours', this.idSection, 'lecon', e.id_lecon]);
+    await this.router.navigate(['/parcours', this.idSection, 'lecon', e.id_lecon]);
   }
 }
