@@ -1,6 +1,15 @@
-.roadmap {
+/* Piste de défilement : sa hauteur (posée par le composant, ~85svh par module)
+   fournit la distance de scroll pendant laquelle le viewport reste collé. */
+.roadmap-track {
   position: relative;
-  min-height: calc(100svh - 72px);
+}
+
+/* Viewport de la scène : fixation NATIVE sous le header (72px) pendant toute
+   la traversée de la piste — le compositeur s'en charge, pas de pin JS. */
+.roadmap {
+  position: sticky;
+  top: 72px;
+  height: calc(100svh - 72px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -257,8 +266,13 @@
 
 /* ===== Repli sans animation / reduced-motion : liste verticale nette ===== */
 
+.roadmap-track.est-statique {
+  height: auto !important;
+}
+
 .roadmap.est-statique {
-  min-height: 0;
+  position: static;
+  height: auto;
   padding: 40px 0;
   perspective: none;
 }

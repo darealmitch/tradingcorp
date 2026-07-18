@@ -55,6 +55,7 @@ export class ParcoursRoadmap {
   readonly modules = input.required<ModuleParcours[]>();
   readonly ouvrir = output<ModuleParcours>();
 
+  private readonly track = viewChild.required<ElementRef<HTMLElement>>('track');
   private readonly stage = viewChild.required<ElementRef<HTMLElement>>('stage');
   private readonly aura = viewChild.required<ElementRef<HTMLElement>>('aura');
   private readonly railFill = viewChild.required<ElementRef<HTMLElement>>('railFill');
@@ -122,23 +123,26 @@ export class ParcoursRoadmap {
     gsap.registerPlugin(ScrollTrigger);
     const n = cartes.length;
 
-    // Le pin + scrub pilotent le défilement : on neutralise le scroll-behavior
-    // global (smooth) pour éviter les saccades avec les refresh/sauts de GSAP
-    // (même convention que la galerie d'avis de la landing).
+    // Le scrub pilote la caméra : on neutralise le scroll-behavior global
+    // (smooth) pour éviter les saccades avec les sauts programmés (même
+    // convention que la galerie d'avis de la landing).
     const root = document.documentElement;
     root.style.scrollBehavior = 'auto';
 
+    // Fixation NATIVE : la piste fournit la distance de défilement, le
+    // viewport .roadmap y reste collé en position:sticky (CSS). Aucun pin JS —
+    // c'était lui qui produisait les sauts d'accroche/décroche. ScrollTrigger
+    // ne fait plus que LIRE la progression de la piste pour animer les cartes.
+    const track = this.track().nativeElement;
+    track.style.height = `calc(100svh - 72px + ${n * 85}svh)`;
+
     const trigger = ScrollTrigger.create({
-      trigger: this.stage().nativeElement,
-      // Épinglage SOUS le header fixe (72px) pour éviter que l'en-tête de la
-      // roadmap glisse derrière lui pendant toute la durée du pin.
+      trigger: track,
+      // De l'accroche du sticky (haut de piste sous le header de 72px)…
       start: 'top 72px',
-      // Distance généreuse par module : la caméra avance lentement par cran de
-      // molette, le geste reste doux (62 % créait des sauts brusques).
-      end: `+=${n * 85}%`,
-      pin: true,
+      // …à son relâchement (bas de piste au bas du viewport).
+      end: 'bottom bottom',
       scrub: 0.9,
-      anticipatePin: 0.5,
       onUpdate: (self) => {
         this.camera = self.progress * (n - 1);
         this.render(cartes);
