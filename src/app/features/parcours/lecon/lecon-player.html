@@ -202,10 +202,13 @@
       <button
         class="btn btn-ghost lecon-suivante"
         type="button"
-        [disabled]="!l.terminee_le && suivante.etat === 'verrouille'"
+        [disabled]="suivante.etat === 'verrouille'"
         (click)="allerSuivante()"
       >
         Étape suivante : {{ suivante.titre }}
+        @if (suivante.etat === 'verrouille') {
+          <app-icone nom="cadenas" [taille]="14" />
+        }
       </button>
     }
   </div>

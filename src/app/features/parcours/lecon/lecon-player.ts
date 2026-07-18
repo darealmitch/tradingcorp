@@ -6,6 +6,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LeconEtape,
@@ -63,23 +64,30 @@ export class LeconPlayer {
   };
 
   constructor() {
-    void this.charger();
+    // Réagit aux changements d'URL (étape suivante, timeline, retour
+    // navigateur) : le composant est réutilisé par le routeur, le rechargement
+    // doit donc suivre les paramètres — jamais d'état périmé.
+    this.route.paramMap
+      .pipe(takeUntilDestroyed())
+      .subscribe((params) => void this.charger(params.get('id'), params.get('idLecon')));
   }
 
   protected typeLabel(l: LeconJouable): string {
     return this.typesLabel[l.type];
   }
 
-  private async charger(): Promise<void> {
-    const idSection = this.route.snapshot.paramMap.get('id');
-    const idLecon = this.route.snapshot.paramMap.get('idLecon');
+  private async charger(idSection: string | null, idLecon: string | null): Promise<void> {
     if (!idSection || !idLecon) {
       this.chargement.set(false);
       return;
     }
+    this.chargement.set(true);
     this.idSection = idSection;
     this.videoFinie.set(false);
     this.tempsMax = 0;
+    this.questions.set([]);
+    this.reponses.set({});
+    this.resultatQuiz.set(null);
 
     const [lecon, etapes] = await Promise.all([
       this.contenu.chargerLeconJouable(idLecon),
@@ -297,12 +305,17 @@ export class LeconPlayer {
     return i >= 0 && i < liste.length - 1 ? liste[i + 1] : null;
   }
 
+  /**
+   * L'étape suivante ne s'ouvre que si le SERVEUR la dit accessible : pour un
+   * apprenant standard elle reste 'verrouille' tant que l'étape courante n'est
+   * pas validée ; démo/formateur/admin ne voient jamais 'verrouille' (RPC).
+   */
   protected async allerSuivante(): Promise<void> {
     const suivante = this.etapeSuivante();
-    if (suivante) {
-      await this.router.navigate(['/espace/parcours', this.idSection, 'lecon', suivante.id_lecon]);
-      await this.charger();
+    if (!suivante || suivante.etat === 'verrouille') {
+      return;
     }
+    await this.router.navigate(['/espace/parcours', this.idSection, 'lecon', suivante.id_lecon]);
   }
 
   /** Navigation directe sur une étape de la timeline — jamais une verrouillée. */
@@ -313,6 +326,5 @@ export class LeconPlayer {
       return;
     }
     await this.router.navigate(['/espace/parcours', this.idSection, 'lecon', e.id_lecon]);
-    await this.charger();
   }
 }

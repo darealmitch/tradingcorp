@@ -64,17 +64,16 @@ Deno.serve(async (req) => {
       return json({ erreur: 'Quiz introuvable.' }, 404);
     }
 
-    // Défense en profondeur : le quiz d'une étape ne se corrige que si la
-    // vidéo de cette étape a été marquée terminée par l'apprenant.
+    // Défense en profondeur : un quiz est un CHAPITRE à part entière — il ne
+    // se corrige que si ce chapitre est déverrouillé pour l'apprenant
+    // (déblocage séquentiel serveur ; démo et staff toujours autorisés).
+    // Appel en contexte utilisateur : lecon_debloquee lit auth.uid().
     if (quiz.id_lecon) {
-      const { data: progression } = await admin
-        .from('progression_lecons')
-        .select('video_terminee_le')
-        .eq('id_lecon', quiz.id_lecon)
-        .eq('id_profil', user.id)
-        .maybeSingle();
-      if (!progression?.video_terminee_le) {
-        return json({ erreur: 'Termine la vidéo avant de passer le quiz.' }, 403);
+      const { data: debloquee } = await porteur.rpc('lecon_debloquee', {
+        p_id_lecon: quiz.id_lecon,
+      });
+      if (!debloquee) {
+        return json({ erreur: 'Termine les chapitres précédents avant de passer ce quiz.' }, 403);
       }
     }
 

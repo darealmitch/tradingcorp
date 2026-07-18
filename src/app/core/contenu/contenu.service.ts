@@ -92,22 +92,13 @@ export class ContenuService {
     };
   }
 
-  /**
-   * Un module du parcours (contenu d'intro + état). Passe par la même RPC :
-   * le serveur reste l'unique autorité, le front ne débloque jamais rien.
-   */
-  async chargerModule(idSection: string): Promise<ModuleParcours | null> {
-    const parcours = await this.chargerParcours();
-    return parcours?.modules.find((m) => m.id_section === idSection) ?? null;
-  }
-
   /** Modules (sections) et leurs étapes, dans l'ordre du programme. */
   async chargerStructure(): Promise<Module[]> {
     const { data } = await this.supabase
       .from('sections')
       .select(
         'id_section, titre, description, position, est_publiee, ' +
-          'lecons(id_lecon, titre, position, duree_s, est_publiee, apercu_gratuit, ' +
+          'lecons(id_lecon, id_section, titre, position, duree_s, est_publiee, apercu_gratuit, ' +
           'video_provider, video_provider_id, pdf_public_id)',
       )
       .order('position')
@@ -271,31 +262,6 @@ export class ContenuService {
       terminees: terminees.get(profil.id_profil) ?? 0,
       total,
     }));
-  }
-
-  /** Quiz accessibles au profil connecté (RLS : inscription active, ou staff). */
-  async compterQuiz(): Promise<number> {
-    const { count } = await this.supabase
-      .from('quiz')
-      .select('id_quiz', { count: 'exact', head: true });
-    return count ?? 0;
-  }
-
-  /** Quiz réussis par le profil connecté (RLS : ses tentatives). */
-  async compterQuizReussis(): Promise<number> {
-    const { count } = await this.supabase
-      .from('tentatives_quiz')
-      .select('id_tentative', { count: 'exact', head: true })
-      .eq('reussi', true);
-    return count ?? 0;
-  }
-
-  /** Certificats du profil connecté (RLS : les siens). */
-  async compterMesCertificats(): Promise<number> {
-    const { count } = await this.supabase
-      .from('certificats')
-      .select('id_certificat', { count: 'exact', head: true });
-    return count ?? 0;
   }
 
   /** Dernières inscriptions à une formation (staff). */

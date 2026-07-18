@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   EtatLecon,
@@ -52,24 +53,53 @@ export class ModuleIntro {
 
   protected readonly chargement = signal(true);
   protected readonly module = signal<ModuleParcours | null>(null);
+  protected readonly modules = signal<ModuleParcours[]>([]);
   protected readonly etapes = signal<LeconEtape[]>([]);
   protected readonly annonce = signal<string | null>(null);
   protected readonly ouverture = signal(false);
 
+  /** Modules voisins dans l'ordre du parcours (navigation inter-modules). */
+  protected readonly modulePrecedent = computed(() => this.voisin(-1));
+  protected readonly moduleSuivant = computed(() => this.voisin(1));
+
   constructor() {
-    void this.charger(this.route.snapshot.paramMap.get('id'));
+    // Le routeur réutilise ce composant d'un module à l'autre : on recharge à
+    // chaque changement de paramètre (navigation précédent/suivant comprise).
+    this.route.paramMap
+      .pipe(takeUntilDestroyed())
+      .subscribe((params) => void this.charger(params.get('id')));
   }
 
   private async charger(id: string | null): Promise<void> {
     if (id) {
-      const [module, etapes] = await Promise.all([
-        this.contenu.chargerModule(id),
+      this.chargement.set(true);
+      const [parcours, etapes] = await Promise.all([
+        this.contenu.chargerParcours(),
         this.contenu.etatsLecons(id),
       ]);
-      this.module.set(module);
+      this.modules.set(parcours?.modules ?? []);
+      this.module.set(parcours?.modules.find((m) => m.id_section === id) ?? null);
       this.etapes.set(etapes);
     }
     this.chargement.set(false);
+  }
+
+  private voisin(decalage: -1 | 1): ModuleParcours | null {
+    const courant = this.module();
+    const liste = this.modules();
+    if (!courant) {
+      return null;
+    }
+    const i = liste.findIndex((m) => m.id_section === courant.id_section);
+    return i >= 0 ? (liste[i + decalage] ?? null) : null;
+  }
+
+  /** Navigue vers un module voisin — jamais un module verrouillé. */
+  protected async allerModule(m: ModuleParcours): Promise<void> {
+    if (m.etat === 'verrouille') {
+      return;
+    }
+    await this.router.navigate(['/espace/parcours', m.id_section]);
   }
 
   private readonly typesLabel: Record<LeconEtape['type'], string> = {

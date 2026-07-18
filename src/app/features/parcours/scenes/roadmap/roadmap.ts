@@ -133,9 +133,11 @@ export class ParcoursRoadmap {
       // Épinglage SOUS le header fixe (72px) pour éviter que l'en-tête de la
       // roadmap glisse derrière lui pendant toute la durée du pin.
       start: 'top 72px',
-      end: `+=${n * 62}%`,
+      // Distance généreuse par module : la caméra avance lentement par cran de
+      // molette, le geste reste doux (62 % créait des sauts brusques).
+      end: `+=${n * 85}%`,
       pin: true,
-      scrub: 0.6,
+      scrub: 0.9,
       anticipatePin: 0.5,
       onUpdate: (self) => {
         this.camera = self.progress * (n - 1);
@@ -157,6 +159,9 @@ export class ParcoursRoadmap {
     cartes.forEach((el, i) => {
       const d = i - cam;
       const abs = Math.abs(d);
+      // Flou plafonné et quantifié (pas de 0,5 px) : `filter: blur` recalculé
+      // en continu sur chaque carte était la première cause de saccades.
+      const flou = Math.round(Math.min(3, abs * 1.2) * 2) / 2;
       gsap.set(el, {
         xPercent: -50,
         yPercent: -50,
@@ -164,7 +169,7 @@ export class ParcoursRoadmap {
         scale: 1 / (1 + abs * 0.17),
         opacity: Math.max(0, 1 - abs * 0.3),
         rotateX: Math.max(-22, Math.min(22, d * -6)),
-        filter: `blur(${Math.min(7, abs * 1.6)}px)`,
+        filter: flou > 0 ? `blur(${flou}px)` : 'none',
         zIndex: 200 - Math.round(abs * 10),
       });
     });

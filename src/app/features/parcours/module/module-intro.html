@@ -98,6 +98,41 @@
         <p class="module-annonce" role="status">{{ message }}</p>
       }
     </section>
+
+    <!-- Navigation inter-modules : états serveur, un module verrouillé reste inerte -->
+    <nav class="module-nav" aria-label="Navigation entre les modules">
+      @if (modulePrecedent(); as prec) {
+        <button
+          class="btn btn-ghost module-nav-btn"
+          type="button"
+          [disabled]="prec.etat === 'verrouille'"
+          (click)="allerModule(prec)"
+        >
+          <app-icone nom="fleche" [taille]="14" class="est-retourne" />
+          <span class="module-nav-sens">Module précédent</span>
+          <span class="module-nav-titre">{{ prec.titre }}</span>
+        </button>
+      } @else {
+        <span></span>
+      }
+
+      @if (moduleSuivant(); as suiv) {
+        <button
+          class="btn btn-ghost module-nav-btn est-suivant"
+          type="button"
+          [disabled]="suiv.etat === 'verrouille'"
+          (click)="allerModule(suiv)"
+        >
+          <span class="module-nav-sens">Module suivant</span>
+          <span class="module-nav-titre">{{ suiv.titre }}</span>
+          @if (suiv.etat === 'verrouille') {
+            <app-icone nom="cadenas" [taille]="14" />
+          } @else {
+            <app-icone nom="fleche" [taille]="14" />
+          }
+        </button>
+      }
+    </nav>
   </article>
 } @else {
   <div class="module-etat">
