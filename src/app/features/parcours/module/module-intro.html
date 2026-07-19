@@ -45,11 +45,16 @@
       <section class="module-chapitres" appReveal revealDelay="200">
         <h2 class="module-sous-titre">Chapitres du module</h2>
         <ol class="chapitres-liste">
-          <li class="chapitre est-intro">
+          <li class="chapitre est-intro" [class.est-termine]="introValidee()">
+            @if (introValidee()) {
+              <app-icone nom="coche" [taille]="16" />
+            } @else {
+              <app-icone nom="lecture" [taille]="16" />
+            }
             <span class="chapitre-titre">Présentation du module</span>
-            <span class="chapitre-type">Article</span>
+            <span class="chapitre-type">Introduction</span>
           </li>
-          @for (e of etapes(); track e.id_lecon) {
+          @for (e of chapitres(); track e.id_lecon) {
             <li class="chapitre" [class]="'est-' + e.etat">
               <button
                 type="button"
@@ -89,9 +94,12 @@
         class="btn btn-primary module-cta"
         type="button"
         [disabled]="actionDesactivee(m) || ouverture()"
-        (click)="demarrer(m)"
+        (click)="suivant(m)"
       >
-        {{ ouverture() ? 'Ouverture…' : action(m) }}
+        {{ ouverture() ? 'Ouverture…' : introValidee() ? 'Continuer' : 'Suivant' }}
+        @if (!ouverture()) {
+          <app-icone nom="fleche" [taille]="16" />
+        }
       </button>
 
       @if (annonce(); as message) {

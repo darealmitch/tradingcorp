@@ -6,8 +6,8 @@
 
 export type VideoProvider = 'youtube' | 'bunny' | 'cloudinary';
 
-/** Type d'un chapitre : contenu texte, vidéo, ou quiz autonome. */
-export type TypeChapitre = 'article' | 'video' | 'quiz';
+/** Type d'un chapitre : présentation du module, contenu texte, vidéo, ou quiz. */
+export type TypeChapitre = 'intro' | 'article' | 'video' | 'quiz';
 
 /** Ressource complémentaire d'une leçon (PDF, image, fichier…). */
 export interface Ressource {
@@ -25,6 +25,7 @@ export interface LeconResume {
   id_lecon: string;
   id_section: string;
   titre: string;
+  type: TypeChapitre;
   position: number;
   duree_s: number | null;
   est_publiee: boolean;

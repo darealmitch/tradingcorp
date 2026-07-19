@@ -52,15 +52,7 @@
             Leçon {{ stats.progression.terminees + 1 }} sur {{ stats.progression.total }}
           </p>
         </div>
-        <a
-          class="btn btn-primary btn-compact"
-          [routerLink]="[
-            '/parcours',
-            stats.prochaines[0].id_section,
-            'lecon',
-            stats.prochaines[0].id_lecon,
-          ]"
-        >
+        <a class="btn btn-primary btn-compact" [routerLink]="lienReprise(stats.prochaines[0])">
           Reprendre
         </a>
       </div>

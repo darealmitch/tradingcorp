@@ -187,6 +187,16 @@ export class Accueil {
       : Math.round((progression.terminees / progression.total) * 100);
   }
 
+  /**
+   * Cible de « Reprendre » : la page du module pour une introduction (le lecteur
+   * ne rend pas ce type), la leçon elle-même sinon.
+   */
+  protected lienReprise(lecon: LeconResume): unknown[] {
+    return lecon.type === 'intro'
+      ? ['/parcours', lecon.id_section]
+      : ['/parcours', lecon.id_section, 'lecon', lecon.id_lecon];
+  }
+
   protected nomComplet(personne: { prenom: string; nom: string } | null): string {
     return personne ? `${personne.prenom} ${personne.nom}`.trim() : 'Utilisateur supprimé';
   }

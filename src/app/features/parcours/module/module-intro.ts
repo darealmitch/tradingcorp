@@ -26,13 +26,6 @@ const ETAT_LECON_ICONE: Record<EtatLecon, string> = {
   termine: 'coche',
 };
 
-const ETAT_ACTION: Record<EtatModule, string> = {
-  verrouille: 'Termine le module précédent',
-  debloque: 'Commencer le module',
-  en_cours: 'Reprendre le module',
-  termine: 'Revoir le module',
-};
-
 /**
  * Introduction d'un module — page GÉNÉRIQUE : titre, accroche, texte et
  * objectifs viennent de la base (table `sections`), jamais du code. Les 8
@@ -61,6 +54,11 @@ export class ModuleIntro {
   /** Modules voisins dans l'ordre du parcours (navigation inter-modules). */
   protected readonly modulePrecedent = computed(() => this.voisin(-1));
   protected readonly moduleSuivant = computed(() => this.voisin(1));
+
+  /** L'étape d'introduction (ancre de progression) — jamais un chapitre du lecteur. */
+  protected readonly intro = computed(() => this.etapes().find((e) => e.type === 'intro') ?? null);
+  /** Chapitres jouables du module (hors introduction). */
+  protected readonly chapitres = computed(() => this.etapes().filter((e) => e.type !== 'intro'));
 
   constructor() {
     // Le routeur réutilise ce composant d'un module à l'autre : on recharge à
@@ -103,6 +101,7 @@ export class ModuleIntro {
   }
 
   private readonly typesLabel: Record<LeconEtape['type'], string> = {
+    intro: 'Introduction',
     article: 'Article',
     video: 'Vidéo',
     quiz: 'Quiz',
@@ -141,27 +140,42 @@ export class ModuleIntro {
     return ETAT_LABEL[m.etat];
   }
 
-  protected action(m: ModuleParcours): string {
-    return m.total_lecons === 0 ? 'Contenu en préparation' : ETAT_ACTION[m.etat];
+  /** Introduction déjà validée → le module est en cours ou terminé. */
+  protected introValidee(): boolean {
+    return this.intro()?.etat === 'termine';
   }
 
-  /** Rien à ouvrir tant que le module n'a pas d'étape publiée. */
+  /** Un module verrouillé ne se démarre pas ; sinon « Suivant » est actif. */
   protected actionDesactivee(m: ModuleParcours): boolean {
-    return m.etat === 'verrouille' || m.total_lecons === 0;
+    return m.etat === 'verrouille';
   }
 
   protected pourcent(m: ModuleParcours): number {
     return m.total_lecons > 0 ? Math.round((m.lecons_terminees / m.total_lecons) * 100) : 0;
   }
 
-  /** Ouvre la première étape vidéo du module (jamais celles verrouillées). */
-  protected async demarrer(m: ModuleParcours): Promise<void> {
+  /**
+   * Bouton « Suivant » : valide l'étape d'introduction (progression + déblocage
+   * de la 1re leçon, via la logique serveur existante) puis redirige vers cette
+   * 1re leçon — sans rechargement. Idempotent si l'intro est déjà validée.
+   */
+  protected async suivant(m: ModuleParcours): Promise<void> {
+    if (m.etat === 'verrouille' || this.ouverture()) {
+      return;
+    }
     this.ouverture.set(true);
-    const etapes = await this.contenu.etatsLecons(m.id_section);
-    const premiere = etapes[0];
+
+    const intro = this.intro();
+    if (intro && intro.etat !== 'termine') {
+      await this.contenu.terminerLecon(intro.id_lecon);
+    }
+
+    const premiere = this.chapitres()[0];
     if (premiere) {
       await this.router.navigate(['/parcours', m.id_section, 'lecon', premiere.id_lecon]);
     } else {
+      // Aucune leçon jouable encore publiée : on reste et on rafraîchit l'état.
+      await this.charger(m.id_section);
       this.annonce.set(`« ${m.titre} » — le contenu de ce module est en préparation.`);
     }
     this.ouverture.set(false);
