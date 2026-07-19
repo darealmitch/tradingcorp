@@ -98,7 +98,7 @@ export class ContenuService {
       .from('sections')
       .select(
         'id_section, titre, description, position, est_publiee, ' +
-          'lecons(id_lecon, id_section, titre, position, duree_s, est_publiee, apercu_gratuit, ' +
+          'lecons(id_lecon, id_section, titre, type, position, duree_s, est_publiee, apercu_gratuit, ' +
           'video_provider, video_provider_id, pdf_public_id)',
       )
       .order('position')

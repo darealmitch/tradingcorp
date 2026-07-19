@@ -58,6 +58,7 @@ export class LeconPlayer {
   protected idSection = '';
 
   private readonly typesLabel: Record<LeconJouable['type'], string> = {
+    intro: 'Introduction',
     article: 'Article',
     video: 'Vidéo',
     quiz: 'Quiz',
@@ -93,8 +94,17 @@ export class LeconPlayer {
       this.contenu.chargerLeconJouable(idLecon),
       this.contenu.etatsLecons(idSection),
     ]);
+
+    // L'introduction n'est pas un chapitre du lecteur : elle vit sur la page
+    // du module. Aucun lien n'y mène ; garde défensif si l'URL est forcée.
+    if (lecon?.type === 'intro') {
+      await this.router.navigate(['/parcours', idSection]);
+      return;
+    }
+
     this.lecon.set(lecon);
-    this.etapes.set(etapes);
+    // La timeline ne montre que les chapitres jouables (l'intro est exclue).
+    this.etapes.set(etapes.filter((e) => e.type !== 'intro'));
     this.chargement.set(false);
 
     if (lecon?.id_quiz) {
