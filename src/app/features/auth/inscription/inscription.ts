@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, GOOGLE_OAUTH_ACTIF } from '../../../core/auth/auth.service';
+import { Logo } from '../../../shared/ui/logo';
 
 /** Les deux champs mot de passe doivent correspondre. */
 function mdpIdentiques(groupe: AbstractControl): ValidationErrors | null {
@@ -37,7 +38,7 @@ function ageMinimum(min: number): (ctrl: AbstractControl) => ValidationErrors | 
   selector: 'app-inscription',
   templateUrl: './inscription.html',
   styleUrl: '../auth-forms.css',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Inscription {

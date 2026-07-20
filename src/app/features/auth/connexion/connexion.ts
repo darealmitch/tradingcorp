@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { ReactiveFormsModule, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, GOOGLE_OAUTH_ACTIF } from '../../../core/auth/auth.service';
+import { Logo } from '../../../shared/ui/logo';
 
 @Component({
   selector: 'app-connexion',
   templateUrl: './connexion.html',
   styleUrl: '../auth-forms.css',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Connexion {

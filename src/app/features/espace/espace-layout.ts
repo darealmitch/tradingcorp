@@ -4,6 +4,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { NotificationsService } from '../../core/notifications/notifications.service';
 import { Role } from '../../core/auth/profil.model';
 import { Icone } from '../../shared/ui/icone';
+import { Logo } from '../../shared/ui/logo';
 
 interface ElementNav {
   libelle: string;
@@ -46,7 +47,7 @@ const ELEMENTS_NAV: ElementNav[] = [
   selector: 'app-espace-layout',
   templateUrl: './espace-layout.html',
   styleUrl: './espace-layout.css',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EspaceLayout {
