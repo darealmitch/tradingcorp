@@ -9,11 +9,11 @@ captures d'écran, illustrations, images de formation, ressources pédagogiques.
 
 ## Architecture de sécurité
 
-| Valeur | Nature | Emplacement |
-|---|---|---|
-| **Cloud Name** | Public | `src/environments/environment.ts` et `environment.prod.ts` → `cloudinaryCloudName` |
-| **API Key** | Non secrète mais serveur | Secret d'Edge Function `CLOUDINARY_API_KEY` |
-| **API Secret** | **Secrète** | Secret d'Edge Function `CLOUDINARY_API_SECRET` |
+| Valeur         | Nature                   | Emplacement                                                                        |
+| -------------- | ------------------------ | ---------------------------------------------------------------------------------- |
+| **Cloud Name** | Public                   | `src/environments/environment.ts` et `environment.prod.ts` → `cloudinaryCloudName` |
+| **API Key**    | Non secrète mais serveur | Secret d'Edge Function `CLOUDINARY_API_KEY`                                        |
+| **API Secret** | **Secrète**              | Secret d'Edge Function `CLOUDINARY_API_SECRET`                                     |
 
 Aucune clé secrète n'entre dans le build Angular : le front ne connaît que le
 Cloud Name (pour construire les URLs de livraison). Les uploads sont **signés**
@@ -23,33 +23,42 @@ l'API Secret.
 ## Où renseigner les valeurs
 
 ### 1. Cloud Name (public) — front
+
 Dans `src/environments/environment.ts` **et** `src/environments/environment.prod.ts` :
+
 ```ts
-cloudinaryCloudName: 'ton-cloud-name'
+cloudinaryCloudName: 'ton-cloud-name';
 ```
 
 ### 2. API Key + API Secret (serveur) — Edge Functions
+
 Copier l'exemple et renseigner les 3 valeurs (Dashboard Cloudinary → Settings → API Keys) :
+
 ```bash
 cp supabase/functions/.env.example supabase/functions/.env
 ```
+
 ```
 CLOUDINARY_CLOUD_NAME=ton-cloud-name
 CLOUDINARY_API_KEY=xxxxxxxxxxxx
 CLOUDINARY_API_SECRET=xxxxxxxxxxxxxxxxxxxxxxxx
 ```
+
 `supabase/functions/.env` est **ignoré par git** — il ne sera jamais committé.
 
 Puis pousser les secrets vers Supabase (le projet doit être lié : `npx supabase link --project-ref swzjzwymzjhdatcobibs`) :
+
 ```bash
 npx supabase secrets set --env-file ./supabase/functions/.env
 ```
+
 (ou Dashboard → Edge Functions → Secrets, une variable à la fois.)
 
 ## Déploiement de l'Edge Function
 
 La fonction de signature exige un JWT (réservée au staff) — **ne pas** utiliser
 `--no-verify-jwt` :
+
 ```bash
 npx supabase functions deploy cloudinary-signature
 ```

@@ -1,6 +1,6 @@
 // Types des API intégrées au runtime Edge de Supabase (Deno.serve, Deno.env).
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 // Correction de quiz — seule voie pour valider une étape. Le client envoie ses
 // réponses, jamais les bonnes réponses (reponses.correcte n'est lue qu'ici, en
