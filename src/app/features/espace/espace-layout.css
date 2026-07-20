@@ -26,45 +26,20 @@
 
 .marque {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 6px 18px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 4px 6px 18px;
   margin-bottom: 12px;
   border-bottom: 1px solid var(--line);
   overflow: hidden;
-}
-
-.marque-logo {
-  display: grid;
-  place-content: center;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--gradient);
-  color: #05060b;
-  font-family: var(--font-title);
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-}
-
-.marque-texte {
-  display: flex;
-  flex-direction: column;
-  white-space: nowrap;
-  transition: opacity 0.2s;
-}
-
-.marque-nom {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 700;
 }
 
 .marque-role {
   font-size: 0.75rem;
   color: var(--muted);
   text-transform: capitalize;
+  transition: opacity 0.2s;
 }
 
 /* ===== Navigation ===== */
@@ -123,10 +98,15 @@
   transition: opacity 0.2s;
 }
 
-.est-replie .lien-libelle,
-.est-replie .marque-texte {
+.est-replie .lien-libelle {
   opacity: 0;
   pointer-events: none;
+}
+
+/* Replié (76px) : le wordmark ne tient pas — on masque la marque (la barre
+   supérieure globale porte toujours le logo). */
+.est-replie .marque {
+  display: none;
 }
 
 .pastille {
@@ -189,10 +169,13 @@
     width: 76px;
   }
 
-  .lateral .lien-libelle,
-  .lateral .marque-texte {
+  .lateral .lien-libelle {
     opacity: 0;
     pointer-events: none;
+  }
+
+  .lateral .marque {
+    display: none;
   }
 
   .lateral .pastille {

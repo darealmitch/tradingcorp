@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { Logo } from '../../../shared/ui/logo';
 
 /** Les deux champs mot de passe doivent correspondre. */
 function mdpIdentiques(groupe: AbstractControl): ValidationErrors | null {
@@ -20,7 +21,7 @@ function mdpIdentiques(groupe: AbstractControl): ValidationErrors | null {
   selector: 'app-nouveau-mdp',
   templateUrl: './nouveau-mdp.html',
   styleUrl: '../auth-forms.css',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NouveauMdp {

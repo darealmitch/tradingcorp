@@ -1,11 +1,10 @@
 <div class="espace-layout">
   <aside class="lateral" [class.est-replie]="replie()">
     <a class="marque" routerLink="/espace" title="Tableau de bord">
-      <span class="marque-logo" aria-hidden="true">TC</span>
-      <span class="marque-texte">
-        <span class="marque-nom">TradingCorp</span>
-        <span class="marque-role">{{ auth.profil()?.role }}</span>
-      </span>
+      <app-logo [taille]="17" />
+      @if (auth.profil()?.role; as role) {
+        <span class="marque-role">{{ role }}</span>
+      }
     </a>
 
     <nav class="lateral-nav" aria-label="Navigation de l'espace">

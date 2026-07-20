@@ -3,12 +3,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { Logo } from '../../shared/ui/logo';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.html',
   styleUrl: './header.css',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(window:scroll)': 'onScroll()',

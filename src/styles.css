@@ -116,18 +116,8 @@ h3 {
 /* ===== Marque ===== */
 
 .brand {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--text);
-}
-
-.brand span {
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ===== Boutons ===== */
