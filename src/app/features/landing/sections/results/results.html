@@ -78,7 +78,13 @@
     </button>
 
     <div class="lightbox-inner" (click)="$event.stopPropagation()">
-      <button class="bouton-fermeture" type="button" (click)="close()" aria-label="Fermer" autofocus>
+      <button
+        class="bouton-fermeture"
+        type="button"
+        (click)="close()"
+        aria-label="Fermer"
+        autofocus
+      >
         <app-icone nom="fermer" [taille]="18" />
       </button>
       @for (frame of [activeIndex()]; track frame) {

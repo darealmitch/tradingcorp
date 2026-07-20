@@ -1,0 +1,13 @@
+# Artefacts générés / build — jamais formatés
+dist/
+docs/
+.angular/
+coverage/
+out-tsc/
+
+# État local Supabase CLI
+supabase/.temp/
+
+# Fichiers minifiés
+*.min.js
+*.min.css
