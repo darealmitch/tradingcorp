@@ -2,6 +2,8 @@
 
 # Compiled output
 /dist
+# Le site publié est construit par la CI à chaque push — jamais versionné.
+/docs
 /tmp
 /out-tsc
 /bazel-out

@@ -9,6 +9,7 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
+import { environment } from '../../../../../environments/environment';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 import { Icone } from '../../../../shared/ui/icone';
@@ -146,6 +147,8 @@ export class Trainer {
     this.lastTrigger?.focus({ preventScroll: true });
     this.lastTrigger = null;
   }
+
+  protected readonly presentationVideoUrl = environment.bunnyPresentationVideoUrl;
 
   /** Compteurs animés au premier passage dans le viewport. */
   private initCounters(reduced: boolean): void {

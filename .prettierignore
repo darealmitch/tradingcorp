@@ -1,6 +1,5 @@
 # Artefacts générés / build — jamais formatés
 dist/
-docs/
 .angular/
 coverage/
 out-tsc/

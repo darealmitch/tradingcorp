@@ -1,4 +1,8 @@
-name: CI
+name: CI & Déploiement
+
+# Pipeline UNIQUE : vérifie à chaque push/PR, et publie sur GitHub Pages
+# uniquement depuis `main`. Le site publié est TOUJOURS construit à partir du
+# commit courant — aucun dossier de build n'est versionné.
 
 on:
   push:
@@ -6,6 +10,16 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement à la fois ; deux pushes rapprochés ne se doublent pas.
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -23,12 +37,39 @@ jobs:
         run: npm ci
 
       - name: Formatage (Prettier)
-        run: npx prettier --check "src/**/*.{ts,html,css,json}"
+        run: npx prettier --check .
 
       - name: Tests unitaires
         run: npx ng test
         env:
           CI: 'true'
 
+      # base-href = chemin du site Pages (https://<user>.github.io/tradingcorp/).
       - name: Build de production
-        run: npx ng build
+        run: npx ng build --base-href /tradingcorp/
+
+      # GitHub Pages sert 404.html sur toute URL inconnue : en y plaçant
+      # l'index, les routes Angular profondes (/parcours, /espace…) fonctionnent.
+      - name: Repli SPA pour les routes profondes
+        run: cp dist/TradingCorp/browser/index.html dist/TradingCorp/browser/404.html
+
+      - name: Préparer l'artefact Pages
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/TradingCorp/browser
+
+  deploy:
+    # Publication seulement après une vérification verte, et seulement sur main.
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Déployer sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
