@@ -15,11 +15,7 @@
             alt="Portrait de Keryan André, formateur TradingCorp"
           />
         </div>
-        <button
-          type="button"
-          class="trainer-play"
-          (click)="openVideo('images/formateur/presentation.mp4', $event)"
-        >
+        <button type="button" class="trainer-play" (click)="openPresentation($event)">
           <span class="trainer-play-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
           </span>
@@ -114,7 +110,7 @@
   </div>
 </section>
 
-@if (activeVideo(); as src) {
+@if (activeVideo(); as video) {
   <div
     class="video-lightbox"
     role="dialog"
@@ -134,7 +130,17 @@
       >
         <app-icone nom="fermer" [taille]="18" />
       </button>
-      <video [src]="src" controls autoplay playsinline preload="metadata"></video>
+      @if (video.type === 'embed') {
+        <iframe
+          [src]="video.src"
+          title="Vidéo de présentation"
+          loading="lazy"
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      } @else {
+        <video [src]="video.src" controls autoplay playsinline preload="metadata"></video>
+      }
     </div>
   </div>
 }

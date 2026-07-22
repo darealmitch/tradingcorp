@@ -9,6 +9,7 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../../environments/environment';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
@@ -82,6 +83,14 @@ const MILESTONES: Milestone[] = [
   },
 ];
 
+/**
+ * Vidéo ouverte en grand. Deux natures :
+ *  - `fichier` : URL directe lisible par <video> (témoignages Cloudinary) ;
+ *  - `embed`   : lecteur Bunny Stream en <iframe> (la présentation, hébergée
+ *                sur Bunny — trop lourde pour le dépôt, et servie en HLS).
+ */
+type VideoOuverte = { type: 'fichier'; src: string } | { type: 'embed'; src: SafeResourceUrl };
+
 /** Retours clients filmés après un entretien téléphonique avec Keryan. */
 const TESTIMONIALS = [
   { pid: 'keryan-01_okdcno', alt: 'Retour client après entretien — 1' },
@@ -113,8 +122,16 @@ export class Trainer {
   /** Valeurs affichées des compteurs (formatées). */
   protected readonly values = signal(STATS.map(() => '0'));
 
-  /** Source de la vidéo ouverte en grand (null = lightbox fermée). */
-  protected readonly activeVideo = signal<string | null>(null);
+  /** Vidéo ouverte en grand (null = lightbox fermée). */
+  protected readonly activeVideo = signal<VideoOuverte | null>(null);
+
+  /**
+   * Lecteur Bunny de la vidéo de présentation. L'URL d'embed est assainie une
+   * fois : Angular refuse toute URL non explicitement approuvée dans un iframe.
+   */
+  private readonly presentationEmbed: SafeResourceUrl = inject(
+    DomSanitizer,
+  ).bypassSecurityTrustResourceUrl(`${environment.bunnyPresentationVideoUrl}?autoplay=true`);
 
   /** Élément déclencheur, re-focalisé à la fermeture. */
   private lastTrigger: HTMLElement | null = null;
@@ -130,10 +147,19 @@ export class Trainer {
     this.destroyRef.onDestroy(() => (document.body.style.overflow = ''));
   }
 
-  /** Ouvre une vidéo en grand (présentation ou témoignage) et fige le défilement. */
+  /** Ouvre un témoignage (fichier vidéo direct) et fige le défilement. */
   protected openVideo(src: string, event: Event): void {
+    this.ouvrir({ type: 'fichier', src }, event);
+  }
+
+  /** Ouvre la vidéo de présentation (lecteur Bunny en iframe). */
+  protected openPresentation(event: Event): void {
+    this.ouvrir({ type: 'embed', src: this.presentationEmbed }, event);
+  }
+
+  private ouvrir(video: VideoOuverte, event: Event): void {
     this.lastTrigger = event.currentTarget as HTMLElement;
-    this.activeVideo.set(src);
+    this.activeVideo.set(video);
     document.body.style.overflow = 'hidden';
   }
 
@@ -147,8 +173,6 @@ export class Trainer {
     this.lastTrigger?.focus({ preventScroll: true });
     this.lastTrigger = null;
   }
-
-  protected readonly presentationVideoUrl = environment.bunnyPresentationVideoUrl;
 
   /** Compteurs animés au premier passage dans le viewport. */
   private initCounters(reduced: boolean): void {
