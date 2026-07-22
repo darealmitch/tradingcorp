@@ -19,4 +19,6 @@ export const environment = {
   // secrets d'Edge Function (voir supabase/functions/.env.example) et ne
   // doivent JAMAIS être embarqués dans le build Angular.
   cloudinaryCloudName: 'xzqyu82g',
+  bunnyPresentationVideoUrl:
+    'https://player.mediadelivery.net/play/708929/ac46adc6-1c4c-4e1e-9681-1808d07461fd',
 };
