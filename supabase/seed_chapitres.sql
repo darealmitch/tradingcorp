@@ -204,8 +204,9 @@ begin
 
       -- Chapitre quiz : crée le quiz + questions de démonstration.
       if ch.type = 'quiz' then
-        insert into quiz (id_formation, id_lecon, titre, score_requis, position)
-        values (v_id_formation, v_id_lecon, ch.titre, 70, ch.position)
+        -- score_requis hérité du défaut de la colonne (80 %), règle unique.
+        insert into quiz (id_formation, id_lecon, titre, position)
+        values (v_id_formation, v_id_lecon, ch.titre, ch.position)
         returning id_quiz into v_id_quiz;
 
         for q in 1 .. 3 loop
