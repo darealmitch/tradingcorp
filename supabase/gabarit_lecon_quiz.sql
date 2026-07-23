@@ -69,8 +69,10 @@ begin
   returning id_lecon into v_id_lecon;
 
   -- 2) QUIZ de la leçon -------------------------------------------------------
-  insert into quiz (id_formation, id_lecon, titre, score_requis, position)
-  values (v_id_formation, v_id_lecon, $q$Quiz — validation de la leçon$q$, 70, 1)
+  -- score_requis non précisé : le seuil de réussite (80 %) vient du défaut de
+  -- la colonne, source unique de la règle pour tous les quiz.
+  insert into quiz (id_formation, id_lecon, titre, position)
+  values (v_id_formation, v_id_lecon, $q$Quiz — validation de la leçon$q$, 1)
   returning id_quiz into v_id_quiz;
 
   -- 3) QUESTION 1 (duplique ce bloc pour chaque question) ---------------------
