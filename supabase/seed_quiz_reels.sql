@@ -11,6 +11,9 @@
 --     Function corriger-quiz), et l'ordre d'affichage est mélangé côté serveur
 --     par reponses_publiques — la position ne trahit donc rien.
 --
+-- Orthographe et grammaire relues ; le sens et les bonnes réponses sont
+-- rigoureusement ceux fournis par l'auteur.
+--
 -- Seuil de réussite : 80 % pour tous les quiz (migration 20260723100000).
 -- =============================================================================
 
@@ -31,15 +34,15 @@ declare
       "quiz": "Quizz Les bases de la monnaie",
       "questions": [
         {
-          "libelle": "Qu'est ce qu'une Monnaie fiduciaire ?",
+          "libelle": "Qu'est-ce qu'une monnaie fiduciaire ?",
           "reponses": [
             { "texte": "Une monnaie qui repose sur la confiance", "correcte": true },
-            { "texte": "Une monnaie 100% en ligne",              "correcte": false },
-            { "texte": "Une monnaie ancienne",                   "correcte": false }
+            { "texte": "Une monnaie 100 % en ligne",              "correcte": false },
+            { "texte": "Une monnaie ancienne",                    "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce que l'inflation ?",
+          "libelle": "Qu'est-ce que l'inflation ?",
           "reponses": [
             { "texte": "La baisse du pouvoir d'achat",         "correcte": false },
             { "texte": "La baisse de la valeur de la monnaie", "correcte": true },
@@ -47,26 +50,26 @@ declare
           ]
         },
         {
-          "libelle": "Qu'est ce que la déflation",
+          "libelle": "Qu'est-ce que la déflation ?",
           "reponses": [
             { "texte": "La hausse du pouvoir d'achat", "correcte": true },
             { "texte": "La baisse des prix",           "correcte": false }
           ]
         },
         {
-          "libelle": "La déflation, est une bonne une mauvaise chose ?",
+          "libelle": "La déflation est-elle une bonne ou une mauvaise chose ?",
           "reponses": [
-            { "texte": "Bonne",       "correcte": false },
-            { "texte": "Mauvaise",    "correcte": true },
-            { "texte": "Je sais pas", "correcte": false }
+            { "texte": "Bonne",          "correcte": false },
+            { "texte": "Mauvaise",       "correcte": true },
+            { "texte": "Je ne sais pas", "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'une monnaie scripturale ?",
+          "libelle": "Qu'est-ce qu'une monnaie scripturale ?",
           "reponses": [
-            { "texte": "Une monnaie physique",   "correcte": false },
-            { "texte": "Une cryptomonnaie",      "correcte": false },
-            { "texte": "Une monnaie digitalisé", "correcte": true }
+            { "texte": "Une monnaie physique",    "correcte": false },
+            { "texte": "Une cryptomonnaie",       "correcte": false },
+            { "texte": "Une monnaie digitalisée", "correcte": true }
           ]
         }
       ]
@@ -79,27 +82,27 @@ declare
           "libelle": "Quel est le meilleur investissement ?",
           "reponses": [
             { "texte": "Le plus risqué",         "correcte": false },
-            { "texte": "Le plus safe",           "correcte": false },
+            { "texte": "Le plus sûr",            "correcte": false },
             { "texte": "Celui qui te ressemble", "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'un rendement passif ?",
+          "libelle": "Qu'est-ce qu'un rendement passif ?",
           "reponses": [
-            { "texte": "Argent gagner grâce à un Actif",     "correcte": true },
-            { "texte": "Argent perdu à cause d'un Passif",   "correcte": false }
+            { "texte": "De l'argent gagné grâce à un actif",   "correcte": true },
+            { "texte": "De l'argent perdu à cause d'un passif", "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce que l'analyse technique ?",
+          "libelle": "Qu'est-ce que l'analyse technique ?",
           "reponses": [
-            { "texte": "L'analyse des graphiques",    "correcte": true },
-            { "texte": "l'analyse de l'économie",     "correcte": false },
+            { "texte": "L'analyse des graphiques",     "correcte": true },
+            { "texte": "L'analyse de l'économie",      "correcte": false },
             { "texte": "L'analyse des autres traders", "correcte": false }
           ]
         },
         {
-          "libelle": "Combien il y à de type d'investissement",
+          "libelle": "Combien y a-t-il de types d'investissement ?",
           "reponses": [
             { "texte": "1", "correcte": false },
             { "texte": "2", "correcte": true },
@@ -109,9 +112,9 @@ declare
         {
           "libelle": "Comment devenir plus riche ?",
           "reponses": [
-            { "texte": "Avoir plus d'actif que de passif", "correcte": true },
-            { "texte": "Avoir plus de passif que d'actif", "correcte": false },
-            { "texte": "Braquer une banque",               "correcte": false }
+            { "texte": "Avoir plus d'actifs que de passifs", "correcte": true },
+            { "texte": "Avoir plus de passifs que d'actifs", "correcte": false },
+            { "texte": "Braquer une banque",                 "correcte": false }
           ]
         }
       ]
@@ -121,10 +124,10 @@ declare
       "quiz": "Quizz éducation financière",
       "questions": [
         {
-          "libelle": "Qu'est ce qu'un actif",
+          "libelle": "Qu'est-ce qu'un actif ?",
           "reponses": [
-            { "texte": "Un Achat qui prend de la valeur", "correcte": true },
-            { "texte": "Un Achat qui perd de la valeur",  "correcte": false },
+            { "texte": "Un achat qui prend de la valeur", "correcte": true },
+            { "texte": "Un achat qui perd de la valeur",  "correcte": false },
             { "texte": "Les deux",                        "correcte": false }
           ]
         },
@@ -133,14 +136,14 @@ declare
           "reponses": [
             { "texte": "Les banques centrales", "correcte": false },
             { "texte": "Les orfèvres",          "correcte": true },
-            { "texte": "Les Banque d'état",     "correcte": false }
+            { "texte": "Les banques d'État",    "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'un passif ?",
+          "libelle": "Qu'est-ce qu'un passif ?",
           "reponses": [
-            { "texte": "Un Achat qui perd de la valeur",  "correcte": true },
-            { "texte": "Un Achat qui prend de la valeur", "correcte": false },
+            { "texte": "Un achat qui perd de la valeur",  "correcte": true },
+            { "texte": "Un achat qui prend de la valeur", "correcte": false },
             { "texte": "Aucun des deux",                  "correcte": false }
           ]
         },
@@ -149,15 +152,15 @@ declare
           "reponses": [
             { "texte": "Le troc",                        "correcte": false },
             { "texte": "Les emprunts",                   "correcte": false },
-            { "texte": "Il y à toujours eu de l'argent", "correcte": true }
+            { "texte": "Il y a toujours eu de l'argent", "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'une capitalisation boursière ?",
+          "libelle": "Qu'est-ce qu'une capitalisation boursière ?",
           "reponses": [
-            { "texte": "Le chiffre d'affaire d'une société",                       "correcte": false },
-            { "texte": "Sont nombre d'action en circulation multiplié par sont prix", "correcte": true },
-            { "texte": "Le bénéfice d'une société",                                "correcte": false }
+            { "texte": "Le chiffre d'affaires d'une société",                        "correcte": false },
+            { "texte": "Son nombre d'actions en circulation multiplié par son prix", "correcte": true },
+            { "texte": "Le bénéfice d'une société",                                  "correcte": false }
           ]
         }
       ]
@@ -167,23 +170,23 @@ declare
       "quiz": "Quizz psychologie en investissement",
       "questions": [
         {
-          "libelle": "L'investissement est-il une activité risqué ?",
+          "libelle": "L'investissement est-il une activité risquée ?",
           "reponses": [
-            { "texte": "oui", "correcte": true },
-            { "texte": "non", "correcte": false }
+            { "texte": "Oui", "correcte": true },
+            { "texte": "Non", "correcte": false }
           ]
         },
         {
-          "libelle": "Les risques liées à l'investissement, sont il",
+          "libelle": "Les risques liés à l'investissement sont-ils :",
           "reponses": [
-            { "texte": "Financier", "correcte": false },
-            { "texte": "mental",    "correcte": false },
-            { "texte": "corporel",  "correcte": false },
-            { "texte": "Les 3",     "correcte": true }
+            { "texte": "Financiers", "correcte": false },
+            { "texte": "Mentaux",    "correcte": false },
+            { "texte": "Corporels",  "correcte": false },
+            { "texte": "Les 3",      "correcte": true }
           ]
         },
         {
-          "libelle": "Combien à ton vu de biais ?",
+          "libelle": "Combien a-t-on vu de biais ?",
           "reponses": [
             { "texte": "4", "correcte": false },
             { "texte": "5", "correcte": false },
@@ -191,11 +194,11 @@ declare
           ]
         },
         {
-          "libelle": "De quel biais à ton parler",
+          "libelle": "De quels biais a-t-on parlé ?",
           "reponses": [
-            { "texte": "confirmation, ancrage, sur confiance, représentativité, disponibilité, aversion à la perte", "correcte": true },
+            { "texte": "Confirmation, ancrage, surconfiance, représentativité, disponibilité, aversion à la perte", "correcte": true },
             { "texte": "Confirmation, peur, instabilité, aversion au risque, confiance, paranoïa",                   "correcte": false },
-            { "texte": "ancrage, disponibilité, sur confiance, modestie, frein, confirmation",                       "correcte": false }
+            { "texte": "Ancrage, disponibilité, surconfiance, modestie, frein, confirmation",                        "correcte": false }
           ]
         }
       ]
@@ -205,43 +208,43 @@ declare
       "quiz": "Quizz déclaration d'impôts",
       "questions": [
         {
-          "libelle": "Que doit on déclarer",
+          "libelle": "Que doit-on déclarer ?",
           "reponses": [
-            { "texte": "Ses plus value",  "correcte": false },
-            { "texte": "Ses moins value", "correcte": false },
-            { "texte": "Les deux",        "correcte": true }
+            { "texte": "Ses plus-values",  "correcte": false },
+            { "texte": "Ses moins-values", "correcte": false },
+            { "texte": "Les deux",         "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce que la technique du 50/20/20/10",
+          "libelle": "Qu'est-ce que la technique du 50/20/20/10 ?",
           "reponses": [
-            { "texte": "50% charges, 20% d'économie, 20% d'investissement 10% de fond d'urgence",     "correcte": true },
-            { "texte": "50% d'investissement, 20% de charges, 20% de fond d'urgence, 10% d'économies", "correcte": false },
-            { "texte": "Aucun des deux",                                                              "correcte": false }
+            { "texte": "50 % de charges, 20 % d'économies, 20 % d'investissement, 10 % de fonds d'urgence", "correcte": true },
+            { "texte": "50 % d'investissement, 20 % de charges, 20 % de fonds d'urgence, 10 % d'économies", "correcte": false },
+            { "texte": "Aucune des deux",                                                                   "correcte": false }
           ]
         },
         {
-          "libelle": "De combien est la flat tax",
+          "libelle": "De combien est la flat tax ?",
           "reponses": [
-            { "texte": "30%", "correcte": true },
-            { "texte": "35%", "correcte": false },
-            { "texte": "40%", "correcte": false }
+            { "texte": "30 %", "correcte": true },
+            { "texte": "35 %", "correcte": false },
+            { "texte": "40 %", "correcte": false }
           ]
         },
         {
-          "libelle": "Quel est l'impôts le plus rependue ?",
+          "libelle": "Quel est l'impôt le plus répandu ?",
           "reponses": [
-            { "texte": "Impôts sur le revenue",  "correcte": false },
-            { "texte": "Impôts sur les société", "correcte": false },
-            { "texte": "TVA",                    "correcte": true }
+            { "texte": "L'impôt sur le revenu",    "correcte": false },
+            { "texte": "L'impôt sur les sociétés", "correcte": false },
+            { "texte": "La TVA",                   "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'un ETF ?",
+          "libelle": "Qu'est-ce qu'un ETF ?",
           "reponses": [
-            { "texte": "Un \"panier d'action\"",                "correcte": true },
-            { "texte": "Un groupe (comme LVMH, Bouygues …)",    "correcte": false },
-            { "texte": "Un produit fiscale",                    "correcte": false }
+            { "texte": "Un « panier d'actions »",            "correcte": true },
+            { "texte": "Un groupe (comme LVMH, Bouygues…)",  "correcte": false },
+            { "texte": "Un produit fiscal",                  "correcte": false }
           ]
         }
       ]
@@ -251,15 +254,15 @@ declare
       "quiz": "Quizz Optimisation fiscale",
       "questions": [
         {
-          "libelle": "L'optimisation fiscale c'est …",
+          "libelle": "L'optimisation fiscale, c'est…",
           "reponses": [
-            { "texte": "Des manières légale de réduire ses impôts",   "correcte": true },
-            { "texte": "Des manières illégale de réduire ses impôts", "correcte": false },
-            { "texte": "Fuir un pays pour ne pas payé d'impôts",      "correcte": false }
+            { "texte": "Des manières légales de réduire ses impôts",   "correcte": true },
+            { "texte": "Des manières illégales de réduire ses impôts", "correcte": false },
+            { "texte": "Fuir un pays pour ne pas payer d'impôts",      "correcte": false }
           ]
         },
         {
-          "libelle": "à quoi doit tu faire attention quand tu veux optimiser ta fiscalité",
+          "libelle": "À quoi dois-tu faire attention quand tu veux optimiser ta fiscalité ?",
           "reponses": [
             { "texte": "Ton taux d'imposition", "correcte": false },
             { "texte": "Ton statut juridique",  "correcte": false },
@@ -267,15 +270,15 @@ declare
           ]
         },
         {
-          "libelle": "Anticiper tes dépense est il une pratique utile ?",
+          "libelle": "Anticiper tes dépenses est-il une pratique utile ?",
           "reponses": [
             { "texte": "Oui",       "correcte": true },
             { "texte": "Non",       "correcte": false },
-            { "texte": "ça dépend", "correcte": false }
+            { "texte": "Ça dépend", "correcte": false }
           ]
         },
         {
-          "libelle": "En général quel va être le statut juridique des société qui entre en bourse ?",
+          "libelle": "En général, quel va être le statut juridique des sociétés qui entrent en bourse ?",
           "reponses": [
             { "texte": "SA",   "correcte": true },
             { "texte": "SAS",  "correcte": false },
@@ -291,37 +294,37 @@ declare
         {
           "libelle": "Quelle est la première étape avant d'investir ?",
           "reponses": [
-            { "texte": "Acheter des actions au hasard",                        "correcte": false },
-            { "texte": "Établir ses objectifs financiers et son profil de risque", "correcte": true },
-            { "texte": "Suivre les tendances des réseaux sociaux",             "correcte": false },
-            { "texte": "Investir uniquement dans des produits sans risque",    "correcte": false }
+            { "texte": "Acheter des actions au hasard",                             "correcte": false },
+            { "texte": "Établir ses objectifs financiers et son profil de risque",  "correcte": true },
+            { "texte": "Suivre les tendances des réseaux sociaux",                  "correcte": false },
+            { "texte": "Investir uniquement dans des produits sans risque",         "correcte": false }
           ]
         },
         {
           "libelle": "Qu'est-ce que la diversification en investissement ?",
           "reponses": [
-            { "texte": "Placer tout son capital dans un seul actif",            "correcte": false },
-            { "texte": "Répartir ses investissements sur plusieurs types d'actifs", "correcte": true },
-            { "texte": "Se spécialiser dans un domaine d'investissement",       "correcte": false },
-            { "texte": "Suivre les conseils d'un seul expert",                  "correcte": false }
+            { "texte": "Placer tout son capital dans un seul actif",                 "correcte": false },
+            { "texte": "Répartir ses investissements sur plusieurs types d'actifs",  "correcte": true },
+            { "texte": "Se spécialiser dans un domaine d'investissement",            "correcte": false },
+            { "texte": "Suivre les conseils d'un seul expert",                       "correcte": false }
           ]
         },
         {
           "libelle": "Quel type d'investissement est généralement considéré comme le moins risqué ?",
           "reponses": [
-            { "texte": "Les actions",             "correcte": false },
+            { "texte": "Les actions",               "correcte": false },
             { "texte": "Les obligations de l'État", "correcte": true },
-            { "texte": "Les cryptomonnaies",      "correcte": false },
-            { "texte": "Les matières premières",  "correcte": false }
+            { "texte": "Les cryptomonnaies",        "correcte": false },
+            { "texte": "Les matières premières",    "correcte": false }
           ]
         },
         {
           "libelle": "Quel est le principal avantage de l'investissement à long terme ?",
           "reponses": [
-            { "texte": "La possibilité de faire des bénéfices rapides",                                  "correcte": false },
+            { "texte": "La possibilité de faire des bénéfices rapides",                                          "correcte": false },
             { "texte": "L'effet de capitalisation et la réduction des risques liés aux fluctuations à court terme", "correcte": true },
-            { "texte": "La minimisation des impôts dès la première année",                               "correcte": false },
-            { "texte": "Une garantie contre toutes pertes",                                              "correcte": false }
+            { "texte": "La minimisation des impôts dès la première année",                                       "correcte": false },
+            { "texte": "Une garantie contre toute perte",                                                        "correcte": false }
           ]
         }
       ]
@@ -331,30 +334,30 @@ declare
       "quiz": "Quizz qu'est ce que la crypto ?",
       "questions": [
         {
-          "libelle": "Qu'est ce qu'une banque centrale ?",
+          "libelle": "Qu'est-ce qu'une banque centrale ?",
           "reponses": [
-            { "texte": "Une banque au milieu d'une ville",                          "correcte": false },
-            { "texte": "Une banque National",                                       "correcte": false },
-            { "texte": "L'organisme qui régule les banques et l'émission de monnaie", "correcte": true }
+            { "texte": "Une banque au milieu d'une ville",                             "correcte": false },
+            { "texte": "Une banque nationale",                                         "correcte": false },
+            { "texte": "L'organisme qui régule les banques et l'émission de monnaie",  "correcte": true }
           ]
         },
         {
-          "libelle": "Bitcoin est la première cryptomonnaie ?",
+          "libelle": "Bitcoin est-il la première cryptomonnaie ?",
           "reponses": [
             { "texte": "Oui", "correcte": false },
             { "texte": "Non", "correcte": true }
           ]
         },
         {
-          "libelle": "Sur quel consensus ce base Ether ?",
+          "libelle": "Sur quel consensus se base Ether ?",
           "reponses": [
-            { "texte": "Proof of work",     "correcte": false },
-            { "texte": "Proof of stake",    "correcte": true },
-            { "texte": "Proof of userfull", "correcte": false }
+            { "texte": "Proof of work",   "correcte": false },
+            { "texte": "Proof of stake",  "correcte": true },
+            { "texte": "Proof of useful", "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'un smart contract ?",
+          "libelle": "Qu'est-ce qu'un smart contract ?",
           "reponses": [
             { "texte": "Un contrat intelligent sur la blockchain", "correcte": true },
             { "texte": "Un contrat de petite taille",              "correcte": false },
@@ -362,19 +365,19 @@ declare
           ]
         },
         {
-          "libelle": "Qu'est ce que le minning",
+          "libelle": "Qu'est-ce que le mining ?",
           "reponses": [
-            { "texte": "La sécurisation du réseau",             "correcte": true },
-            { "texte": "La recherche de métaux dans une mine",  "correcte": false },
-            { "texte": "La création de cryptomonnaie",          "correcte": false }
+            { "texte": "La sécurisation du réseau",            "correcte": true },
+            { "texte": "La recherche de métaux dans une mine", "correcte": false },
+            { "texte": "La création de cryptomonnaie",         "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'un nœud ?",
+          "libelle": "Qu'est-ce qu'un nœud ?",
           "reponses": [
-            { "texte": "Un lien avec 2 ou plusieurs corde", "correcte": false },
-            { "texte": "Un ordinateur",                     "correcte": true },
-            { "texte": "La blockchain",                     "correcte": false }
+            { "texte": "Un lien entre deux ou plusieurs cordes", "correcte": false },
+            { "texte": "Un ordinateur",                          "correcte": true },
+            { "texte": "La blockchain",                          "correcte": false }
           ]
         }
       ]
@@ -384,43 +387,43 @@ declare
       "quiz": "Quizz La blockchain",
       "questions": [
         {
-          "libelle": "Qu'est ce que le trilèmme de la blockchain",
+          "libelle": "Qu'est-ce que le trilemme de la blockchain ?",
           "reponses": [
             { "texte": "Scalabilité, décentralisation, sécurité", "correcte": true },
-            { "texte": "Rapidité, décentralisation, Pollution",   "correcte": false },
+            { "texte": "Rapidité, décentralisation, pollution",   "correcte": false },
             { "texte": "Décentralisation, sécurité, coûts",       "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce qui faut à la blockchain pour être plus rapide ?",
+          "libelle": "Que faut-il à la blockchain pour être plus rapide ?",
           "reponses": [
-            { "texte": "de la décentralisation", "correcte": false },
-            { "texte": "de l'argent",            "correcte": false },
-            { "texte": "de la sécurité",         "correcte": true }
+            { "texte": "De la décentralisation", "correcte": false },
+            { "texte": "De l'argent",            "correcte": false },
+            { "texte": "De la sécurité",         "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce qui faut à la blockchain pour être sécurisé",
+          "libelle": "Que faut-il à la blockchain pour être sécurisée ?",
           "reponses": [
-            { "texte": "de l'argent",            "correcte": false },
-            { "texte": "de la décentralisation", "correcte": false },
-            { "texte": "de la scalabilité",      "correcte": true }
+            { "texte": "De l'argent",            "correcte": false },
+            { "texte": "De la décentralisation", "correcte": false },
+            { "texte": "De la scalabilité",      "correcte": true }
           ]
         },
         {
-          "libelle": "Que veux dire être décentralisé ?",
+          "libelle": "Que veut dire être décentralisé ?",
           "reponses": [
-            { "texte": "Qu'il n'y à pas de centre",                            "correcte": false },
-            { "texte": "Que le réseau est indépendant",                        "correcte": false },
-            { "texte": "Que le réseau fonctionne sans intermédiaire de confiance", "correcte": true }
+            { "texte": "Qu'il n'y a pas de centre",                                 "correcte": false },
+            { "texte": "Que le réseau est indépendant",                             "correcte": false },
+            { "texte": "Que le réseau fonctionne sans intermédiaire de confiance",  "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'un layer 2",
+          "libelle": "Qu'est-ce qu'un layer 2 ?",
           "reponses": [
-            { "texte": "Une blockchain qui viens ce greffer sur une blockchain existante", "correcte": true },
-            { "texte": "Toutes blockchain autre que celle de bitcoin",                     "correcte": false },
-            { "texte": "Une solution centralisée pour regler le trilemme de la blockchain", "correcte": false }
+            { "texte": "Une blockchain qui vient se greffer sur une blockchain existante",  "correcte": true },
+            { "texte": "Toute blockchain autre que celle de Bitcoin",                       "correcte": false },
+            { "texte": "Une solution centralisée pour régler le trilemme de la blockchain", "correcte": false }
           ]
         }
       ]
@@ -430,15 +433,15 @@ declare
       "quiz": "Quizz NFT",
       "questions": [
         {
-          "libelle": "Qu'est ce qu'un NFT",
+          "libelle": "Qu'est-ce qu'un NFT ?",
           "reponses": [
-            { "texte": "Un token non fongible",                        "correcte": false },
-            { "texte": "De l'art numérique",                           "correcte": false },
-            { "texte": "Un token avec un certificat de propriété en ligne", "correcte": true }
+            { "texte": "Un token non fongible",                             "correcte": false },
+            { "texte": "De l'art numérique",                                "correcte": false },
+            { "texte": "Un token avec un certificat de propriété en ligne",  "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce qui fais d'un NFT un NFT",
+          "libelle": "Qu'est-ce qui fait d'un NFT un NFT ?",
           "reponses": [
             { "texte": "Son certificat d'authenticité", "correcte": true },
             { "texte": "Sa fongibilité",                "correcte": false },
@@ -446,34 +449,34 @@ declare
           ]
         },
         {
-          "libelle": "qu'est ce que le metavers ?",
+          "libelle": "Qu'est-ce que le métavers ?",
           "reponses": [
-            { "texte": "Un monde virtuel en ligne",                 "correcte": false },
+            { "texte": "Un monde virtuel en ligne",                   "correcte": false },
             { "texte": "Un monde virtuel en ligne sur la blockchain", "correcte": true },
-            { "texte": "Un film",                                   "correcte": false }
+            { "texte": "Un film",                                     "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce que le web 3 ?",
+          "libelle": "Qu'est-ce que le Web 3 ?",
           "reponses": [
-            { "texte": "Un web décentralisée",                                  "correcte": true },
-            { "texte": "Un web décentralisé et sur le quel tu peux faire ce que tu veux", "correcte": false },
-            { "texte": "Une mise à jour du dark web",                           "correcte": false }
+            { "texte": "Un web décentralisé",                                     "correcte": true },
+            { "texte": "Un web décentralisé sur lequel tu peux faire ce que tu veux", "correcte": false },
+            { "texte": "Une mise à jour du dark web",                             "correcte": false }
           ]
         },
         {
-          "libelle": "Les NFT sont ils des outils de spéculations ?",
+          "libelle": "Les NFT sont-ils des outils de spéculation ?",
           "reponses": [
-            { "texte": "Oui",                        "correcte": false },
-            { "texte": "Non",                        "correcte": false },
-            { "texte": "Les deux réponse sont vrai", "correcte": true }
-          ]
-        },
-        {
-          "libelle": "Les NFT ont ils une utilité dans le monde réel ?",
-          "reponses": [
-            { "texte": "Oui",                          "correcte": true },
+            { "texte": "Oui",                          "correcte": false },
             { "texte": "Non",                          "correcte": false },
+            { "texte": "Les deux réponses sont vraies", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Les NFT ont-ils une utilité dans le monde réel ?",
+          "reponses": [
+            { "texte": "Oui",                           "correcte": true },
+            { "texte": "Non",                           "correcte": false },
             { "texte": "Les deux réponses sont vraies", "correcte": false }
           ]
         }
@@ -484,23 +487,23 @@ declare
       "quiz": "Quizz Web 3",
       "questions": [
         {
-          "libelle": "Qu'est ce qu'il y avait avant le Web 3?",
+          "libelle": "Qu'y avait-il avant le Web 3 ?",
           "reponses": [
-            { "texte": "Le web 1", "correcte": false },
-            { "texte": "Le web 2", "correcte": true },
+            { "texte": "Le Web 1", "correcte": false },
+            { "texte": "Le Web 2", "correcte": true },
             { "texte": "Rien",     "correcte": false }
           ]
         },
         {
-          "libelle": "Quel est la principale différence entre le Web 3 et ses prédécesseur ?",
+          "libelle": "Quelle est la principale différence entre le Web 3 et ses prédécesseurs ?",
           "reponses": [
             { "texte": "La décentralisation", "correcte": true },
-            { "texte": "l'interopérabilité",  "correcte": false },
+            { "texte": "L'interopérabilité",  "correcte": false },
             { "texte": "L'anonymat",          "correcte": false }
           ]
         },
         {
-          "libelle": "Cette mise à jour est elle bonne pour les GAFAM ?",
+          "libelle": "Cette mise à jour est-elle bonne pour les GAFAM ?",
           "reponses": [
             { "texte": "Oui", "correcte": false },
             { "texte": "Non", "correcte": true }
@@ -513,35 +516,35 @@ declare
       "quiz": "Quizz crypto",
       "questions": [
         {
-          "libelle": "Qu'est ce qu'un narratif ?",
+          "libelle": "Qu'est-ce qu'un narratif ?",
           "reponses": [
-            { "texte": "Un domaine de cryptomonnaie",   "correcte": true },
-            { "texte": "Une histoire",                  "correcte": false },
-            { "texte": "Les deux réponses sont vraies", "correcte": false }
+            { "texte": "Un domaine de cryptomonnaie",    "correcte": true },
+            { "texte": "Une histoire",                   "correcte": false },
+            { "texte": "Les deux réponses sont vraies",  "correcte": false }
           ]
         },
         {
-          "libelle": "Qu'est ce que l'adoption ?",
+          "libelle": "Qu'est-ce que l'adoption ?",
           "reponses": [
-            { "texte": "Un usage étatique de la blockchain",           "correcte": false },
-            { "texte": "L'acceptation de la cryptomonnaie par la masse", "correcte": true },
-            { "texte": "Avoir un enfant qui n'ai pas le siens",        "correcte": false }
+            { "texte": "Un usage étatique de la blockchain",              "correcte": false },
+            { "texte": "L'acceptation de la cryptomonnaie par la masse",  "correcte": true },
+            { "texte": "Avoir un enfant qui n'est pas le sien",           "correcte": false }
           ]
         },
         {
-          "libelle": "Pourquoi le Gaming pourrait être la porte d'adoption de la crypto ?",
+          "libelle": "Pourquoi le gaming pourrait-il être la porte d'adoption de la crypto ?",
           "reponses": [
-            { "texte": "Parce que les enfants en parlerons à leur parents", "correcte": false },
-            { "texte": "ça ne sera pas la porte d'adoption",                "correcte": false },
-            { "texte": "En raison de la taille du marché du gaming",        "correcte": true }
+            { "texte": "Parce que les enfants en parleront à leurs parents", "correcte": false },
+            { "texte": "Ça ne sera pas la porte d'adoption",                 "correcte": false },
+            { "texte": "En raison de la taille du marché du gaming",         "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce que l'IBC ?",
+          "libelle": "Qu'est-ce que l'IBC ?",
           "reponses": [
-            { "texte": "Le consensus de la Blockchain",                     "correcte": false },
-            { "texte": "Un moyen pour les blockchain communique entre elle", "correcte": true },
-            { "texte": "La solution au trilemme de la blockchain",           "correcte": false }
+            { "texte": "Le consensus de la blockchain",                          "correcte": false },
+            { "texte": "Un moyen pour les blockchains de communiquer entre elles", "correcte": true },
+            { "texte": "La solution au trilemme de la blockchain",                "correcte": false }
           ]
         }
       ]
@@ -551,50 +554,50 @@ declare
       "quiz": "Quizz Adoption",
       "questions": [
         {
-          "libelle": "Qu'est ce qu'un Airdrop ?",
+          "libelle": "Qu'est-ce qu'un airdrop ?",
           "reponses": [
-            { "texte": "Un système de rémunération sur la blockchain",              "correcte": false },
-            { "texte": "Le moyen qu'utilise un projet pour rémunérer des acteurs du projet", "correcte": true },
-            { "texte": "Un ensemble de tache réalisé pour recevoir des Token gratuit", "correcte": false }
+            { "texte": "Un système de rémunération sur la blockchain",                       "correcte": false },
+            { "texte": "Le moyen qu'utilise un projet pour rémunérer les acteurs du projet", "correcte": true },
+            { "texte": "Un ensemble de tâches réalisées pour recevoir des tokens gratuits",  "correcte": false }
           ]
         },
         {
-          "libelle": "Quel est l'avantage des airdrop ?",
+          "libelle": "Quel est l'avantage des airdrops ?",
           "reponses": [
-            { "texte": "Gratuité",              "correcte": false },
-            { "texte": "Rapidité",              "correcte": false },
-            { "texte": "Taches souvent simples", "correcte": true }
+            { "texte": "La gratuité",             "correcte": false },
+            { "texte": "La rapidité",             "correcte": false },
+            { "texte": "Des tâches souvent simples", "correcte": true }
           ]
         },
         {
-          "libelle": "Qu'est ce qu'une lowcap ?",
+          "libelle": "Qu'est-ce qu'une lowcap ?",
           "reponses": [
-            { "texte": "Une cryptomonnaie à mois de 100 M de marketcap", "correcte": true },
-            { "texte": "Une cryptomonnaie qui n'est pas connue",         "correcte": false },
-            { "texte": "Un projet qui viens de sortir",                  "correcte": false }
+            { "texte": "Une cryptomonnaie à moins de 100 M de marketcap", "correcte": true },
+            { "texte": "Une cryptomonnaie qui n'est pas connue",          "correcte": false },
+            { "texte": "Un projet qui vient de sortir",                   "correcte": false }
           ]
         },
         {
-          "libelle": "Quel est l'avantage des lowcap ?",
+          "libelle": "Quel est l'avantage des lowcaps ?",
           "reponses": [
-            { "texte": "Risque modéré",             "correcte": false },
-            { "texte": "Potentiel de gros rendement", "correcte": true },
-            { "texte": "Faible coûts",              "correcte": false }
+            { "texte": "Un risque modéré",             "correcte": false },
+            { "texte": "Un potentiel de gros rendement", "correcte": true },
+            { "texte": "De faibles coûts",             "correcte": false }
           ]
         },
         {
-          "libelle": "ETF crypto, bonne ou mauvaise chose ?",
+          "libelle": "Un ETF crypto, bonne ou mauvaise chose ?",
           "reponses": [
             { "texte": "Bonne",    "correcte": true },
             { "texte": "Mauvaise", "correcte": false }
           ]
         },
         {
-          "libelle": "Que signifie un ETF dans le secteur des crypto ?",
+          "libelle": "Que signifie un ETF dans le secteur des cryptos ?",
           "reponses": [
-            { "texte": "Que les institution cherche à détourner l'usage de Bitcoin", "correcte": false },
-            { "texte": "Rien",                                                      "correcte": false },
-            { "texte": "Un signe d'adoption par les institution financière",        "correcte": true }
+            { "texte": "Que les institutions cherchent à détourner l'usage de Bitcoin", "correcte": false },
+            { "texte": "Rien",                                                          "correcte": false },
+            { "texte": "Un signe d'adoption par les institutions financières",          "correcte": true }
           ]
         }
       ]
