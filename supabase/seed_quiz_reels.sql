@@ -765,7 +765,7 @@ declare
         {
           "libelle": "À quoi fait référence la suite de Fibonacci ?",
           "reponses": [
-            { "texte": "Aux chiffres univers",          "correcte": true },
+            { "texte": "Au chiffre univers",            "correcte": true },
             { "texte": "À une suite arithmétique",      "correcte": false },
             { "texte": "Aux chiffres les plus utilisés", "correcte": false }
           ]
@@ -1171,6 +1171,442 @@ declare
             { "texte": "La différence de volatilité implicite entre deux sous-jacents", "correcte": true },
             { "texte": "La différence entre la volatilité du même actif sur deux horizons de temps différents", "correcte": false },
             { "texte": "Ni l'un ni l'autre", "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Analyse fondamentale",
+      "quiz": "Quiz - Économie",
+      "questions": [
+        {
+          "libelle": "Quelle est la devise majeure du monde ?",
+          "reponses": [
+            { "texte": "Euro",   "correcte": false },
+            { "texte": "Dollar", "correcte": true },
+            { "texte": "Yen",    "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Que signifie dovish ?",
+          "reponses": [
+            { "texte": "Que la banque est encline à augmenter les taux", "correcte": false },
+            { "texte": "Que la banque est encline à baisser les taux",   "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une opération d'open market ?",
+          "reponses": [
+            { "texte": "Quand de nouveaux titres sont émis pour la première fois sur le marché", "correcte": false },
+            { "texte": "Quand la banque centrale achète un titre pour stabiliser le cours",       "correcte": true },
+            { "texte": "Quand de nouveaux intervenants arrivent sur le marché",                   "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le risk on ?",
+          "reponses": [
+            { "texte": "Quand les investisseurs sont enclins à prendre du risque", "correcte": true },
+            { "texte": "Quand les investisseurs deviennent de nature prudente",    "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que la balance commerciale ?",
+          "reponses": [
+            { "texte": "La différence entre les importations et les exportations dans le pays", "correcte": true },
+            { "texte": "Le total d'importation dans un pays",                                   "correcte": false },
+            { "texte": "Le total d'exportation d'un pays",                                      "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Quel est l'impact du déficit sur l'économie ?",
+          "reponses": [
+            { "texte": "Il cause des augmentations d'impôts qui pèsent sur les entreprises", "correcte": true },
+            { "texte": "Il peut faire augmenter l'inflation",                                "correcte": false },
+            { "texte": "Les deux réponses sont vraies",                                      "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que l'inflation finalement ?",
+          "reponses": [
+            { "texte": "La hausse des prix",                        "correcte": false },
+            { "texte": "La baisse de la valeur de l'argent",        "correcte": false },
+            { "texte": "Un déséquilibre entre l'offre et la demande", "correcte": false },
+            { "texte": "Toutes ces réponses sont vraies",           "correcte": true }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Analyse fondamentale",
+      "quiz": "Quiz - Leaders économiques",
+      "questions": [
+        {
+          "libelle": "Quel est le leader économique européen ?",
+          "reponses": [
+            { "texte": "France",    "correcte": false },
+            { "texte": "Allemagne", "correcte": true },
+            { "texte": "Suisse",    "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Quel est le leader économique mondial ?",
+          "reponses": [
+            { "texte": "Russie",      "correcte": false },
+            { "texte": "États-Unis",  "correcte": true },
+            { "texte": "Japon",       "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Le botseva est l'indice de quel pays ?",
+          "reponses": [
+            { "texte": "Amérique latine", "correcte": false },
+            { "texte": "Brésil",          "correcte": true },
+            { "texte": "Argentine",       "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Quel est l'indice du dollar ?",
+          "reponses": [
+            { "texte": "DXYX", "correcte": false },
+            { "texte": "DXX",  "correcte": false },
+            { "texte": "DXY",  "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Quel est le principal secteur de dominance des États-Unis ?",
+          "reponses": [
+            { "texte": "La technologie", "correcte": true },
+            { "texte": "La médecine",    "correcte": false },
+            { "texte": "La manufacture", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Le FTSE250 est l'indice :",
+          "reponses": [
+            { "texte": "Du Japon",       "correcte": false },
+            { "texte": "D'Australie",    "correcte": false },
+            { "texte": "Du Royaume-Uni", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le Nasdaq 100 ?",
+          "reponses": [
+            { "texte": "Les 100 plus grosses boîtes tech US", "correcte": true },
+            { "texte": "Les 100 plus grosses boîtes US",      "correcte": false },
+            { "texte": "C'est une bourse",                    "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le Nasdaq ?",
+          "reponses": [
+            { "texte": "Une bourse",                                                        "correcte": false },
+            { "texte": "Les 3000 plus grosses boîtes non financières cotées aux États-Unis", "correcte": false },
+            { "texte": "Les deux réponses sont vraies",                                     "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Combien y a-t-il de cycles immobiliers ?",
+          "reponses": [
+            { "texte": "4",         "correcte": true },
+            { "texte": "5",         "correcte": false },
+            { "texte": "ça dépend", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Quelle est la différence entre un ETF et un indice ?",
+          "reponses": [
+            { "texte": "Les ETF sont corrélés aux indices",                       "correcte": false },
+            { "texte": "L'un peut être uniquement acheté, l'autre uniquement tradé", "correcte": false },
+            { "texte": "Les deux réponses sont vraies",                           "correcte": true },
+            { "texte": "Les deux réponses sont fausses",                          "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Analyse fondamentale",
+      "quiz": "Quiz - Calendrier économique",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce que le FOMC ?",
+          "reponses": [
+            { "texte": "Réunion officielle de la FED",        "correcte": true },
+            { "texte": "Communiqué sur les taux directeurs",  "correcte": false },
+            { "texte": "Discours de la FED",                  "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le JOLTS ?",
+          "reponses": [
+            { "texte": "Annonce de création d'emploi",   "correcte": true },
+            { "texte": "Annonce du chômage",             "correcte": false },
+            { "texte": "Annonce de recherche d'emploi",  "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le NFP ?",
+          "reponses": [
+            { "texte": "Annonce de création d'emploi",   "correcte": true },
+            { "texte": "Annonce du chômage",             "correcte": false },
+            { "texte": "Annonce de recherche d'emploi",  "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le retails sales ?",
+          "reponses": [
+            { "texte": "La rotation des stocks",     "correcte": false },
+            { "texte": "Les ventes au détail",       "correcte": true },
+            { "texte": "Les commandes fournisseurs", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que l'IPC ?",
+          "reponses": [
+            { "texte": "L'indice des prix à la consommation",  "correcte": true },
+            { "texte": "L'indice de dépense des ménages",      "correcte": false },
+            { "texte": "L'indice de confiance en l'économie",  "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le GDP Growth rate ?",
+          "reponses": [
+            { "texte": "L'annonce du PIB",             "correcte": false },
+            { "texte": "Le taux de croissance du PIB", "correcte": true },
+            { "texte": "Le PIB trimestriel",           "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que l'inflation rate ?",
+          "reponses": [
+            { "texte": "L'évolution de l'inflation",                                      "correcte": false },
+            { "texte": "L'inflation YTD (du début de l'année jusqu'au jour de l'annonce)", "correcte": false },
+            { "texte": "L'inflation sur 12 mois glissants",                               "correcte": true }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Analyse fondamentale",
+      "quiz": "Quiz - Commodités",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce qu'un ratio financier ?",
+          "reponses": [
+            { "texte": "Indicateur permettant de connaître la valeur comptable d'une entreprise", "correcte": true },
+            { "texte": "Calcul de rentabilité",                                                   "correcte": false },
+            { "texte": "Calcul permettant de savoir combien gagne et perd une entreprise",        "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Le pétrole est-il une commodité importante dans le monde ?",
+          "reponses": [
+            { "texte": "Oui",       "correcte": true },
+            { "texte": "Non",       "correcte": false },
+            { "texte": "ça dépend", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qui a le plus de valeur entre l'or et l'argent ?",
+          "reponses": [
+            { "texte": "L'or",           "correcte": true },
+            { "texte": "L'argent",       "correcte": false },
+            { "texte": "C'est différent", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un bilan ?",
+          "reponses": [
+            { "texte": "La santé financière de l'entreprise", "correcte": true },
+            { "texte": "Les charges - moins le résultat",     "correcte": false },
+            { "texte": "La rentabilité de l'entreprise",      "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une obligation ?",
+          "reponses": [
+            { "texte": "Une dette émise par un État pour financer son déficit",           "correcte": false },
+            { "texte": "Une dette émise par une entreprise pour régler ses problèmes",    "correcte": false },
+            { "texte": "Les deux réponses sont vraies",                                   "correcte": false },
+            { "texte": "Une dette émise par une entreprise, par une société ou une entreprise", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Les obligations sont des produits :",
+          "reponses": [
+            { "texte": "De spéculation / trading",       "correcte": false },
+            { "texte": "D'investissement peu risqué",    "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Investir en obligation revient-il à investir sur un État ?",
+          "reponses": [
+            { "texte": "Oui", "correcte": true },
+            { "texte": "Non", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Une obligation :",
+          "reponses": [
+            { "texte": "Est remboursée totalement à l'échéance",                        "correcte": false },
+            { "texte": "Verse des intérêts constants pendant la période de détention",  "correcte": false },
+            { "texte": "Les deux réponses sont vraies",                                 "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Quel est le risque d'une obligation ?",
+          "reponses": [
+            { "texte": "Risque de crédit",    "correcte": true },
+            { "texte": "Risque de faillite",  "correcte": false },
+            { "texte": "Risque de liquidité", "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Optimisation",
+      "quiz": "Quiz - Optimisation",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce que le A book ?",
+          "reponses": [
+            { "texte": "Une transmission directe des ordres du broker sur le marché", "correcte": true },
+            { "texte": "Une transmission indirecte des ordres au marché",             "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Le B book est-il de l'arnaque ?",
+          "reponses": [
+            { "texte": "Oui", "correcte": false },
+            { "texte": "Non", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Quel est le meilleur choix ?",
+          "reponses": [
+            { "texte": "A book",                             "correcte": false },
+            { "texte": "B book",                             "correcte": false },
+            { "texte": "tout dépend de la manière de trader", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une fusion en finance ?",
+          "reponses": [
+            { "texte": "2 entreprises du même secteur qui fusionnent", "correcte": false },
+            { "texte": "2 entreprises qui fusionnent",                 "correcte": true },
+            { "texte": "2 entreprises qui s'associent",               "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Dans une acquisition, comment est appelée l'entreprise qui se fait acheter ?",
+          "reponses": [
+            { "texte": "Proie",    "correcte": false },
+            { "texte": "Cible",    "correcte": true },
+            { "texte": "Objectif", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un swap ?",
+          "reponses": [
+            { "texte": "Les frais payés pour laisser un trade tourner le soir",                "correcte": true },
+            { "texte": "Les frais payés pour laisser un trade tourner le week-end",            "correcte": false },
+            { "texte": "La différence entre le bid et le ask qui constitue la commission du broker", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un spread ?",
+          "reponses": [
+            { "texte": "Les frais payés pour laisser un trade tourner le soir",                "correcte": false },
+            { "texte": "Les frais payés pour laisser un trade tourner le week-end",            "correcte": false },
+            { "texte": "La différence entre le bid et le ask qui constitue la commission du broker", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une fusion verticale ?",
+          "reponses": [
+            { "texte": "Deux entreprises de taille similaire qui s'unissent pour former une nouvelle entité", "correcte": false },
+            { "texte": "Des entreprises du même secteur d'activité qui se regroupent pour augmenter leur part de marché", "correcte": false },
+            { "texte": "Des entreprises de la même chaîne de production qui se regroupent pour améliorer l'efficacité et réduire les coûts", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Quel est le cycle économique le plus long ?",
+          "reponses": [
+            { "texte": "Celui de Kondratieff", "correcte": true },
+            { "texte": "Celui de Juglar",      "correcte": false },
+            { "texte": "Celui de Kitchin",     "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Quel est le cycle économique le plus court ?",
+          "reponses": [
+            { "texte": "Celui de Kondratieff", "correcte": false },
+            { "texte": "Celui de Juglar",      "correcte": false },
+            { "texte": "Celui de Kitchin",     "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Pendant une période de creux :",
+          "reponses": [
+            { "texte": "On revend nos mauvais investissements et on assume notre perte",       "correcte": false },
+            { "texte": "On en profite pour racheter ce qui sous-performe pour revendre plus haut", "correcte": true },
+            { "texte": "On attend la reprise économique",                                      "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Pendant une période de pic :",
+          "reponses": [
+            { "texte": "On revend les actifs spéculatifs à leur pic", "correcte": true },
+            { "texte": "On revend les actifs safe à leur pic",        "correcte": false },
+            { "texte": "On revend les actifs cycliques à leur pic",   "correcte": false },
+            { "texte": "Les 3 réponses sont vraies",                  "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que la Due diligence ?",
+          "reponses": [
+            { "texte": "Une offre d'achat publique",         "correcte": false },
+            { "texte": "L'audit et l'évaluation d'une cible", "correcte": true },
+            { "texte": "Un montage fiscal pour le M&A",      "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un LBO ?",
+          "reponses": [
+            { "texte": "L'offre d'action à bas prix envers les actionnaires existants pour éviter une OPA hostile", "correcte": false },
+            { "texte": "L'achat d'une cible grâce à de la dette", "correcte": true },
+            { "texte": "Des conditions favorables données à des employés après une fusion pour éviter qu'ils quittent la boîte", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un golden parachute ?",
+          "reponses": [
+            { "texte": "Compensation financière accordée à un gérant en cas de licenciement après une fusion ou acquisition", "correcte": true },
+            { "texte": "Projet de restructuration pour une société en faillite",                  "correcte": false },
+            { "texte": "Projet pour rentabiliser l'achat d'une société par une plus grosse",      "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que l'Altman Z score ?",
+          "reponses": [
+            { "texte": "Modèle de scoring pour prédire la probabilité de surperformance",       "correcte": false },
+            { "texte": "Modèle de scoring pour prédire la rentabilité de l'achat d'une société", "correcte": false },
+            { "texte": "Modèle de scoring pour prédire la probabilité de faillite",             "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le Sharpe ratio ?",
+          "reponses": [
+            { "texte": "Le rendement ajusté au risque",                              "correcte": true },
+            { "texte": "Le rendement ajusté à la volatilité",                        "correcte": false },
+            { "texte": "Le rendement ajusté à la volatilité implicite sur du CFD",   "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un roadshow ?",
+          "reponses": [
+            { "texte": "Un tour de table sur une levée de fonds",                                          "correcte": true },
+            { "texte": "Quand un entrepreneur vend des actions pour faire autre chose",                    "correcte": false },
+            { "texte": "La mobilité salariale permettant à un employé de changer de poste (au sein de la même structure)", "correcte": false }
           ]
         }
       ]
