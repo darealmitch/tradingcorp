@@ -601,6 +601,579 @@ declare
           ]
         }
       ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Initiation aux graphiques",
+      "questions": [
+        {
+          "libelle": "Que signifie une bougie rouge ?",
+          "reponses": [
+            { "texte": "Que le prix a baissé",        "correcte": true },
+            { "texte": "Que le prix est monté",       "correcte": false },
+            { "texte": "Que le prix s'est stabilisé", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une tendance ?",
+          "reponses": [
+            { "texte": "Le sens dans lequel va le graphique", "correcte": false },
+            { "texte": "Le sens dans lequel va le prix",      "correcte": false },
+            { "texte": "Les deux réponses sont vraies",       "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une figure chartiste ?",
+          "reponses": [
+            { "texte": "Un mouvement de prix",                                              "correcte": false },
+            { "texte": "Un mouvement de prix qui peut prédire le sens que va prendre le marché", "correcte": true },
+            { "texte": "Les deux réponses sont vraies",                                     "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un indicateur technique ?",
+          "reponses": [
+            { "texte": "Un algorithme qui nous aide à prédire le marché",     "correcte": false },
+            { "texte": "Un outil permettant d'assister à la prise de décision", "correcte": false },
+            { "texte": "Un outil de polarité qui synthétise les informations", "correcte": false },
+            { "texte": "Toutes les réponses sont vraies",                      "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Que signifie BTCUSD ?",
+          "reponses": [
+            { "texte": "Le prix du Bitcoin en dollars",                        "correcte": true },
+            { "texte": "Le prix du dollar exprimé en Bitcoin",                 "correcte": false },
+            { "texte": "Le prix du Bitcoin converti en dollars canadiens",     "correcte": false },
+            { "texte": "Le taux de change entre deux stablecoins adossés au dollar", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "EURUSD",
+          "reponses": [
+            { "texte": "Est une question", "correcte": true },
+            { "texte": "Une affirmation",  "correcte": false },
+            { "texte": "Une information",  "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Trading",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce que le trading ?",
+          "reponses": [
+            { "texte": "Une activité d'achat et de vente à découvert", "correcte": true },
+            { "texte": "Une activité d'investissement",               "correcte": false },
+            { "texte": "Une activité de spéculation",                 "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le scalping ?",
+          "reponses": [
+            { "texte": "Le fait de maintenir ses positions de trading 1 à 2 jours",              "correcte": false },
+            { "texte": "Le fait de maintenir ses positions de trading sur 1 à 2 mois",           "correcte": false },
+            { "texte": "Le fait de maintenir ses positions de trading sur de petites unités de temps", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un broker ?",
+          "reponses": [
+            { "texte": "C'est un trader retail",                                    "correcte": false },
+            { "texte": "C'est une entité permettant de mettre les retails en face du marché", "correcte": true },
+            { "texte": "C'est une banque fournisseuse de liquidité",               "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un trade ?",
+          "reponses": [
+            { "texte": "De la spéculation",                                  "correcte": false },
+            { "texte": "Le fait d'acheter ou de vendre un actif à découvert", "correcte": true },
+            { "texte": "Investir sur un actif qu'on ne possède pas vraiment", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un CFD ?",
+          "reponses": [
+            { "texte": "Un outil qui permet de trader sur un contrat sans posséder l'actif sous-jacent", "correcte": true },
+            { "texte": "Un outil qui permet de trader sur un contrat où le broker possède le sous-jacent", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un effet de levier ?",
+          "reponses": [
+            { "texte": "Le coefficient multiplicateur des gains et des pertes",   "correcte": true },
+            { "texte": "Le coefficient multiplicateur des gains",                 "correcte": false },
+            { "texte": "Un outil permettant de trader des actifs sans avoir d'argent", "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Fondamentaux",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce que le money management ?",
+          "reponses": [
+            { "texte": "La gestion de la taille d'une position", "correcte": true },
+            { "texte": "La gestion d'un trade",                  "correcte": false },
+            { "texte": "La gestion d'un compte de trading",      "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Combien y a-t-il de types d'ordre ?",
+          "reponses": [
+            { "texte": "4", "correcte": false },
+            { "texte": "5", "correcte": false },
+            { "texte": "6", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le forex ?",
+          "reponses": [
+            { "texte": "Le marché des changes",          "correcte": false },
+            { "texte": "Le marché des devises mondiales", "correcte": true },
+            { "texte": "Le marché de la monnaie",         "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Quelle est l'unité qui mesure la distance parcourue par un trade ?",
+          "type": "choix_multiple",
+          "reponses": [
+            { "texte": "Le dollar", "correcte": false },
+            { "texte": "Le point",  "correcte": true },
+            { "texte": "Le pips",   "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Peut-on trader sur les marchés sur lesquels on a investi ?",
+          "reponses": [
+            { "texte": "Oui",         "correcte": false },
+            { "texte": "Non",         "correcte": false },
+            { "texte": "Pas toujours", "correcte": true }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Fibonacci",
+      "questions": [
+        {
+          "libelle": "À quoi fait référence la suite de Fibonacci ?",
+          "reponses": [
+            { "texte": "Aux chiffres univers",          "correcte": true },
+            { "texte": "À une suite arithmétique",      "correcte": false },
+            { "texte": "Aux chiffres les plus utilisés", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une propfirm ?",
+          "reponses": [
+            { "texte": "Une société de trading",                                    "correcte": false },
+            { "texte": "Une société qui te fournit du capital en échange de tests",  "correcte": true },
+            { "texte": "Un type de broker",                                          "correcte": false }
+          ]
+        },
+        {
+          "libelle": "À quoi sert le retracement de Fibonacci ?",
+          "reponses": [
+            { "texte": "À trouver des points d'entrée et de sortie pertinents", "correcte": false },
+            { "texte": "À trouver des points d'intérêt",                        "correcte": true },
+            { "texte": "À se rassurer",                                         "correcte": false }
+          ]
+        },
+        {
+          "libelle": "À quoi sert le prolongement selon la tendance de Fibonacci ?",
+          "type": "choix_multiple",
+          "reponses": [
+            { "texte": "À identifier les potentielles zones de TP",     "correcte": true },
+            { "texte": "À identifier les potentielles zones de SL",     "correcte": true },
+            { "texte": "À identifier les potentielles zones d'entrée",  "correcte": true }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Contextes de marchés",
+      "questions": [
+        {
+          "libelle": "Combien y a-t-il de contextes de marché ?",
+          "reponses": [
+            { "texte": "1", "correcte": false },
+            { "texte": "2", "correcte": false },
+            { "texte": "3", "correcte": false },
+            { "texte": "4", "correcte": true },
+            { "texte": "5", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Les contextes de marché ont-ils un ordre précis ou surgissent-ils de manière aléatoire ?",
+          "reponses": [
+            { "texte": "Aléatoire", "correcte": false },
+            { "texte": "Ordre",     "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Que se passe-t-il après un retracement ?",
+          "reponses": [
+            { "texte": "Expansion",     "correcte": true },
+            { "texte": "Consolidation", "correcte": false },
+            { "texte": "Reversal",      "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Concepts de base",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce que l'OTE ?",
+          "reponses": [
+            { "texte": "Le point parfait pour TP", "correcte": false },
+            { "texte": "Le point parfait pour SL", "correcte": false },
+            { "texte": "Le point parfait de PE",   "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Les LRLR sont des points ?",
+          "reponses": [
+            { "texte": "Vulnérables", "correcte": true },
+            { "texte": "Protégés",    "correcte": false },
+            { "texte": "Égaux",       "correcte": false }
+          ]
+        },
+        {
+          "libelle": "La liquidité interne est quand le chart se trouve entre :",
+          "reponses": [
+            { "texte": "Le précédent plus haut et plus bas", "correcte": true },
+            { "texte": "La précédente figure chartiste",     "correcte": false },
+            { "texte": "Les moyennes mobiles",               "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Le carnet d'ordre est :",
+          "reponses": [
+            { "texte": "Le carnet où sont inscrites toutes les transactions sur la blockchain", "correcte": false },
+            { "texte": "Le cahier de trading",                                                  "correcte": false },
+            { "texte": "L'endroit où sont affichées toutes les demandes de vente et d'achat",   "correcte": true }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Structures",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce qu'une structure ?",
+          "reponses": [
+            { "texte": "Un schéma de prix qui permet de prédire le futur",       "correcte": false },
+            { "texte": "Un schéma de prix qui nous indique ce qui pourrait se passer", "correcte": true },
+            { "texte": "Un schéma de prix",                                      "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qui différencie une AMD d'une Accumulation / Distribution ?",
+          "reponses": [
+            { "texte": "Les patterns",  "correcte": false },
+            { "texte": "Le chartisme",  "correcte": false },
+            { "texte": "La liquidité",  "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que la fractalité ?",
+          "reponses": [
+            { "texte": "Quand une structure se brise",                                    "correcte": false },
+            { "texte": "Le fait que des figures se répètent à différents intervalles de temps", "correcte": true },
+            { "texte": "Une prise de liquidité",                                          "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une timeframe ?",
+          "reponses": [
+            { "texte": "Une unité de temps",                    "correcte": true },
+            { "texte": "Le temps que va prendre un trade",      "correcte": false },
+            { "texte": "L'heure à laquelle on va prendre un trade", "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Kill zones",
+      "questions": [
+        {
+          "libelle": "Combien y a-t-il de sessions ?",
+          "reponses": [
+            { "texte": "1", "correcte": false },
+            { "texte": "2", "correcte": false },
+            { "texte": "3", "correcte": false },
+            { "texte": "4", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Quelle est la session la plus importante ?",
+          "reponses": [
+            { "texte": "Asie",     "correcte": true },
+            { "texte": "New York", "correcte": false },
+            { "texte": "Londres",  "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Que font les sessions de Londres et New York ?",
+          "reponses": [
+            { "texte": "Ils vont dans le même sens",                     "correcte": false },
+            { "texte": "Ils break l'asia session",                       "correcte": true },
+            { "texte": "Ils suivent la tendance donnée par l'asia session", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "À quelle heure se déroule l'asia session ?",
+          "reponses": [
+            { "texte": "20-02h", "correcte": false },
+            { "texte": "02-09h", "correcte": false },
+            { "texte": "00-09h", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "À quelle heure sont les meilleures entrées pour New York ?",
+          "reponses": [
+            { "texte": "13h30 - 14h / 14h30 - 15h", "correcte": false },
+            { "texte": "13 - 13h30 / 14h30 - 15h",  "correcte": true },
+            { "texte": "12h30 - 13h / 13h30 - 14h", "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Days of week",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce que le PDH/L ?",
+          "reponses": [
+            { "texte": "Le plus haut/bas du jour",       "correcte": true },
+            { "texte": "Le plus haut/bas de la semaine", "correcte": false },
+            { "texte": "Le plus haut/bas du mois",       "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un big figure ?",
+          "reponses": [
+            { "texte": "Un point où le prix se termine par 000", "correcte": true },
+            { "texte": "Une grande figure chartiste",            "correcte": false },
+            { "texte": "Aucune des deux réponses",               "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Quels jours vas-tu généralement chercher les plus hauts et les plus bas de la semaine ?",
+          "reponses": [
+            { "texte": "Lundi / Mardi",     "correcte": false },
+            { "texte": "Mardi / Mercredi",  "correcte": true },
+            { "texte": "Mercredi / Jeudi",  "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Liquidités",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce qu'une liquidité ?",
+          "reponses": [
+            { "texte": "Un point d'intérêt",               "correcte": true },
+            { "texte": "De l'eau",                         "correcte": false },
+            { "texte": "L'effet de levier des positions",  "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un EQX ?",
+          "reponses": [
+            { "texte": "Un pattern indiquant une expansion",     "correcte": false },
+            { "texte": "Un pattern indiquant un reversal",       "correcte": true },
+            { "texte": "Un pattern indiquant une consolidation", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'annonce un orderblock ?",
+          "reponses": [
+            { "texte": "Une consolidation", "correcte": false },
+            { "texte": "Un reversal",       "correcte": false },
+            { "texte": "Une expansion",     "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un BSL/SSL ?",
+          "reponses": [
+            { "texte": "Un pattern indiquant une expansion",     "correcte": false },
+            { "texte": "Un pattern indiquant un reversal",       "correcte": true },
+            { "texte": "Un pattern indiquant une consolidation", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un orderblock ?",
+          "reponses": [
+            { "texte": "Le dernier buy avant le sell",  "correcte": false },
+            { "texte": "Le dernier sell avant le buy",  "correcte": false },
+            { "texte": "Les deux réponses sont vraies", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le MTB ?",
+          "reponses": [
+            { "texte": "Un pattern d'aide à l'entrée en position",    "correcte": true },
+            { "texte": "Un pattern d'aide à la sortie de position",   "correcte": false },
+            { "texte": "Un pattern de retracement",                   "correcte": false }
+          ]
+        },
+        {
+          "libelle": "À quoi sert le seek & destroy ?",
+          "reponses": [
+            { "texte": "Prévenir la prochaine AMD",                  "correcte": false },
+            { "texte": "Anticiper les prochaines liquidités",        "correcte": true },
+            { "texte": "Anticiper le biais de la prochaine session", "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Mes stratégies",
+      "questions": [
+        {
+          "libelle": "Qu'est-ce qu'une moyenne mobile ?",
+          "reponses": [
+            { "texte": "La pondération des dernières cotations",       "correcte": true },
+            { "texte": "La pondération du market cap",                 "correcte": false },
+            { "texte": "La pondération des SL et des TP sur le chart", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Comment s'appelle-t-il quand deux moyennes mobiles se croisent à la hausse ?",
+          "reponses": [
+            { "texte": "Death cross",  "correcte": false },
+            { "texte": "Golden cross", "correcte": true },
+            { "texte": "High cross",   "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le market profile ?",
+          "reponses": [
+            { "texte": "Un pattern",                                                          "correcte": false },
+            { "texte": "Un indicateur qui montre où est la liquidité",                        "correcte": false },
+            { "texte": "Un indicateur qui résume et simplifie les derniers jours de pondération", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Comment s'appelle la zone où il y a eu le plus de transactions sur le market profile ?",
+          "reponses": [
+            { "texte": "La high area",         "correcte": false },
+            { "texte": "La zone de haute valeur", "correcte": false },
+            { "texte": "La value area",        "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le volume profile ?",
+          "reponses": [
+            { "texte": "Un indicateur qui montre les zones de support résistance", "correcte": false },
+            { "texte": "Un indicateur qui montre les zones de TP et SL",           "correcte": false },
+            { "texte": "Un indicateur qui montre où il y a eu le plus de liquidité", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que le RSI ?",
+          "reponses": [
+            { "texte": "Un indicateur de surachat et de survente", "correcte": true },
+            { "texte": "Un indicateur de tendance",                "correcte": false },
+            { "texte": "Un indicateur de volatilité",              "correcte": false }
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Trading",
+      "quiz": "Quiz - Options",
+      "questions": [
+        {
+          "libelle": "À quoi servent les options ?",
+          "reponses": [
+            { "texte": "Couvrir une position",    "correcte": false },
+            { "texte": "Amplifier une position",  "correcte": false },
+            { "texte": "Couvrir un portefeuille", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce que les greeks ?",
+          "reponses": [
+            { "texte": "Alpha, beta, gamma, theta, vega", "correcte": false },
+            { "texte": "Alpha, beta, gamma, rho",         "correcte": false },
+            { "texte": "Delta, vega, gamma, rho, theta",  "correcte": true }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'un alpha ?",
+          "reponses": [
+            { "texte": "Le chef d'une meute de loups",           "correcte": false },
+            { "texte": "La mesure de la volatilité d'un actif",  "correcte": false },
+            { "texte": "L'actif de référence d'un portefeuille", "correcte": true }
+          ]
+        },
+        {
+          "libelle": "À quoi sert le delta ?",
+          "reponses": [
+            { "texte": "Voir la volatilité sous-jacente",                              "correcte": false },
+            { "texte": "Voir la corrélation au sous-jacent en termes de variation de prix", "correcte": true },
+            { "texte": "Voir l'érosion temporelle",                                    "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Comment s'appelle le fait de couvrir un portefeuille avec des options ?",
+          "reponses": [
+            { "texte": "Le hedging",    "correcte": true },
+            { "texte": "La couverture", "correcte": false },
+            { "texte": "L'optionage",   "correcte": false }
+          ]
+        },
+        {
+          "libelle": "À quoi servent les options ?",
+          "reponses": [
+            { "texte": "À couvrir un portefeuille sur des pertes latentes", "correcte": true },
+            { "texte": "À faire du trading différemment",                   "correcte": false },
+            { "texte": "À trader de manière plus sécuritaire",              "correcte": false }
+          ]
+        },
+        {
+          "libelle": "À quoi sert le theta ?",
+          "reponses": [
+            { "texte": "Calculer la volatilité",                 "correcte": false },
+            { "texte": "Calculer le rendement ajusté au risque", "correcte": false },
+            { "texte": "Calculer l'érosion temporelle",          "correcte": true }
+          ]
+        },
+        {
+          "libelle": "À quoi sert le ratio de Sharpe ?",
+          "reponses": [
+            { "texte": "Calculer l'écart type",                    "correcte": false },
+            { "texte": "Calculer la performance ajustée au risque", "correcte": true },
+            { "texte": "Calculer la différence entre le plus haut et le plus bas d'un actif sur une période donnée", "correcte": false }
+          ]
+        },
+        {
+          "libelle": "Qu'est-ce qu'une covariance ?",
+          "reponses": [
+            { "texte": "La différence de volatilité implicite entre deux sous-jacents", "correcte": true },
+            { "texte": "La différence entre la volatilité du même actif sur deux horizons de temps différents", "correcte": false },
+            { "texte": "Ni l'un ni l'autre", "correcte": false }
+          ]
+        }
+      ]
     }
   ]
   $json$::jsonb;
@@ -625,8 +1198,9 @@ begin
     loop
       v_pos := v_pos + 1;
 
+      -- type par question : 'choix_unique' par défaut, 'choix_multiple' si précisé.
       insert into questions (id_quiz, libelle, position, type)
-      values (v_id_quiz, q ->> 'libelle', v_pos, 'choix_unique')
+      values (v_id_quiz, q ->> 'libelle', v_pos, coalesce(q ->> 'type', 'choix_unique'))
       returning id_question into v_id_question;
 
       for r in select * from jsonb_array_elements(q -> 'reponses')
