@@ -31,7 +31,7 @@ declare
   [
     {
       "module": "Éducation financière",
-      "quiz": "Quizz Les bases de la monnaie",
+      "quiz": "Quiz - Les bases de la monnaie",
       "questions": [
         {
           "libelle": "Qu'est-ce qu'une monnaie fiduciaire ?",
@@ -76,7 +76,7 @@ declare
     },
     {
       "module": "Éducation financière",
-      "quiz": "Quizz retraite et assurances",
+      "quiz": "Quiz - Retraite et assurances",
       "questions": [
         {
           "libelle": "Quel est le meilleur investissement ?",
@@ -121,7 +121,7 @@ declare
     },
     {
       "module": "Éducation financière",
-      "quiz": "Quizz éducation financière",
+      "quiz": "Quiz - Éducation financière",
       "questions": [
         {
           "libelle": "Qu'est-ce qu'un actif ?",
@@ -167,7 +167,7 @@ declare
     },
     {
       "module": "Éducation financière",
-      "quiz": "Quizz psychologie en investissement",
+      "quiz": "Quiz - Psychologie en investissement",
       "questions": [
         {
           "libelle": "L'investissement est-il une activité risquée ?",
@@ -205,7 +205,7 @@ declare
     },
     {
       "module": "Fiscalité",
-      "quiz": "Quizz déclaration d'impôts",
+      "quiz": "Quiz - Déclaration d'impôts",
       "questions": [
         {
           "libelle": "Que doit-on déclarer ?",
@@ -251,7 +251,7 @@ declare
     },
     {
       "module": "Fiscalité",
-      "quiz": "Quizz Optimisation fiscale",
+      "quiz": "Quiz - Optimisation fiscale",
       "questions": [
         {
           "libelle": "L'optimisation fiscale, c'est…",
@@ -289,7 +289,7 @@ declare
     },
     {
       "module": "Les marchés",
-      "quiz": "Quizz qu'est ce que la bourse ?",
+      "quiz": "Quiz - Qu'est-ce que la bourse ?",
       "questions": [
         {
           "libelle": "Quelle est la première étape avant d'investir ?",
@@ -331,7 +331,7 @@ declare
     },
     {
       "module": "Les marchés",
-      "quiz": "Quizz qu'est ce que la crypto ?",
+      "quiz": "Quiz - Qu'est-ce que la crypto ?",
       "questions": [
         {
           "libelle": "Qu'est-ce qu'une banque centrale ?",
@@ -384,7 +384,7 @@ declare
     },
     {
       "module": "Les marchés",
-      "quiz": "Quizz La blockchain",
+      "quiz": "Quiz - La blockchain",
       "questions": [
         {
           "libelle": "Qu'est-ce que le trilemme de la blockchain ?",
@@ -430,7 +430,7 @@ declare
     },
     {
       "module": "Les marchés",
-      "quiz": "Quizz NFT",
+      "quiz": "Quiz - NFT",
       "questions": [
         {
           "libelle": "Qu'est-ce qu'un NFT ?",
@@ -484,7 +484,7 @@ declare
     },
     {
       "module": "Les marchés",
-      "quiz": "Quizz Web 3",
+      "quiz": "Quiz - Web 3",
       "questions": [
         {
           "libelle": "Qu'y avait-il avant le Web 3 ?",
@@ -513,7 +513,7 @@ declare
     },
     {
       "module": "Les marchés",
-      "quiz": "Quizz crypto",
+      "quiz": "Quiz - Crypto",
       "questions": [
         {
           "libelle": "Qu'est-ce qu'un narratif ?",
@@ -551,7 +551,7 @@ declare
     },
     {
       "module": "Les marchés",
-      "quiz": "Quizz Adoption",
+      "quiz": "Quiz - Adoption",
       "questions": [
         {
           "libelle": "Qu'est-ce qu'un airdrop ?",
