@@ -36,6 +36,12 @@ export class AuthService {
 
   readonly estConnecte = computed(() => this.sessionSig() !== null);
   readonly role = computed(() => this.profilSig()?.role ?? null);
+  /**
+   * Compte de démonstration/test (profils.est_test) : mêmes accès élargis que
+   * côté serveur (bypass de la progression via acces_demo). Sert à lever les
+   * verrous UX de progression pour la recette, jamais pour un compte réel.
+   */
+  readonly estCompteTest = computed(() => this.profilSig()?.est_test ?? false);
   readonly estFormateurOuAdmin = computed(() => {
     const role = this.role();
     return role === 'formateur' || role === 'admin';

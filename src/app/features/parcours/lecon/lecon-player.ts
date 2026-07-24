@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  computed,
   inject,
   signal,
   viewChild,
@@ -9,11 +10,13 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
+  DetailQuestionQuiz,
   LeconEtape,
   LeconJouable,
   QuestionQuiz,
   ResultatQuiz,
 } from '../../../core/contenu/apprentissage.model';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { QuizService } from '../../../core/contenu/quiz.service';
 import { MediaService } from '../../../core/media/media.service';
@@ -32,6 +35,7 @@ type ReponsesSaisies = Record<string, string | string[]>;
 export class LeconPlayer {
   private readonly contenu = inject(ContenuService);
   private readonly quizService = inject(QuizService);
+  private readonly auth = inject(AuthService);
   protected readonly media = inject(MediaService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -48,6 +52,12 @@ export class LeconPlayer {
   protected readonly reponses = signal<ReponsesSaisies>({});
   protected readonly envoiQuiz = signal(false);
   protected readonly resultatQuiz = signal<ResultatQuiz | null>(null);
+
+  /** Correction indexée par id_question, pour le retour pédagogique après envoi. */
+  protected readonly detailParQuestion = computed(() => {
+    const detail = this.resultatQuiz()?.detail ?? [];
+    return new Map<string, DetailQuestionQuiz>(detail.map((d) => [d.id_question, d]));
+  });
 
   /** La vidéo courante vient d'atteindre sa fin dans cette session. */
   protected readonly videoFinie = signal(false);
@@ -182,9 +192,12 @@ export class LeconPlayer {
     this.tempsMax = Math.max(this.tempsMax, l.position_video_s);
   }
 
-  /** Une leçon vidéo déjà validée se consulte librement (avance autorisée). */
+  /**
+   * Avance vidéo libre : leçon déjà validée, OU compte de test (recette sans
+   * simuler la progression — mêmes accès élargis que côté serveur).
+   */
   private avanceLibre(l: LeconJouable): boolean {
-    return !!l.terminee_le;
+    return !!l.terminee_le || this.auth.estCompteTest();
   }
 
   protected sauverPosition(): void {
@@ -235,9 +248,15 @@ export class LeconPlayer {
     }
   }
 
-  /** Le bouton de validation n'est actif qu'une fois la vidéo réellement finie. */
+  /**
+   * Le bouton de validation n'est actif qu'une fois la vidéo réellement finie —
+   * sauf pour un compte de test, qui peut valider sans visionner (recette).
+   */
   protected peutValider(l: LeconJouable): boolean {
-    return !l.terminee_le && (this.videoFinie() || l.video_terminee_le !== null);
+    return (
+      !l.terminee_le &&
+      (this.videoFinie() || l.video_terminee_le !== null || this.auth.estCompteTest())
+    );
   }
 
   /**
@@ -303,6 +322,21 @@ export class LeconPlayer {
   protected reessayerQuiz(): void {
     this.resultatQuiz.set(null);
     this.reponses.set({});
+  }
+
+  /** Correction d'une question (null tant que le quiz n'a pas été soumis). */
+  protected detailQuestion(idQuestion: string): DetailQuestionQuiz | undefined {
+    return this.detailParQuestion().get(idQuestion);
+  }
+
+  /** Une option fait-elle partie des bonnes réponses (révélées après correction) ? */
+  protected estBonneReponse(idQuestion: string, idReponse: string): boolean {
+    return this.detailQuestion(idQuestion)?.bonnes_reponses.includes(idReponse) ?? false;
+  }
+
+  /** L'apprenant avait-il coché cette option ? */
+  protected aEteCochee(idQuestion: string, idReponse: string): boolean {
+    return this.detailQuestion(idQuestion)?.reponses_donnees.includes(idReponse) ?? false;
   }
 
   protected etapeSuivante(): LeconEtape | null {
