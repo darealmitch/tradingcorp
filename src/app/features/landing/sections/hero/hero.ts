@@ -7,6 +7,7 @@ import {
   inject,
   viewChild,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 interface Stream {
   rgb: string;
@@ -24,6 +25,7 @@ const STEP = 16;
   selector: 'app-hero',
   templateUrl: './hero.html',
   styleUrl: './hero.css',
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Hero {
