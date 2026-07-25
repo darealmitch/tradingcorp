@@ -108,11 +108,27 @@ export interface QuestionQuiz {
   reponses: OptionReponse[];
 }
 
+/**
+ * Retour pédagogique d'une question après correction : verdict, bonne(s)
+ * réponse(s) révélée(s) et explication adaptée (réussite ou échec).
+ */
+export interface DetailQuestionQuiz {
+  id_question: string;
+  correcte: boolean;
+  /** ids des réponses correctes (révélées seulement après soumission). */
+  bonnes_reponses: string[];
+  /** ids des réponses effectivement cochées par l'apprenant. */
+  reponses_donnees: string[];
+  explication: string | null;
+}
+
 /** Résultat renvoyé par l'Edge Function corriger-quiz. */
 export interface ResultatQuiz {
   reussi: boolean;
   score: number;
   score_requis: number;
+  /** Correction détaillée question par question (retour pédagogique). */
+  detail: DetailQuestionQuiz[];
 }
 
 /** Progression agrégée : étapes terminées / total accessible. */

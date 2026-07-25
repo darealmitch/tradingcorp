@@ -79,13 +79,28 @@ Deno.serve(async (req) => {
 
     const { data: questions } = await admin
       .from('questions')
-      .select('id_question, type, reponses(id_reponse, correcte)')
+      .select(
+        'id_question, type, explication_reussite, explication_echec, reponses(id_reponse, correcte)',
+      )
       .eq('id_quiz', id_quiz);
     if (!questions || questions.length === 0) {
       return json({ erreur: 'Ce quiz ne contient aucune question.' }, 422);
     }
 
+    // Détail pédagogique par question : renvoyé APRÈS correction (les bonnes
+    // réponses ne sont donc jamais exposées avant la soumission). Chaque entrée
+    // porte la ou les bonnes réponses, la saisie de l'apprenant, le verdict et
+    // l'explication adaptée (réussite si juste, échec sinon).
+    interface DetailQuestion {
+      id_question: string;
+      correcte: boolean;
+      bonnes_reponses: string[];
+      reponses_donnees: string[];
+      explication: string | null;
+    }
+
     let bonnes = 0;
+    const detail: DetailQuestion[] = [];
     for (const question of questions) {
       const correctes = new Set(
         (question.reponses as { id_reponse: string; correcte: boolean }[])
@@ -99,6 +114,15 @@ Deno.serve(async (req) => {
       if (identiques) {
         bonnes += 1;
       }
+      detail.push({
+        id_question: question.id_question,
+        correcte: identiques,
+        bonnes_reponses: [...correctes],
+        reponses_donnees: [...donnees],
+        explication: identiques
+          ? (question.explication_reussite ?? null)
+          : (question.explication_echec ?? null),
+      });
     }
 
     const score = Math.round((bonnes / questions.length) * 100);
@@ -121,7 +145,7 @@ Deno.serve(async (req) => {
         );
     }
 
-    return json({ reussi, score, score_requis: quiz.score_requis }, 200);
+    return json({ reussi, score, score_requis: quiz.score_requis, detail }, 200);
   } catch (erreur) {
     console.error('[corriger-quiz]', erreur);
     return json({ erreur: 'La correction du quiz a échoué.' }, 500);
