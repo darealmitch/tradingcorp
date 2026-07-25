@@ -288,6 +288,67 @@
   margin-top: 12px;
 }
 
+/* ---- Correction détaillée (retour pédagogique après soumission) ---- */
+.quiz-question.est-corrigee {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.quiz-question.est-corrigee.est-juste {
+  border-color: color-mix(in srgb, var(--up) 40%, var(--line));
+}
+
+.quiz-question.est-corrigee.est-faux {
+  border-color: color-mix(in srgb, var(--down) 40%, var(--line));
+}
+
+.quiz-verdict {
+  margin-right: 6px;
+  font-weight: 700;
+}
+
+.est-juste .quiz-verdict {
+  color: var(--up);
+}
+
+.est-faux .quiz-verdict {
+  color: var(--down);
+}
+
+.quiz-option-corrigee {
+  cursor: default;
+  border-bottom: none;
+  border-radius: 8px;
+}
+
+.quiz-option-corrigee.est-bonne {
+  background: color-mix(in srgb, var(--up) 12%, transparent);
+  color: var(--up);
+}
+
+.quiz-option-corrigee.est-mauvaise {
+  background: color-mix(in srgb, var(--down) 12%, transparent);
+  color: var(--down);
+}
+
+.quiz-marque {
+  flex: 0 0 1em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.quiz-explication {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
 .lecon-suivante {
   width: 100%;
   height: 52px;
