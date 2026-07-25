@@ -135,12 +135,18 @@
         <section class="lecon-quiz">
           @if (resultatQuiz(); as resultat) {
             <!-- Bandeau de score -->
-            <div class="quiz-resultat" [class.est-succes]="resultat.reussi" [class.est-echec]="!resultat.reussi">
+            <div
+              class="quiz-resultat"
+              [class.est-succes]="resultat.reussi"
+              [class.est-echec]="!resultat.reussi"
+            >
               @if (resultat.reussi) {
                 <p>Quiz réussi — {{ resultat.score }} % (seuil {{ resultat.score_requis }} %).</p>
                 <p class="discret">Le chapitre suivant est débloqué.</p>
               } @else {
-                <p>Score {{ resultat.score }} % — {{ resultat.score_requis }} % requis pour valider.</p>
+                <p>
+                  Score {{ resultat.score }} % — {{ resultat.score_requis }} % requis pour valider.
+                </p>
               }
             </div>
 
