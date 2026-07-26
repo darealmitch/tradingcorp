@@ -63,6 +63,8 @@ const SCROLL_KEYS = new Set([' ', 'PageUp', 'PageDown', 'Home', 'End', 'ArrowUp'
 export class Notice {
   private readonly stage = viewChild.required<ElementRef<HTMLElement>>('stage');
   private readonly track = viewChild.required<ElementRef<HTMLElement>>('track');
+  /** Conteneur de la modal, ciblé pour y porter le focus à l'ouverture. */
+  private readonly dialogue = viewChild<ElementRef<HTMLElement>>('dialogue');
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly media = inject(MediaService);
@@ -98,6 +100,26 @@ export class Notice {
     this.activeIndex.set(index);
     this.lockScroll();
     this.syncGalleryTo(index, true);
+    this.donnerFocusAuDialogue();
+  }
+
+  /**
+   * Ferme si le clic vient du fond et non du contenu. Évite de poser un
+   * gestionnaire sur le conteneur interne, qui en ferait un faux élément
+   * interactif (non focusable et sans équivalent clavier).
+   */
+  protected fermerSiFond(evenement: MouseEvent): void {
+    if (evenement.target === evenement.currentTarget) {
+      this.closeAvis();
+    }
+  }
+
+  /**
+   * Déplace le focus dans la modal à l'ouverture — le rôle que tenait
+   * `autofocus`, mais sans l'attribut (déconseillé) et après rendu effectif.
+   */
+  private donnerFocusAuDialogue(): void {
+    setTimeout(() => this.dialogue()?.nativeElement.focus({ preventScroll: true }));
   }
 
   /**

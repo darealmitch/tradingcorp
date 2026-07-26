@@ -65,18 +65,13 @@
     role="dialog"
     aria-modal="true"
     aria-label="Certificat de fin de programme"
+    #dialogue
     tabindex="-1"
-    (click)="closeCert()"
+    (click)="fermerSiFond($event)"
     (keydown.escape)="closeCert()"
   >
-    <div class="cert-lightbox-inner" (click)="$event.stopPropagation()">
-      <button
-        class="bouton-fermeture"
-        type="button"
-        (click)="closeCert()"
-        aria-label="Fermer"
-        autofocus
-      >
+    <div class="cert-lightbox-inner">
+      <button class="bouton-fermeture" type="button" (click)="closeCert()" aria-label="Fermer">
         <app-icone nom="fermer" [taille]="18" />
       </button>
       <img
