@@ -43,7 +43,11 @@
   padding: 32px 28px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--text) 2.5%, transparent),
+    transparent
+  );
   transition:
     transform 0.35s var(--ease-out),
     border-color 0.35s;

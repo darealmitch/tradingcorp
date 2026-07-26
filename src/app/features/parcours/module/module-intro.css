@@ -223,7 +223,7 @@
   height: 4px;
   margin-bottom: 10px;
   border-radius: 999px;
-  background: rgba(148, 163, 220, 0.14);
+  background: var(--line);
   overflow: hidden;
 }
 
@@ -360,7 +360,7 @@
 }
 
 .chapitre-lien:hover:not(:disabled) {
-  background: rgba(148, 163, 220, 0.08);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 .chapitre-lien:disabled {
@@ -388,7 +388,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(148, 163, 220, 0.85);
+  color: var(--muted);
 }
 
 .chapitre.est-termine .chapitre-type {

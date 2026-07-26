@@ -1,11 +1,14 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 /**
- * Logo TradingCorp recréé EN CODE (aucun PNG) : « TRADING » en argenté
- * métallique, « CORP » au dégradé néon cyan→violet→magenta avec halo. Vectoriel
- * par le texte + les dégradés CSS → net à toute taille et parfaitement intégré
- * au thème. Réutilisable partout via `<app-logo [taille]="20" />` (taille = la
+ * Logo TradingCorp recréé EN CODE (aucun PNG) : « TRADING » en métallique,
+ * « CORP » au dégradé néon cyan→violet→magenta avec halo. Vectoriel par le
+ * texte + les dégradés CSS → net à toute taille et parfaitement intégré au
+ * thème. Réutilisable partout via `<app-logo [taille]="20" />` (taille = la
  * hauteur typographique en px ; tout le reste est proportionnel).
+ *
+ * Bi-thème : seul « TRADING » change (--logo-trading), car l'argenté serait
+ * illisible sur fond clair. Le néon de « CORP » reste identique partout.
  *
  * Le favicon reste le PNG d'origine — ce composant ne concerne que l'UI.
  */
@@ -38,11 +41,13 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       letter-spacing: 0.02em;
     }
 
-    /* TRADING — argenté métallique (dégradé vertical), display condensé. */
+    /* TRADING — métallique (dégradé vertical), display condensé. Le dégradé
+       suit le thème via --logo-trading : argenté sur fond sombre, métal sombre
+       sur fond clair (mêmes paliers, valeurs inversées). Voir styles.css. */
     .mot-trading {
       font-family: var(--font-title);
       font-weight: 400;
-      background-image: linear-gradient(180deg, #f4f6fb 4%, #c6ccda 52%, #838c9f 100%);
+      background-image: var(--logo-trading);
     }
 
     /* CORP — dégradé néon de marque + halo lumineux. */

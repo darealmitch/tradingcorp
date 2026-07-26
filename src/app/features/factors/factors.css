@@ -77,7 +77,12 @@
   border-radius: 50%;
   border: 2px solid transparent;
   background:
-    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.06), var(--surface) 70%) padding-box,
+    radial-gradient(
+        circle at 50% 35%,
+        color-mix(in srgb, var(--text) 6%, transparent),
+        var(--surface) 70%
+      )
+      padding-box,
     var(--gradient) border-box;
   box-shadow: 0 12px 40px rgba(5, 6, 11, 0.7);
   transition:
@@ -104,7 +109,7 @@
   padding: 34px 34px 36px;
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--text) 3%, transparent), transparent);
   transition:
     transform 0.4s var(--ease-out),
     border-color 0.4s,

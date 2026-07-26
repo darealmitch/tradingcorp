@@ -4,9 +4,12 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  effect,
   inject,
   viewChild,
 } from '@angular/core';
+import { ThemeService } from '../core/theme/theme.service';
+import { nombreJeton, rgbJeton } from './couleurs-theme';
 
 /**
  * Champ de particules ambiant, en fond de page.
@@ -43,12 +46,24 @@ import {
 export class Particles {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly destroyRef = inject(DestroyRef);
+  private readonly theme = inject(ThemeService);
 
-  /** Couleurs partagées avec le tunnel de la traversée, pour rester cohérent. */
-  private readonly colors = ['56, 225, 255', '124, 108, 255', '225, 77, 255'];
+  /** Jetons de marque partagés avec le tunnel de la traversée (repli = thème sombre). */
+  private readonly jetons: [string, string][] = [
+    ['--cyan', '56, 225, 255'],
+    ['--violet', '124, 108, 255'],
+    ['--magenta', '225, 77, 255'],
+  ];
+
+  /** Recolore les particules depuis les jetons CSS ; posé une fois le canvas prêt. */
+  private rafraichirCouleurs?: () => void;
 
   constructor() {
     afterNextRender(() => this.init());
+    effect(() => {
+      this.theme.theme();
+      this.rafraichirCouleurs?.();
+    });
   }
 
   private init(): void {
@@ -62,14 +77,20 @@ export class Particles {
       x: number;
       y: number;
       z: number;
-      rgb: string;
+      /** Index dans la palette : la couleur suit le thème, pas la particule. */
+      teinte: number;
     }
+
+    /** Palette et opacités relues à chaque changement de thème. */
+    let palette = this.jetons.map(([jeton, repli]) => rgbJeton(jeton, repli));
+    let alphaBase = nombreJeton('--particle-alpha-base', 0.1);
+    let alphaProfondeur = nombreJeton('--particle-alpha-depth', 0.45);
 
     const particles: Particle[] = Array.from({ length: 200 }, () => ({
       x: (Math.random() - 0.5) * 2,
       y: (Math.random() - 0.5) * 2,
       z: Math.random() * 0.9 + 0.1,
-      rgb: this.colors[Math.floor(Math.random() * this.colors.length)],
+      teinte: Math.floor(Math.random() * palette.length),
     }));
 
     let width = 0;
@@ -87,6 +108,15 @@ export class Particles {
     resize();
     window.addEventListener('resize', resize);
     this.destroyRef.onDestroy(() => window.removeEventListener('resize', resize));
+
+    // Relit les jetons puis repeint : appelé par l'effect à chaque bascule.
+    this.rafraichirCouleurs = (): void => {
+      palette = this.jetons.map(([jeton, repli]) => rgbJeton(jeton, repli));
+      alphaBase = nombreJeton('--particle-alpha-base', alphaBase);
+      alphaProfondeur = nombreJeton('--particle-alpha-depth', alphaProfondeur);
+      draw(0);
+    };
+    this.destroyRef.onDestroy(() => (this.rafraichirCouleurs = undefined));
 
     const draw = (advance: number): void => {
       ctx.clearRect(0, 0, width, height);
@@ -109,7 +139,7 @@ export class Particles {
         const depth = 1 - p.z;
         ctx.beginPath();
         ctx.arc(px, py, 0.4 + depth * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${p.rgb}, ${0.1 + depth * 0.45})`;
+        ctx.fillStyle = `rgba(${palette[p.teinte]}, ${alphaBase + depth * alphaProfondeur})`;
         ctx.fill();
       }
     };

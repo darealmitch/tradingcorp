@@ -74,7 +74,7 @@
 
 .lateral-lien:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
 }
 
 .lateral-lien.est-actif {

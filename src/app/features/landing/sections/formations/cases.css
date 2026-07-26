@@ -18,8 +18,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(148, 163, 220, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 220, 0.07) 1px, transparent 1px);
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 120px 120px;
   -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black, transparent 90%);
   mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black, transparent 90%);

@@ -20,7 +20,7 @@
   padding: 26px 28px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--text) 3%, transparent), transparent);
 }
 
 .panneau + .panneau {
@@ -144,7 +144,7 @@
 }
 
 .ligne-liste:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
 }
 
 .liste-icone {
