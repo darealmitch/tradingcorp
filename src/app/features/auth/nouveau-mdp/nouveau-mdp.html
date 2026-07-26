@@ -13,31 +13,39 @@
 
     <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
       <div class="champ">
-        <label for="mdp">Nouveau mot de passe</label>
+        <label for="mdp"
+          >Nouveau mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
+        >
         <input
           id="mdp"
           type="password"
           formControlName="mdp"
+          required
+          [attr.aria-invalid]="invalide('mdp') || null"
           autocomplete="new-password"
           placeholder="8 caractères minimum"
         />
         @if (invalide('mdp')) {
-          <p class="champ-erreur">8 caractères minimum.</p>
+          <p class="champ-erreur" role="alert">8 caractères minimum.</p>
         }
       </div>
 
       <div class="champ">
-        <label for="confirmation">Confirme le mot de passe</label>
+        <label for="confirmation"
+          >Confirme le mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
+        >
         <input
           id="confirmation"
           type="password"
           formControlName="confirmation"
+          required
+          [attr.aria-invalid]="invalide('confirmation') || null"
           autocomplete="new-password"
         />
         @if (mdpDifferents()) {
-          <p class="champ-erreur">Les mots de passe ne correspondent pas.</p>
+          <p class="champ-erreur" role="alert">Les mots de passe ne correspondent pas.</p>
         } @else if (invalide('confirmation')) {
-          <p class="champ-erreur">Confirmation requise.</p>
+          <p class="champ-erreur" role="alert">Confirmation requise.</p>
         }
       </div>
 

@@ -3,6 +3,7 @@
     <app-logo class="auth-logo" [taille]="26" />
     <h1 class="auth-title">Connexion</h1>
     <p class="auth-sub">Accède à ton espace personnel TradingCorp.</p>
+    <p class="auth-mention">Les champs suivis d'un astérisque sont obligatoires.</p>
 
     @if (erreur(); as message) {
       <p class="form-erreur" role="alert">{{ message }}</p>
@@ -10,30 +11,42 @@
 
     <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
       <div class="champ">
-        <label for="email">E-mail</label>
+        <label for="email">
+          E-mail
+          <span class="champ-requis" aria-hidden="true">*</span>
+        </label>
         <input
           id="email"
           type="email"
           formControlName="email"
           autocomplete="email"
           placeholder="toi@exemple.com"
+          required
+          [attr.aria-invalid]="invalide('email') || null"
+          [attr.aria-describedby]="invalide('email') ? 'email-erreur' : null"
         />
         @if (invalide('email')) {
-          <p class="champ-erreur">Adresse e-mail invalide.</p>
+          <p class="champ-erreur" id="email-erreur" role="alert">Adresse e-mail invalide.</p>
         }
       </div>
 
       <div class="champ">
-        <label for="mdp">Mot de passe</label>
+        <label for="mdp">
+          Mot de passe
+          <span class="champ-requis" aria-hidden="true">*</span>
+        </label>
         <input
           id="mdp"
           type="password"
           formControlName="mdp"
           autocomplete="current-password"
           placeholder="••••••••"
+          required
+          [attr.aria-invalid]="invalide('mdp') || null"
+          [attr.aria-describedby]="invalide('mdp') ? 'mdp-erreur' : null"
         />
         @if (invalide('mdp')) {
-          <p class="champ-erreur">Mot de passe requis.</p>
+          <p class="champ-erreur" id="mdp-erreur" role="alert">Mot de passe requis.</p>
         }
       </div>
 
