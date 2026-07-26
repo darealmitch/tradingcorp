@@ -23,6 +23,8 @@ export interface EntreeJournal {
   action: string;
   cible: string | null;
   date_action: string;
+  /** E-mail de l'auteur figé à l'écriture — seul repli si son compte a été supprimé. */
+  auteur: string | null;
   profils: { prenom: string; nom: string } | null;
 }
 
@@ -117,6 +119,26 @@ export class AdminService {
     return { motDePasse: data.mot_de_passe };
   }
 
+  /**
+   * Supprime définitivement un compte via l'Edge Function `supprimer-compte`
+   * (auth.users n'est pas accessible au client). Les données liées suivent les
+   * cascades du schéma ; les paiements sont conservés, détachés du profil.
+   * Retourne un message d'erreur prêt à afficher, ou null en cas de succès.
+   */
+  async supprimerProfil(idProfil: string): Promise<string | null> {
+    const { error } = await this.supabase.functions.invoke('supprimer-compte', {
+      body: { id_profil: idProfil },
+    });
+    if (!error) {
+      return null;
+    }
+    if (error instanceof FunctionsHttpError) {
+      const corps = (await error.context.json().catch(() => null)) as { erreur?: string } | null;
+      return corps?.erreur ?? 'La suppression du compte a échoué.';
+    }
+    return 'La suppression du compte a échoué.';
+  }
+
   /** Historique complet des paiements avec le profil payeur (RLS : admin). */
   async listerPaiements(): Promise<PaiementLigne[]> {
     const { data } = await this.supabase
@@ -132,7 +154,7 @@ export class AdminService {
   async listerJournal(): Promise<EntreeJournal[]> {
     const { data } = await this.supabase
       .from('journal_admin')
-      .select('id_journal, action, cible, date_action, profils(prenom, nom)')
+      .select('id_journal, action, cible, date_action, auteur, profils(prenom, nom)')
       .order('date_action', { ascending: false })
       .limit(100);
     return (data as unknown as EntreeJournal[] | null) ?? [];

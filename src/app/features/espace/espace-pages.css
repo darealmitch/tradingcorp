@@ -210,3 +210,16 @@
   padding-inline: 20px;
   font-size: 0.85rem;
 }
+
+/* Action destructrice confirmée (suppression d'un compte). Teinté depuis
+   --down, qui s'adapte déjà aux deux thèmes. */
+.btn-danger {
+  border: 1px solid color-mix(in srgb, var(--down) 45%, var(--line));
+  background: color-mix(in srgb, var(--down) 14%, transparent);
+  color: var(--down-text);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--down) 24%, transparent);
+  border-color: var(--down);
+}

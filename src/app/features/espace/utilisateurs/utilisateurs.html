@@ -101,6 +101,7 @@
             <th>Rôle</th>
             <th>Statut</th>
             <th>Test</th>
+            <th><span class="lecteur-ecran">Actions</span></th>
           </tr>
         </thead>
         <tbody>
@@ -179,6 +180,41 @@
                   (change)="basculerTest(profil, $any($event.target).checked)"
                   [attr.aria-label]="'Compte de test : ' + profil.prenom + ' ' + profil.nom"
                 />
+              </td>
+              <td>
+                @if (profil.id_profil === auth.profil()?.id_profil) {
+                  <span class="cellule-discrete">—</span>
+                } @else if (suppressionId() === profil.id_profil) {
+                  <span class="confirmation-suppression">
+                    <span class="confirmation-texte">Supprimer définitivement ?</span>
+                    <button
+                      class="btn btn-danger btn-compact"
+                      type="button"
+                      [disabled]="suppressionEnCours()"
+                      (click)="confirmerSuppression(profil)"
+                    >
+                      {{ suppressionEnCours() ? 'Suppression…' : 'Confirmer' }}
+                    </button>
+                    <button
+                      class="btn btn-ghost btn-compact"
+                      type="button"
+                      [disabled]="suppressionEnCours()"
+                      (click)="annulerSuppression()"
+                    >
+                      Annuler
+                    </button>
+                  </span>
+                } @else {
+                  <button
+                    class="lien-supprimer"
+                    type="button"
+                    (click)="demanderSuppression(profil)"
+                    title="Supprimer le compte"
+                    [attr.aria-label]="'Supprimer le compte de ' + profil.prenom + ' ' + profil.nom"
+                  >
+                    <app-icone nom="corbeille" [taille]="14" />
+                  </button>
+                }
               </td>
             </tr>
           }
