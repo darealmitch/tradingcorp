@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { NotificationsService } from '../../../core/notifications/notifications.service';
 import { Icone } from '../../../shared/ui/icone';
 
@@ -11,6 +11,10 @@ import { Icone } from '../../../shared/ui/icone';
 })
 export class Notifications {
   protected readonly notifications = inject(NotificationsService);
+
+  protected readonly suiviNonLues = computed(
+    () => this.notifications.suivi().filter((n) => !n.lue).length,
+  );
 
   protected dateEnvoi(iso: string): string {
     return new Intl.DateTimeFormat('fr-FR', {

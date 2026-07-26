@@ -26,6 +26,32 @@
   opacity: 0.55;
 }
 
+/* ===== Fil « à traiter » =====
+   Séparé du suivi par un panneau à part, souligné d'un filet ambré : un achat
+   appelle une action, il ne doit pas se lire comme une ligne de statistique. */
+
+.panneau-urgent {
+  border-color: color-mix(in srgb, var(--attention) 45%, var(--line));
+  box-shadow: inset 3px 0 0 var(--attention);
+}
+
+.badge-statut.est-urgent {
+  border-color: color-mix(in srgb, var(--attention) 55%, transparent);
+  color: var(--attention-text);
+}
+
+.notification.est-urgente .liste-icone {
+  color: var(--attention-text);
+}
+
+.notification.est-urgente .liste-titre {
+  font-weight: 600;
+}
+
+.notification.est-urgente .point-non-lue {
+  background: var(--attention);
+}
+
 .liste-corps {
   display: flex;
   flex-direction: column;
