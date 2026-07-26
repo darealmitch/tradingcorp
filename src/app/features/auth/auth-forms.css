@@ -81,9 +81,23 @@
   color: color-mix(in srgb, var(--muted) 50%, transparent);
 }
 
+/* Astérisque des champs obligatoires : purement visuel, la sémantique est
+   portée par l'attribut `required` (règle required-indicators). */
+.champ-requis {
+  margin-left: 2px;
+  color: var(--down-text);
+}
+
+/* Mention expliquant l'astérisque, en tête de formulaire. */
+.auth-mention {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .champ-erreur {
   margin-top: 6px;
-  color: var(--down);
+  color: var(--down-text);
   font-size: 0.85rem;
 }
 
@@ -99,7 +113,7 @@
   border: 1px solid rgba(255, 92, 122, 0.4);
   border-radius: 12px;
   background: rgba(255, 92, 122, 0.08);
-  color: var(--down);
+  color: var(--down-text);
   font-size: 0.92rem;
 }
 
@@ -109,7 +123,7 @@
   border: 1px solid rgba(52, 226, 154, 0.4);
   border-radius: 12px;
   background: rgba(52, 226, 154, 0.08);
-  color: var(--up);
+  color: var(--up-text);
   font-size: 0.95rem;
 }
 

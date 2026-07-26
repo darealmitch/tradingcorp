@@ -34,7 +34,11 @@
   padding: 24px 26px;
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: linear-gradient(155deg, rgba(20, 24, 40, 0.82), rgba(10, 12, 22, 0.72));
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--surface-2) 82%, transparent),
+    color-mix(in srgb, var(--surface) 72%, transparent)
+  );
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
@@ -153,16 +157,20 @@
 }
 .module-carte[data-etat='termine'] .module-etat {
   border-color: rgba(52, 226, 154, 0.4);
-  color: var(--up);
+  color: var(--up-text);
 }
 
 .module-carte[data-etat='en_cours'] .module-etat {
   border-color: rgba(56, 225, 255, 0.4);
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .module-carte[data-etat='verrouille'] {
-  background: linear-gradient(155deg, rgba(14, 16, 26, 0.7), rgba(8, 9, 16, 0.7));
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--surface) 70%, transparent),
+    color-mix(in srgb, var(--bg) 70%, transparent)
+  );
 }
 .module-carte[data-etat='verrouille'] .module-titre,
 .module-carte[data-etat='verrouille'] .module-numero {

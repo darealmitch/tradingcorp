@@ -13,10 +13,10 @@
   padding: 12px 20px;
   border: 1px solid rgba(56, 225, 255, 0.35);
   border-radius: 14px;
-  background: rgba(9, 11, 19, 0.92);
+  background: color-mix(in srgb, var(--bg-soft) 92%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  color: var(--cyan);
+  color: var(--accent);
   font-size: 0.9rem;
   text-align: center;
 }

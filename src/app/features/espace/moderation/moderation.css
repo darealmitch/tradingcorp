@@ -1,5 +1,5 @@
 .panneau-titre app-icone {
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .moderation-ligne {
@@ -24,7 +24,7 @@
 
 .moderation-note {
   margin-left: 8px;
-  color: var(--cyan);
+  color: var(--accent);
   letter-spacing: 0.15em;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .est-rejet {
-  color: var(--down);
+  color: var(--down-text);
   border-color: rgba(255, 92, 122, 0.35);
 }
 
