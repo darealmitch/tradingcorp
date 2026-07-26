@@ -18,77 +18,105 @@
       <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
         <div class="champs-ligne">
           <div class="champ">
-            <label for="prenom">Prénom</label>
-            <input id="prenom" type="text" formControlName="prenom" autocomplete="given-name" />
+            <label for="prenom">Prénom<span class="champ-requis" aria-hidden="true">*</span></label>
+            <input
+              id="prenom"
+              type="text"
+              formControlName="prenom"
+              required
+              [attr.aria-invalid]="invalide('prenom') || null"
+              autocomplete="given-name"
+            />
             @if (invalide('prenom')) {
-              <p class="champ-erreur">Prénom requis.</p>
+              <p class="champ-erreur" role="alert">Prénom requis.</p>
             }
           </div>
           <div class="champ">
-            <label for="nom">Nom</label>
-            <input id="nom" type="text" formControlName="nom" autocomplete="family-name" />
+            <label for="nom">Nom<span class="champ-requis" aria-hidden="true">*</span></label>
+            <input
+              id="nom"
+              type="text"
+              formControlName="nom"
+              required
+              [attr.aria-invalid]="invalide('nom') || null"
+              autocomplete="family-name"
+            />
             @if (invalide('nom')) {
-              <p class="champ-erreur">Nom requis.</p>
+              <p class="champ-erreur" role="alert">Nom requis.</p>
             }
           </div>
         </div>
 
         <div class="champ">
-          <label for="date_naissance">Date de naissance</label>
+          <label for="date_naissance"
+            >Date de naissance<span class="champ-requis" aria-hidden="true">*</span></label
+          >
           <input
             id="date_naissance"
             type="date"
             formControlName="dateNaissance"
+            required
+            [attr.aria-invalid]="invalide('dateNaissance') || null"
             autocomplete="bday"
             [max]="dateMaxMajeur"
           />
           @if (mineur()) {
-            <p class="champ-erreur">Tu dois avoir au moins 18 ans pour t’inscrire.</p>
+            <p class="champ-erreur" role="alert">Tu dois avoir au moins 18 ans pour t’inscrire.</p>
           } @else if (invalide('dateNaissance')) {
-            <p class="champ-erreur">Date de naissance requise.</p>
+            <p class="champ-erreur" role="alert">Date de naissance requise.</p>
           }
         </div>
 
         <div class="champ">
-          <label for="email">E-mail</label>
+          <label for="email">E-mail<span class="champ-requis" aria-hidden="true">*</span></label>
           <input
             id="email"
             type="email"
             formControlName="email"
+            required
+            [attr.aria-invalid]="invalide('email') || null"
             autocomplete="email"
             placeholder="toi@exemple.com"
           />
           @if (invalide('email')) {
-            <p class="champ-erreur">Adresse e-mail invalide.</p>
+            <p class="champ-erreur" role="alert">Adresse e-mail invalide.</p>
           }
         </div>
 
         <div class="champ">
-          <label for="mdp">Mot de passe</label>
+          <label for="mdp"
+            >Mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
+          >
           <input
             id="mdp"
             type="password"
             formControlName="mdp"
+            required
+            [attr.aria-invalid]="invalide('mdp') || null"
             autocomplete="new-password"
             placeholder="8 caractères minimum"
           />
           @if (invalide('mdp')) {
-            <p class="champ-erreur">8 caractères minimum.</p>
+            <p class="champ-erreur" role="alert">8 caractères minimum.</p>
           }
         </div>
 
         <div class="champ">
-          <label for="confirmation">Confirme le mot de passe</label>
+          <label for="confirmation"
+            >Confirme le mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
+          >
           <input
             id="confirmation"
             type="password"
             formControlName="confirmation"
+            required
+            [attr.aria-invalid]="invalide('confirmation') || null"
             autocomplete="new-password"
           />
           @if (mdpDifferents()) {
-            <p class="champ-erreur">Les mots de passe ne correspondent pas.</p>
+            <p class="champ-erreur" role="alert">Les mots de passe ne correspondent pas.</p>
           } @else if (invalide('confirmation')) {
-            <p class="champ-erreur">Confirmation requise.</p>
+            <p class="champ-erreur" role="alert">Confirmation requise.</p>
           }
         </div>
 
