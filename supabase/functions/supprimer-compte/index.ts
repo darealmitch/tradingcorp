@@ -83,12 +83,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // E-mail relevé AVANT la suppression (après, il n'est plus résolvable),
+    // mais journalisé APRÈS : une tentative qui échoue ne doit pas laisser
+    // dans la piste d'audit la trace d'une suppression qui n'a pas eu lieu.
     const {
       data: { user: utilisateurCible },
     } = await admin.auth.admin.getUserById(idCible);
     const emailCible = utilisateurCible?.email ?? null;
 
-    // Journalisé AVANT la suppression : après, l'e-mail n'est plus résolvable.
+    // Cascade depuis auth.users : révoque aussi sessions et identités.
+    const { error: erreurSuppression } = await admin.auth.admin.deleteUser(idCible);
+    if (erreurSuppression) {
+      console.error('[supprimer-compte]', erreurSuppression);
+      return json({ erreur: 'La suppression du compte a échoué.' }, 500);
+    }
+
+    // Le compte est parti : l'échec de journalisation ne peut plus l'annuler.
+    // On trace l'incident sans faire échouer une suppression déjà effective.
     const { error: erreurJournal } = await admin.from('journal_admin').insert({
       id_profil: appelant.id,
       action: 'suppression_compte',
@@ -101,14 +112,7 @@ Deno.serve(async (req) => {
       },
     });
     if (erreurJournal) {
-      return json({ erreur: "La suppression a été interrompue avant d'être effectuée." }, 500);
-    }
-
-    // Cascade depuis auth.users : révoque aussi sessions et identités.
-    const { error: erreurSuppression } = await admin.auth.admin.deleteUser(idCible);
-    if (erreurSuppression) {
-      console.error('[supprimer-compte]', erreurSuppression);
-      return json({ erreur: 'La suppression du compte a échoué.' }, 500);
+      console.error('[supprimer-compte] journalisation manquée', erreurJournal);
     }
 
     return json({ supprime: true }, 200);
