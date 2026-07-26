@@ -22,7 +22,12 @@
   background:
     radial-gradient(ellipse 60% 50% at 18% 30%, rgba(56, 225, 255, 0.1), transparent 70%),
     radial-gradient(ellipse 50% 45% at 85% 65%, rgba(225, 77, 255, 0.09), transparent 70%),
-    linear-gradient(180deg, rgba(5, 6, 11, 0.55), rgba(5, 6, 11, 0.25) 45%, var(--bg));
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 55%, transparent),
+      color-mix(in srgb, var(--bg) 25%, transparent) 45%,
+      var(--bg)
+    );
 }
 
 .hero-content {
@@ -53,7 +58,7 @@
   padding: 9px 18px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(14, 17, 28, 0.6);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
   font-family: var(--font-display);
   font-size: 0.82rem;
   font-weight: 500;
@@ -89,7 +94,7 @@
   justify-content: center;
   width: 28px;
   height: 46px;
-  border: 1.5px solid rgba(148, 163, 220, 0.4);
+  border: 1.5px solid var(--line-strong);
   border-radius: 999px;
 }
 

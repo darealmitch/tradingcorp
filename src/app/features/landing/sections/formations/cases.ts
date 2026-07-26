@@ -4,6 +4,7 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  effect,
   inject,
   signal,
   viewChild,
@@ -11,6 +12,8 @@ import {
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MediaService } from '../../../../core/media/media.service';
+import { ThemeService } from '../../../../core/theme/theme.service';
+import { rgbJeton } from '../../../../shared/couleurs-theme';
 
 /**
  * Une case : un identifiant (affiché en 01, 02, …), un titre court et son message.
@@ -70,6 +73,7 @@ export class Cases {
   private readonly progressBar = viewChild.required<ElementRef<HTMLElement>>('progressBar');
   private readonly tunnel = viewChild.required<ElementRef<HTMLCanvasElement>>('tunnel');
   private readonly destroyRef = inject(DestroyRef);
+  private readonly theme = inject(ThemeService);
 
   protected readonly media = inject(MediaService);
   protected readonly cases = CASES;
@@ -84,8 +88,15 @@ export class Cases {
   /** Progression brute du scroll (0 → 1), cible que la caméra suit avec inertie. */
   private sceneProgress = 0;
 
+  /** Relit la palette du tunnel depuis les jetons CSS ; posé une fois la scène prête. */
+  private rafraichirCouleurs?: () => void;
+
   constructor() {
     afterNextRender(() => this.initScrollScene());
+    effect(() => {
+      this.theme.theme();
+      this.rafraichirCouleurs?.();
+    });
   }
 
   /**
@@ -140,21 +151,35 @@ export class Cases {
       message: slide.querySelector<HTMLElement>('.slide-message'),
     }));
 
-    const COLORS = ['56, 225, 255', '124, 108, 255', '225, 77, 255'];
+    // Couleurs de marque lues dans les jetons CSS (repli = valeurs du thème sombre).
+    const JETONS: [string, string][] = [
+      ['--cyan', '56, 225, 255'],
+      ['--violet', '124, 108, 255'],
+      ['--magenta', '225, 77, 255'],
+    ];
+    let palette = JETONS.map(([jeton, repli]) => rgbJeton(jeton, repli));
 
     interface Particle {
       x: number;
       y: number;
       z: number;
-      rgb: string;
+      /** Index dans la palette : la couleur suit le thème, pas la particule. */
+      teinte: number;
     }
 
     const particles: Particle[] = Array.from({ length: 160 }, () => ({
       x: (Math.random() - 0.5) * 2,
       y: (Math.random() - 0.5) * 2,
       z: Math.random() * 0.9 + 0.1,
-      rgb: COLORS[Math.floor(Math.random() * COLORS.length)],
+      teinte: Math.floor(Math.random() * palette.length),
     }));
+
+    // Le tunnel est repeint en continu par la scène GSAP : il suffit donc de
+    // relire la palette au changement de thème, sans forcer de rendu.
+    this.rafraichirCouleurs = (): void => {
+      palette = JETONS.map(([jeton, repli]) => rgbJeton(jeton, repli));
+    };
+    this.destroyRef.onDestroy(() => (this.rafraichirCouleurs = undefined));
 
     let width = 0;
     let height = 0;
@@ -197,7 +222,7 @@ export class Cases {
         const depth = 1 - p.z;
         ctx.beginPath();
         ctx.arc(px, py, 0.4 + depth * 2.2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${p.rgb}, ${0.12 + depth * 0.5})`;
+        ctx.fillStyle = `rgba(${palette[p.teinte]}, ${0.12 + depth * 0.5})`;
         ctx.fill();
       }
     };

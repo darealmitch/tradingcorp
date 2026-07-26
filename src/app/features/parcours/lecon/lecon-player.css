@@ -80,7 +80,7 @@
 }
 
 .timeline-point:hover {
-  border-color: rgba(148, 163, 220, 0.4);
+  border-color: var(--line-strong);
   color: var(--text);
 }
 
@@ -96,7 +96,7 @@
 }
 
 .timeline-point.est-verrouille {
-  color: rgba(152, 160, 189, 0.5);
+  color: color-mix(in srgb, var(--muted) 50%, transparent);
   cursor: not-allowed;
 }
 

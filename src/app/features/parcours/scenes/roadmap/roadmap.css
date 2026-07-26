@@ -52,7 +52,7 @@
 .module-numero {
   font-family: var(--font-title);
   font-size: 1.5rem;
-  color: rgba(148, 163, 220, 0.5);
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
   letter-spacing: 0.04em;
 }
 
@@ -91,7 +91,7 @@
   height: 4px;
   margin: 18px 0 16px;
   border-radius: 999px;
-  background: rgba(148, 163, 220, 0.14);
+  background: var(--line);
   overflow: hidden;
 }
 

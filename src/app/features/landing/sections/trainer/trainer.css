@@ -30,7 +30,7 @@
   background:
     radial-gradient(circle at 50% 38%, rgba(124, 108, 255, 0.28), transparent 62%),
     radial-gradient(circle at 70% 80%, rgba(225, 77, 255, 0.2), transparent 60%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+    linear-gradient(180deg, color-mix(in srgb, var(--text) 4%, transparent), transparent);
   border: 1px solid var(--line);
 }
 
@@ -57,7 +57,7 @@
   padding: 10px 20px 10px 12px;
   border: 1px solid rgba(238, 241, 251, 0.22);
   border-radius: 999px;
-  background: rgba(5, 6, 11, 0.55);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   color: var(--text);
@@ -75,7 +75,7 @@
 .trainer-play:focus-visible {
   transform: translateX(-50%) translateY(-3px);
   border-color: rgba(124, 108, 255, 0.6);
-  background: rgba(14, 17, 28, 0.8);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
 }
 
 .trainer-play-icon {
@@ -185,7 +185,7 @@
   padding: 7px 16px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
   font-family: var(--font-display);
   font-size: 0.85rem;
   font-weight: 500;
@@ -241,7 +241,11 @@
   padding: 28px 22px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--text) 2.5%, transparent),
+    transparent
+  );
   transition:
     transform 0.35s var(--ease-out),
     border-color 0.35s;

@@ -116,7 +116,7 @@
   height: 52px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(14, 17, 28, 0.7);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
   cursor: pointer;
   transition:
     transform 0.25s var(--ease-out),
