@@ -59,8 +59,12 @@ export class ThemeService {
       return memorise;
     }
 
+    // `matchMedia` est absent des environnements de test (jsdom) et du rendu
+
+    // serveur : on interroge la préférence système seulement si l'API existe,
+    // et on retombe sinon sur le thème sombre, qui est celui de la marque.
     const vue = this.document.defaultView;
-    return vue?.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    return vue?.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   }
 
   /** Choix explicite déjà mémorisé, ou null si absent / stockage indisponible. */
