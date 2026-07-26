@@ -105,6 +105,35 @@
   color: var(--accent);
 }
 
+/* Même traitement que .lien-corriger, en teinte d'alerte au survol : la
+   suppression reste discrète tant qu'elle n'est pas visée. */
+.lien-supprimer {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.lien-supprimer:hover {
+  color: var(--down-text);
+}
+
+.confirmation-suppression {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirmation-texte {
+  color: var(--down-text);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
 .correction {
   display: flex;
   flex-wrap: wrap;

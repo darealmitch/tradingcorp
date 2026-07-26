@@ -51,6 +51,10 @@ export class Utilisateurs {
     nom: ['', [Validators.required]],
   });
 
+  // Suppression définitive : confirmation exigée sur la ligne concernée.
+  protected readonly suppressionId = signal<string | null>(null);
+  protected readonly suppressionEnCours = signal(false);
+
   constructor() {
     void this.charger();
   }
@@ -168,6 +172,35 @@ export class Utilisateurs {
       this.correctionId.set(null);
     }
     this.enregistrement.set(false);
+  }
+
+  protected demanderSuppression(profil: ProfilAdmin): void {
+    this.erreur.set(null);
+    this.suppressionId.set(profil.id_profil);
+  }
+
+  protected annulerSuppression(): void {
+    this.suppressionId.set(null);
+  }
+
+  /**
+   * Suppression définitive du compte et de ses données liées. Le serveur reste
+   * l'autorité (rôle admin, dernier administrateur, auto-suppression) : on se
+   * contente de relayer son refus.
+   */
+  protected async confirmerSuppression(profil: ProfilAdmin): Promise<void> {
+    this.erreur.set(null);
+    this.suppressionEnCours.set(true);
+    const erreur = await this.admin.supprimerProfil(profil.id_profil);
+    if (erreur) {
+      this.erreur.set(erreur);
+      // Le refus peut venir d'un état devenu obsolète (rôle changé ailleurs).
+      this.profils.set(await this.admin.listerProfils());
+    } else {
+      this.profils.update((profils) => profils.filter((p) => p.id_profil !== profil.id_profil));
+    }
+    this.suppressionId.set(null);
+    this.suppressionEnCours.set(false);
   }
 
   protected inscritLe(profil: ProfilAdmin): string {
