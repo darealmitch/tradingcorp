@@ -18,23 +18,115 @@
   margin: 0;
 }
 
+/* ===========================================================================
+   JETONS DE DESIGN — deux thèmes.
+
+   Séparation stricte :
+   • MARQUE (ci-dessous) : identique dans les deux thèmes, jamais redéclinée.
+   • SÉMANTIQUE (blocs [data-theme]) : surfaces, textes, profondeurs, adaptés.
+
+   Le thème est porté par l'attribut `data-theme` sur <html>, posé par
+   ThemeService au démarrage (préférence système, puis choix mémorisé).
+   =========================================================================== */
+
 :root {
-  --bg: #05060b;
-  --bg-soft: #090b13;
-  --surface: #0e111c;
-  --line: rgba(148, 163, 220, 0.14);
-  --text: #eef1fb;
-  --muted: #98a0bd;
+  /* --- Marque : intouchable, commune aux deux thèmes --- */
   --cyan: #38e1ff;
   --violet: #7c6cff;
   --magenta: #e14dff;
+  --gradient: linear-gradient(92deg, var(--cyan), var(--violet) 52%, var(--magenta));
   --up: #34e29a;
   --down: #ff5c7a;
-  --gradient: linear-gradient(92deg, var(--cyan), var(--violet) 52%, var(--magenta));
+
   --font-display: 'Space Grotesk', 'Inter', sans-serif;
   --font-title: 'Anton', 'Space Grotesk', sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- Thème SOMBRE (défaut) --- */
+:root,
+[data-theme='dark'] {
+  --bg: #05060b;
+  --bg-soft: #090b13;
+  --surface: #0e111c;
+  --surface-2: #141828;
+  --line: rgba(148, 163, 220, 0.14);
+  --line-strong: rgba(148, 163, 220, 0.4);
+  --text: #eef1fb;
+  --muted: #98a0bd;
+
+  /* Accent utilisable tel quel sur fond sombre */
+  --accent: var(--cyan);
+  --accent-soft: rgba(56, 225, 255, 0.12);
+
+  /* Dégradé appliqué à du TEXTE : celui de la marque convient sur fond sombre */
+  --gradient-text: var(--gradient);
+
+  /* « TRADING » du logo — argenté métallique d'origine */
+  --logo-trading: linear-gradient(180deg, #f4f6fb 4%, #c6ccda 52%, #838c9f 100%);
+
+  /* Profondeur : halo lumineux, pas d'ombre portée */
+  --glow: 0 0 40px rgba(124, 108, 255, 0.25);
+  --shadow: none;
+
+  /* Verre dépoli des CTA (voir .btn-primary) */
+  --glass-fill: rgba(255, 255, 255, 0.15);
+  --glass-edge: rgba(255, 255, 255, 0.5);
+  --glass-ghost: rgba(255, 255, 255, 0.02);
+  --glass-ghost-hover: rgba(255, 255, 255, 0.05);
+
+  /* Canvas animés (hero, cases, particules) */
+  --grid-dot: rgba(154, 163, 192, 0.08);
+  --canvas-line-alpha: 0.55;
+  --canvas-glow-alpha: 0.08;
+  --particle-alpha-base: 0.1;
+  --particle-alpha-depth: 0.45;
+
+  --selection: rgba(124, 108, 255, 0.45);
+  color-scheme: dark;
+}
+
+/* --- Thème CLAIR --- */
+[data-theme='light'] {
+  --bg: #f7f8fc;
+  --bg-soft: #eef1f8;
+  --surface: #ffffff;
+  --surface-2: #f2f4fa;
+  --line: #e2e6f0;
+  --line-strong: #cdd4e4;
+  --text: #0e111c;
+  --muted: #5a6480;
+
+  /* Cyan désaturé : le #38e1ff d'origine ne tient pas 4.5:1 sur fond clair */
+  --accent: #0a8fb0;
+  --accent-soft: rgba(10, 143, 176, 0.1);
+
+  /* Dégradé de TEXTE assombri (le cyan de marque tombe à 1,7:1 sur fond clair).
+     Le logo, lui, garde son propre traitement via --logo-trading. */
+  --gradient-text: linear-gradient(92deg, #0a8fb0, #5b46e0 52%, #b81fd4);
+
+  /* « TRADING » du logo — métal sombre : même dégradé vertical, mêmes paliers,
+     valeurs inversées pour rester lisible. Le « CORP » néon ne change jamais. */
+  --logo-trading: linear-gradient(180deg, #4a5268 4%, #232a3a 52%, #0e111c 100%);
+
+  /* Profondeur : ombre douce, le halo n'a pas de sens sur fond clair */
+  --glow: none;
+  --shadow: 0 1px 2px rgba(14, 17, 28, 0.04), 0 8px 24px rgba(14, 17, 28, 0.06);
+
+  --glass-fill: rgba(255, 255, 255, 0.55);
+  --glass-edge: rgba(255, 255, 255, 0.9);
+  --glass-ghost: rgba(14, 17, 28, 0.02);
+  --glass-ghost-hover: rgba(14, 17, 28, 0.05);
+
+  --grid-dot: rgba(90, 100, 128, 0.12);
+  --canvas-line-alpha: 0.4;
+  --canvas-glow-alpha: 0.06;
+  --particle-alpha-base: 0.08;
+  --particle-alpha-depth: 0.3;
+
+  --selection: rgba(124, 108, 255, 0.25);
+  color-scheme: light;
 }
 
 html {
@@ -54,6 +146,15 @@ body {
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.3s var(--ease-out),
+    color 0.3s var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
 }
 
 img,
@@ -88,11 +189,11 @@ h3 {
 }
 
 ::selection {
-  background: rgba(124, 108, 255, 0.45);
+  background: var(--selection);
 }
 
 :focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -107,7 +208,7 @@ h3 {
 }
 
 .text-gradient {
-  background: var(--gradient);
+  background: var(--gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -160,16 +261,23 @@ h3 {
   transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 2.2);
 }
 
+/* En thème clair, le verre blanc sur fond clair manque de tenue : on lui donne
+   un contour net pour que le bouton reste identifiable. */
+[data-theme='light'] .btn-primary {
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow);
+}
+
 .btn-primary::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--glass-fill);
   box-shadow:
-    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
-    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+    inset 2px 2px 1px 0 var(--glass-edge),
+    inset -1px -1px 1px 1px var(--glass-edge);
 }
 
 .btn-primary::after {
@@ -191,13 +299,13 @@ h3 {
 .btn-ghost {
   color: var(--text);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--glass-ghost);
 }
 
 .btn-ghost:hover {
   transform: translateY(-2px);
-  border-color: rgba(148, 163, 220, 0.4);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--line-strong);
+  background: var(--glass-ghost-hover);
 }
 
 /* ===== Bouton de fermeture des modales média (image / vidéo) =====
@@ -258,7 +366,7 @@ h3 {
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  background: var(--gradient);
+  background: var(--gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
