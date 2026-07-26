@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
 import { Formation } from '../../../core/commerce/formation.model';
+import { Icone } from '../../../shared/ui/icone';
 
 const ROLES: Role[] = ['apprenant', 'formateur', 'admin'];
 
@@ -13,7 +14,7 @@ const ROLES: Role[] = ['apprenant', 'formateur', 'admin'];
   selector: 'app-utilisateurs',
   templateUrl: './utilisateurs.html',
   styleUrls: ['../espace-pages.css', './utilisateurs.css'],
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Icone],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Utilisateurs {

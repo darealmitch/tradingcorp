@@ -159,7 +159,12 @@
                 [class.est-faux]="d && !d.correcte"
               >
                 <legend>
-                  <span class="quiz-verdict" aria-hidden="true">{{ d?.correcte ? '✓' : '✗' }}</span>
+                  <span class="quiz-verdict">
+                    <app-icone [nom]="d?.correcte ? 'coche' : 'croix'" [taille]="16" />
+                    <span class="lecteur-ecran">
+                      {{ d?.correcte ? 'Question réussie :' : 'Question manquée :' }}
+                    </span>
+                  </span>
                   {{ q.libelle }}
                 </legend>
                 @for (opt of q.reponses; track opt.id_reponse) {
@@ -171,11 +176,13 @@
                       !estBonneReponse(q.id_question, opt.id_reponse)
                     "
                   >
-                    <span class="quiz-marque" aria-hidden="true">
+                    <span class="quiz-marque">
                       @if (estBonneReponse(q.id_question, opt.id_reponse)) {
-                        ✓
+                        <app-icone nom="coche" [taille]="16" />
+                        <span class="lecteur-ecran">Bonne réponse :</span>
                       } @else if (aEteCochee(q.id_question, opt.id_reponse)) {
-                        ✗
+                        <app-icone nom="croix" [taille]="16" />
+                        <span class="lecteur-ecran">Votre réponse, incorrecte :</span>
                       }
                     </span>
                     <span>{{ opt.contenu }}</span>

@@ -125,6 +125,14 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
         }
+        @case ('croix') {
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        }
+        @case ('crayon') {
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        }
         @case ('soleil') {
           <circle cx="12" cy="12" r="4" />
           <path
