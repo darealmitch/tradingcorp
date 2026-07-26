@@ -119,17 +119,17 @@
 
 .badge-statut.est-succes {
   border-color: rgba(52, 226, 154, 0.4);
-  color: var(--up);
+  color: var(--up-text);
 }
 
 .badge-statut.est-attente {
   border-color: rgba(56, 225, 255, 0.35);
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .badge-statut.est-echec {
   border-color: rgba(255, 92, 122, 0.4);
-  color: var(--down);
+  color: var(--down-text);
 }
 
 /* ===== Listes d'activité ===== */
@@ -155,7 +155,7 @@
   height: 36px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .liste-corps {
@@ -195,12 +195,12 @@
 
 .alerte.est-succes {
   border-color: rgba(52, 226, 154, 0.4);
-  color: var(--up);
+  color: var(--up-text);
 }
 
 .alerte.est-erreur {
   border-color: rgba(255, 92, 122, 0.4);
-  color: var(--down);
+  color: var(--down-text);
 }
 
 /* ===== Boutons compacts (panneaux, tableaux) ===== */

@@ -79,7 +79,7 @@
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .module-titre {
@@ -114,17 +114,17 @@
 
 .module-etiquette.est-debloque {
   border-color: rgba(56, 225, 255, 0.4);
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .module-etiquette.est-en_cours {
   border-color: rgba(124, 108, 255, 0.45);
-  color: var(--violet);
+  color: var(--violet-text);
 }
 
 .module-etiquette.est-termine {
   border-color: rgba(52, 226, 154, 0.4);
-  color: var(--up);
+  color: var(--up-text);
 }
 
 /* ===== Introduction ===== */
@@ -204,7 +204,7 @@
   font-family: var(--font-display);
   font-size: 0.76rem;
   font-weight: 600;
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 /* ===== Pied / CTA ===== */
@@ -249,7 +249,7 @@
 .module-annonce {
   margin-top: 16px;
   font-size: 0.9rem;
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 /* ===== Navigation inter-modules ===== */
@@ -368,7 +368,7 @@
 }
 
 .chapitre.est-intro {
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .chapitre-titre {

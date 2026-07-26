@@ -24,7 +24,7 @@
   margin-top: 16px;
   font-size: 0.88rem;
   font-weight: 500;
-  color: var(--cyan);
+  color: var(--accent);
   transition: opacity 0.2s;
 }
 

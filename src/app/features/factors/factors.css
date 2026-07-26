@@ -141,7 +141,7 @@
   border-radius: 14px;
   border: 1px solid rgba(124, 108, 255, 0.35);
   background: rgba(124, 108, 255, 0.12);
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .factor-icon svg {

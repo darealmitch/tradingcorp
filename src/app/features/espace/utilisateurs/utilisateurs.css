@@ -54,7 +54,7 @@
 
 .champ-erreur {
   font-size: 0.8rem;
-  color: var(--down);
+  color: var(--down-text);
 }
 
 .compte-cree p + p {
@@ -102,7 +102,7 @@
 }
 
 .lien-corriger:hover {
-  color: var(--cyan);
+  color: var(--accent);
 }
 
 .correction {

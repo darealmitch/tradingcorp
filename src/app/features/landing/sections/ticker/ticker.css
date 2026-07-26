@@ -2,7 +2,7 @@
   overflow: hidden;
   border-block: 1px solid var(--line);
   /* Translucide : laisse transparaître le champ de particules de fond */
-  background: rgba(9, 11, 19, 0.72);
+  background: color-mix(in srgb, var(--bg-soft) 72%, transparent);
   padding-block: 18px;
 }
 
@@ -47,11 +47,11 @@
 .ticker-change {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--up);
+  color: var(--up-text);
 }
 
 .ticker-change.is-down {
-  color: var(--down);
+  color: var(--down-text);
 }
 
 @keyframes ticker-scroll {
