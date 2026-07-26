@@ -1,12 +1,19 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { SUPABASE } from '../supabase/supabase.client';
 
+/**
+ * `urgente` demande une action (un achat engage un client) ; `information`
+ * relève du suivi, qui se lit en volume. Deux fils distincts à l'affichage.
+ */
+export type PrioriteNotification = 'urgente' | 'information';
+
 export interface Notification {
   id_notification: string;
   titre: string;
   message: string | null;
   date_envoi: string;
   lue: boolean;
+  priorite: PrioriteNotification;
 }
 
 interface LigneNotification {
@@ -15,6 +22,7 @@ interface LigneNotification {
   message: string | null;
   date_envoi: string;
   lu_le: string | null;
+  priorite: PrioriteNotification;
 }
 
 /**
@@ -30,6 +38,13 @@ export class NotificationsService {
   readonly liste = this.listeSig.asReadonly();
   readonly nonLues = computed(() => this.listeSig().filter((n) => !n.lue).length);
 
+  /** Événements à traiter (achats) — mis en avant, comptés à part. */
+  readonly urgentes = computed(() => this.listeSig().filter((n) => n.priorite === 'urgente'));
+  readonly urgentesNonLues = computed(() => this.urgentes().filter((n) => !n.lue).length);
+
+  /** Suivi de la plateforme : comptes créés, progression des apprenants. */
+  readonly suivi = computed(() => this.listeSig().filter((n) => n.priorite !== 'urgente'));
+
   constructor() {
     void this.recharger();
   }
@@ -37,7 +52,7 @@ export class NotificationsService {
   async recharger(): Promise<void> {
     const { data } = await this.supabase
       .from('notifications')
-      .select('id_notification, titre, message, date_envoi, lu_le')
+      .select('id_notification, titre, message, date_envoi, lu_le, priorite')
       .order('date_envoi', { ascending: false });
     const lignes = (data as LigneNotification[] | null) ?? [];
     this.listeSig.set(

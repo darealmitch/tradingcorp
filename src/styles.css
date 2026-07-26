@@ -37,6 +37,9 @@
   --gradient: linear-gradient(92deg, var(--cyan), var(--violet) 52%, var(--magenta));
   --up: #34e29a;
   --down: #ff5c7a;
+  /* Ambre d'attention : signale ce qui appelle une action (un achat à traiter),
+     distinct du vert « réussi » et du rouge « échec ». */
+  --attention: #ffb020;
 
   --font-display: 'Space Grotesk', 'Inter', sans-serif;
   --font-title: 'Anton', 'Space Grotesk', sans-serif;
@@ -66,6 +69,7 @@
      qu'une couleur de marque sert de `color:`, jamais la couleur brute. */
   --up-text: var(--up);
   --down-text: var(--down);
+  --attention-text: var(--attention);
   --violet-text: var(--violet);
   --magenta-text: var(--magenta);
 
@@ -116,6 +120,8 @@
      toujours aux fonds, bordures et remplissages. */
   --up-text: #0b7a4f;
   --down-text: #c4173c;
+  /* L'ambre de marque tombe à 1,8:1 sur fond clair : brun ambré en texte. */
+  --attention-text: #8a5300;
   --violet-text: #5b46e0;
   --magenta-text: #b81fd4;
 
