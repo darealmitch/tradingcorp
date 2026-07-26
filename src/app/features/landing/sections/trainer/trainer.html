@@ -116,18 +116,13 @@
     role="dialog"
     aria-modal="true"
     aria-label="Lecture vidéo"
+    #dialogue
     tabindex="-1"
-    (click)="closeVideo()"
+    (click)="fermerSiFond($event)"
     (keydown.escape)="closeVideo()"
   >
-    <div class="video-inner" (click)="$event.stopPropagation()">
-      <button
-        class="bouton-fermeture"
-        type="button"
-        (click)="closeVideo()"
-        aria-label="Fermer"
-        autofocus
-      >
+    <div class="video-inner">
+      <button class="bouton-fermeture" type="button" (click)="closeVideo()" aria-label="Fermer">
         <app-icone nom="fermer" [taille]="18" />
       </button>
       @if (video.type === 'embed') {

@@ -107,6 +107,8 @@ const TESTIMONIALS = [
 })
 export class Trainer {
   private readonly portrait = viewChild.required<ElementRef<HTMLElement>>('portrait');
+  /** Conteneur de la lightbox vidéo, ciblé pour y porter le focus à l'ouverture. */
+  private readonly dialogue = viewChild<ElementRef<HTMLElement>>('dialogue');
   private readonly statEls = viewChildren<ElementRef<HTMLElement>>('statValue');
   private readonly destroyRef = inject(DestroyRef);
 
@@ -161,6 +163,19 @@ export class Trainer {
     this.lastTrigger = event.currentTarget as HTMLElement;
     this.activeVideo.set(video);
     document.body.style.overflow = 'hidden';
+    // Remplace `autofocus` (déconseillé) : focus posé après rendu effectif.
+    setTimeout(() => this.dialogue()?.nativeElement.focus({ preventScroll: true }));
+  }
+
+  /**
+   * Ferme si le clic vient du fond et non du contenu. Évite de poser un
+   * gestionnaire sur le conteneur interne, qui en ferait un faux élément
+   * interactif (non focusable et sans équivalent clavier).
+   */
+  protected fermerSiFond(evenement: MouseEvent): void {
+    if (evenement.target === evenement.currentTarget) {
+      this.closeVideo();
+    }
   }
 
   /** Ferme la vidéo (l'élément est détruit → lecture arrêtée) et restaure le focus. */

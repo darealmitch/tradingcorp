@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 import { Icone } from '../../../../shared/ui/icone';
@@ -34,6 +42,9 @@ export class Curriculum {
   /** Élément déclencheur, re-focalisé à la fermeture. */
   private lastTrigger: HTMLElement | null = null;
 
+  /** Conteneur de la lightbox, ciblé pour y porter le focus à l'ouverture. */
+  private readonly dialogue = viewChild<ElementRef<HTMLElement>>('dialogue');
+
   constructor() {
     this.destroyRef.onDestroy(() => (document.body.style.overflow = ''));
   }
@@ -43,6 +54,19 @@ export class Curriculum {
     this.lastTrigger = event.currentTarget as HTMLElement;
     this.certOpen.set(true);
     document.body.style.overflow = 'hidden';
+    // Remplace `autofocus` (déconseillé) : focus posé après rendu effectif.
+    setTimeout(() => this.dialogue()?.nativeElement.focus({ preventScroll: true }));
+  }
+
+  /**
+   * Ferme si le clic vient du fond et non du contenu. Évite de poser un
+   * gestionnaire sur le conteneur interne, qui en ferait un faux élément
+   * interactif (non focusable et sans équivalent clavier).
+   */
+  protected fermerSiFond(evenement: MouseEvent): void {
+    if (evenement.target === evenement.currentTarget) {
+      this.closeCert();
+    }
   }
 
   /** Ferme le certificat, restaure le défilement et rend le focus. */

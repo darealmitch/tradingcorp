@@ -62,8 +62,9 @@
     role="dialog"
     aria-modal="true"
     aria-label="Capture de résultats en grand"
+    #dialogue
     tabindex="-1"
-    (click)="close()"
+    (click)="fermerSiFond($event)"
     (keydown.escape)="close()"
     (keydown.arrowright)="next()"
     (keydown.arrowleft)="prev()"
@@ -77,14 +78,8 @@
       <span aria-hidden="true"></span>
     </button>
 
-    <div class="lightbox-inner" (click)="$event.stopPropagation()">
-      <button
-        class="bouton-fermeture"
-        type="button"
-        (click)="close()"
-        aria-label="Fermer"
-        autofocus
-      >
+    <div class="lightbox-inner">
+      <button class="bouton-fermeture" type="button" (click)="close()" aria-label="Fermer">
         <app-icone nom="fermer" [taille]="18" />
       </button>
       @for (frame of [activeIndex()]; track frame) {
