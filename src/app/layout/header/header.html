@@ -28,6 +28,15 @@
       }
     </nav>
 
+    <button
+      class="theme-toggle"
+      type="button"
+      (click)="theme.basculer()"
+      [attr.aria-label]="theme.estSombre() ? 'Passer en thème clair' : 'Passer en thème sombre'"
+    >
+      <app-icone [nom]="theme.estSombre() ? 'lune' : 'soleil'" [taille]="18" />
+    </button>
+
     @if (!auth.estConnecte()) {
       <a class="btn btn-primary header-cta" routerLink="/inscription">Ouvrir un compte</a>
     } @else {
