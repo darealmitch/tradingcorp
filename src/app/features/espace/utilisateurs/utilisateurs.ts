@@ -174,6 +174,18 @@ export class Utilisateurs {
     this.enregistrement.set(false);
   }
 
+  /**
+   * Reflet de la règle appliquée par l'Edge Function : un administrateur ne se
+   * supprime que par le compte propriétaire. Purement cosmétique — c'est le
+   * serveur qui tranche, l'interface évite seulement un refus prévisible.
+   */
+  protected peutSupprimer(profil: ProfilAdmin): boolean {
+    if (profil.id_profil === this.auth.profil()?.id_profil) {
+      return false;
+    }
+    return profil.role !== 'admin' || (this.auth.profil()?.est_proprietaire ?? false);
+  }
+
   protected demanderSuppression(profil: ProfilAdmin): void {
     this.erreur.set(null);
     this.suppressionId.set(profil.id_profil);
