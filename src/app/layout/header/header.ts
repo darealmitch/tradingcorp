@@ -3,13 +3,15 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { ThemeService } from '../../core/theme/theme.service';
+import { Icone } from '../../shared/ui/icone';
 import { Logo } from '../../shared/ui/logo';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.html',
   styleUrl: './header.css',
-  imports: [RouterLink, RouterLinkActive, Logo],
+  imports: [RouterLink, RouterLinkActive, Logo, Icone],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(window:scroll)': 'onScroll()',
@@ -20,6 +22,7 @@ export class Header {
   private readonly router = inject(Router);
 
   protected readonly auth = inject(AuthService);
+  protected readonly theme = inject(ThemeService);
 
   protected readonly scrolled = signal(false);
   protected readonly menuOpen = signal(false);

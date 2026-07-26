@@ -9,7 +9,7 @@
 }
 
 .site-header.is-scrolled {
-  background: rgba(5, 6, 11, 0.82);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-color: var(--line);
@@ -58,6 +58,30 @@
   display: none;
 }
 
+/* Bascule clair / sombre — reste visible à toutes les tailles d'écran. */
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--glass-ghost);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+  background: var(--glass-ghost-hover);
+}
+
 .header-cta {
   height: 44px;
   padding-inline: 24px;
@@ -92,13 +116,22 @@
 }
 
 @media (max-width: 860px) {
+  /* Gouttière resserrée : seuls la marque et les deux boutons restent en flux. */
+  .header-inner {
+    gap: 12px;
+  }
+
   .header-cta {
     display: none;
   }
 
+  /* C'est la bascule de thème qui pousse le groupe à droite, le burger la suit. */
+  .theme-toggle {
+    margin-left: auto;
+  }
+
   .menu-toggle {
     display: flex;
-    margin-left: auto;
   }
 
   .header-nav {
@@ -109,7 +142,7 @@
     justify-content: center;
     gap: 36px;
     margin: 0;
-    background: rgba(5, 6, 11, 0.96);
+    background: color-mix(in srgb, var(--bg) 96%, transparent);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     opacity: 0;
