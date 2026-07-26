@@ -182,8 +182,16 @@
                 />
               </td>
               <td>
-                @if (profil.id_profil === auth.profil()?.id_profil) {
-                  <span class="cellule-discrete">—</span>
+                @if (!peutSupprimer(profil)) {
+                  <span
+                    class="cellule-discrete"
+                    [title]="
+                      profil.id_profil === auth.profil()?.id_profil
+                        ? 'Tu ne peux pas supprimer ton propre compte'
+                        : 'Seul le propriétaire de la plateforme peut supprimer un administrateur'
+                    "
+                    >—</span
+                  >
                 } @else if (suppressionId() === profil.id_profil) {
                   <span class="confirmation-suppression">
                     <span class="confirmation-texte">Supprimer définitivement ?</span>

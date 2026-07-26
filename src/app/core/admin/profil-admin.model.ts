@@ -12,4 +12,6 @@ export interface ProfilAdmin {
   doit_changer_mdp: boolean;
   /** Compte de démonstration, exclu des statistiques. */
   est_test: boolean;
+  /** Compte propriétaire : seul habilité à supprimer un administrateur. */
+  est_proprietaire: boolean;
 }

@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
 
     const { data: profilAppelant } = await admin
       .from('profils')
-      .select('role')
+      .select('role, est_proprietaire')
       .eq('id_profil', appelant.id)
       .maybeSingle();
     if (profilAppelant?.role !== 'admin') {
@@ -72,8 +72,19 @@ Deno.serve(async (req) => {
       return json({ erreur: 'Profil introuvable.' }, 404);
     }
 
-    // Un back-office sans administrateur ne se rattrape pas depuis l'application.
+    // Supprimer un pair est réservé au compte propriétaire (profils.est_proprietaire).
+    // Contrôle porté par le serveur : l'Edge Function est l'unique voie de
+    // suppression, auth.users étant hors de portée du client. Le masquage du
+    // bouton côté interface n'est qu'un confort, jamais la garantie.
     if (cible.role === 'admin') {
+      if (!profilAppelant.est_proprietaire) {
+        return json(
+          { erreur: 'Seul le propriétaire de la plateforme peut supprimer un administrateur.' },
+          403,
+        );
+      }
+
+      // Un back-office sans administrateur ne se rattrape pas depuis l'application.
       const { count } = await admin
         .from('profils')
         .select('id_profil', { count: 'exact', head: true })
