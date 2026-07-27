@@ -121,10 +121,17 @@ export class ContenuService {
   async chargerLeconJouable(idLecon: string): Promise<LeconJouable | null> {
     const [{ data: lecon }, { data: ressources }] = await Promise.all([
       this.supabase.rpc('lecon_contenu', { p_id_lecon: idLecon }).maybeSingle(),
+      // Les ressources inactives et les leçons verrouillées sont écartées par
+      // la RLS (`ressources_select_gated`) : rien à filtrer ici.
       this.supabase
         .from('ressources')
-        .select('id_ressource, nom, type_mime, cloudinary_public_id, chemin_storage, taille')
-        .eq('id_lecon', idLecon),
+        .select(
+          'id_ressource, nom, type, description, type_mime, cloudinary_public_id, ' +
+            'chemin_storage, url, contenu, langage, taille, position',
+        )
+        .eq('id_lecon', idLecon)
+        .order('position')
+        .order('date_creation'),
     ]);
     if (!lecon) {
       return null;

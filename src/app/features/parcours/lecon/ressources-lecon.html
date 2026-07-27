@@ -1,0 +1,67 @@
+@if (ressources().length > 0) {
+  <section class="ressources">
+    <h2 class="lecon-sous-titre">Ressources complémentaires</h2>
+
+    @if (liens().length > 0) {
+      <ul class="ressources-liste">
+        @for (r of liens(); track r.id_ressource) {
+          <li class="ressource" [class.est-partenaire]="r.type === 'partenaire'">
+            <span class="ressource-icone" aria-hidden="true">
+              <app-icone [nom]="presentation(r).icone" [taille]="16" />
+            </span>
+
+            <span class="ressource-corps">
+              <span class="ressource-categorie">{{ presentation(r).categorie }}</span>
+              <span class="ressource-nom">{{ r.nom }}</span>
+              @if (r.description) {
+                <span class="ressource-description">{{ r.description }}</span>
+              }
+            </span>
+
+            @if (poids(r); as p) {
+              <span class="ressource-poids">{{ p }}</span>
+            }
+
+            @if (href(r); as lien) {
+              <a
+                class="btn btn-ghost btn-compact ressource-action"
+                [href]="lien"
+                [attr.target]="estExterne(r) ? '_blank' : '_blank'"
+                rel="noopener noreferrer"
+                [attr.download]="r.type === 'fichier' ? r.nom : null"
+              >
+                {{ presentation(r).action }}
+                @if (estExterne(r)) {
+                  <app-icone nom="fleche" [taille]="13" />
+                }
+              </a>
+            } @else {
+              <span class="ressource-attente">Bientôt disponible</span>
+            }
+          </li>
+        }
+      </ul>
+    }
+
+    @for (r of embarquees(); track r.id_ressource) {
+      <article class="ressource-bloc">
+        <header class="bloc-tete">
+          <span class="ressource-categorie">{{ presentation(r).categorie }}</span>
+          <h3 class="bloc-titre">{{ r.nom }}</h3>
+          @if (r.description) {
+            <p class="ressource-description">{{ r.description }}</p>
+          }
+        </header>
+
+        @if (r.type === 'code') {
+          <pre class="bloc-code"><code>{{ r.contenu }}</code></pre>
+          @if (r.langage) {
+            <span class="bloc-langage">{{ r.langage }}</span>
+          }
+        } @else {
+          <pre class="bloc-doc">{{ r.contenu }}</pre>
+        }
+      </article>
+    }
+  </section>
+}

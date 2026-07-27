@@ -248,6 +248,10 @@
       }
     }
 
+    <!-- Ressources complémentaires : après le contenu du chapitre, quel qu'en
+         soit le type, et avant le passage à l'étape suivante. -->
+    <app-ressources-lecon [ressources]="l.ressources" />
+
     @if (etapeSuivante(); as suivante) {
       <button
         class="btn btn-ghost lecon-suivante"
