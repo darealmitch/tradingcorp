@@ -73,6 +73,13 @@
   --violet-text: var(--violet);
   --magenta-text: var(--magenta);
 
+  /* Teintes d'ÉTAT (bordures, fonds, filets). Séparées des jetons de texte :
+     un fond n'a pas les mêmes exigences de contraste qu'un libellé, et chaque
+     thème doit pouvoir les décliner. Sur fond sombre, ce sont les couleurs de
+     marque telles quelles — le rendu actuel est conservé à l'identique. */
+  --accent-etat: var(--accent);
+  --up-etat: var(--up);
+
   /* Dégradé appliqué à du TEXTE : celui de la marque convient sur fond sombre */
   --gradient-text: var(--gradient);
 
@@ -111,17 +118,39 @@
   --text: #0e111c;
   --muted: #5a6480;
 
-  /* Cyan désaturé : le #38e1ff d'origine ne tient pas 4.5:1 sur fond clair */
-  --accent: #0a8fb0;
-  --accent-soft: rgba(10, 143, 176, 0.1);
+  /* Accent ENCRE. Le cyan désaturé qui occupait cette place (#0a8fb0) était
+     réputé tenir 4,5:1 — mesure faite, il plafonnait à 3,55:1 sur --bg et
+     3,34:1 sur --surface : sous le seuil AA, pour tous les libellés qui s'en
+     servent (badges, étiquettes, puces, annonces).
+     Un graphite bleuté joue le même rôle de signal avec 14,6:1, et sert le
+     parti monochrome des interfaces financières haut de gamme.
+     Volontairement distinct de --text (#0e111c) : accent et corps de texte
+     doivent rester dissociables.
+     Le cyan de MARQUE (--cyan, dégradé, logo, canvas) n'est pas touché. */
+  --accent: #1e2433;
+  --accent-soft: rgba(30, 36, 51, 0.07);
 
   /* Couleurs de marque assombries pour rester lisibles en texte sur fond clair.
      Les couleurs de marque brutes (--up, --down…) restent inchangées et servent
      toujours aux fonds, bordures et remplissages. */
-  --up-text: #0b7a4f;
+  /* Vert : le #0b7a4f précédent était très saturé (83 %) et sombre — un vert
+     « bouteille » qui jurait avec le menthe néon de la marque encore utilisé,
+     lui, sur les bordures et les fonds. La dissonance venait de là, pas du
+     manque de luminosité. On désature vers un émeraude profond, et surtout on
+     décline la MÊME teinte sur les états (--up-etat) pour que texte, filet et
+     fond parlent enfin d'une seule voix. Contraste 6:1. */
+  --up-text: #1a6b4f;
   --down-text: #c4173c;
   /* L'ambre de marque tombe à 1,8:1 sur fond clair : brun ambré en texte. */
   --attention-text: #8a5300;
+
+  /* États : sur fond clair, la menthe néon de la marque est trop lumineuse pour
+     un filet — mais le vert de TEXTE est, lui, trop sombre : dilué à 40 %, il
+     vire au vert-gris terne. D'où une troisième valeur, uniquement pour les
+     bordures et les fonds : un émeraude franc, qui reste vert une fois
+     transparent. Le texte garde --up-text, plus dense, pour la lisibilité. */
+  --accent-etat: var(--accent);
+  --up-etat: #10a86e;
   --violet-text: #5b46e0;
   --magenta-text: #b81fd4;
 

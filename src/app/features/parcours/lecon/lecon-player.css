@@ -85,13 +85,13 @@
 }
 
 .timeline-point.est-actif {
-  border-color: var(--cyan);
+  border-color: var(--accent);
   color: var(--accent);
-  background: rgba(56, 225, 255, 0.08);
+  background: color-mix(in srgb, var(--accent-etat) 8%, transparent);
 }
 
 .timeline-point.est-termine {
-  border-color: rgba(52, 226, 154, 0.35);
+  border-color: color-mix(in srgb, var(--up-etat) 35%, transparent);
   color: var(--up-text);
 }
 
@@ -211,8 +211,8 @@
   align-items: center;
   gap: 14px;
   color: var(--up-text);
-  border: 1px solid rgba(52, 226, 154, 0.35);
-  background: rgba(52, 226, 154, 0.05);
+  border: 1px solid color-mix(in srgb, var(--up-etat) 35%, transparent);
+  background: color-mix(in srgb, var(--up-etat) 6%, transparent);
 }
 
 .lecon-sous-titre {

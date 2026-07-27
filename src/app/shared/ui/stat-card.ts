@@ -44,8 +44,8 @@ import { Icone } from './icone';
       height: 38px;
       border: 1px solid var(--line);
       border-radius: 12px;
-      color: var(--cyan);
-      background: rgba(56, 225, 255, 0.06);
+      color: var(--accent);
+      background: color-mix(in srgb, var(--accent-etat) 7%, transparent);
     }
 
     .stat-libelle {

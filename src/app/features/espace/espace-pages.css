@@ -117,18 +117,26 @@
   white-space: nowrap;
 }
 
+/* Chaque statut porte la couleur de son sens, et non celle de l'accent de
+   l'interface : vert pour ce qui est acquis, ambre pour ce qui attend une
+   action, rouge pour ce qui a échoué. Un aplat très léger complète le filet —
+   une pastille cerclée seule reste flottante sur fond clair. */
+
 .badge-statut.est-succes {
-  border-color: rgba(52, 226, 154, 0.4);
+  border-color: color-mix(in srgb, var(--up-etat) 45%, transparent);
+  background: color-mix(in srgb, var(--up-etat) 10%, transparent);
   color: var(--up-text);
 }
 
 .badge-statut.est-attente {
-  border-color: rgba(56, 225, 255, 0.35);
-  color: var(--accent);
+  border-color: color-mix(in srgb, var(--attention) 50%, transparent);
+  background: color-mix(in srgb, var(--attention) 13%, transparent);
+  color: var(--attention-text);
 }
 
 .badge-statut.est-echec {
-  border-color: rgba(255, 92, 122, 0.4);
+  border-color: color-mix(in srgb, var(--down) 45%, transparent);
+  background: color-mix(in srgb, var(--down) 10%, transparent);
   color: var(--down-text);
 }
 
@@ -194,12 +202,12 @@
 }
 
 .alerte.est-succes {
-  border-color: rgba(52, 226, 154, 0.4);
+  border-color: color-mix(in srgb, var(--up-etat) 40%, transparent);
   color: var(--up-text);
 }
 
 .alerte.est-erreur {
-  border-color: rgba(255, 92, 122, 0.4);
+  border-color: color-mix(in srgb, var(--down) 40%, transparent);
   color: var(--down-text);
 }
 
