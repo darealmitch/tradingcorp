@@ -11,7 +11,8 @@
     </div>
 
     @if (auth.profil(); as profil) {
-      <span class="badge-statut est-attente profil-role">{{ profil.role }}</span>
+      <!-- Le rôle est une information, pas un statut d'attente : badge neutre. -->
+      <span class="badge-statut profil-role">{{ profil.role }}</span>
     }
   </div>
 
