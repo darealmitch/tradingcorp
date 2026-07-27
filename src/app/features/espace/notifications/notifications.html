@@ -52,10 +52,10 @@
     <div class="panneau-tete">
       <h2 class="panneau-titre">
         Suivi de la plateforme
+        <!-- Badge neutre : l'ambre est réservé au fil « à traiter » juste au-dessus.
+             Deux pastilles ambrées côte à côte annuleraient la distinction. -->
         @if (suiviNonLues(); as compte) {
-          <span class="badge-statut est-attente"
-            >{{ compte }} non lue{{ compte > 1 ? 's' : '' }}</span
-          >
+          <span class="badge-statut">{{ compte }} non lue{{ compte > 1 ? 's' : '' }}</span>
         }
       </h2>
       <button
