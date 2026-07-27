@@ -11,7 +11,7 @@
   max-width: 560px;
   margin: 0 auto 12px;
   padding: 12px 20px;
-  border: 1px solid rgba(56, 225, 255, 0.35);
+  border: 1px solid color-mix(in srgb, var(--accent-etat) 35%, transparent);
   border-radius: 14px;
   background: color-mix(in srgb, var(--bg-soft) 92%, transparent);
   backdrop-filter: blur(10px);

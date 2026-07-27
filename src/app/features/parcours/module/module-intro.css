@@ -5,13 +5,28 @@
 :host {
   display: block;
   padding: 108px 24px 0;
+
+  /* Rythme vertical. Les marges étaient posées au cas par cas (14, 20, 24, 28,
+     34, 40, 56, 64, 96) : aucune progression lisible, donc aucune hiérarchie
+     perceptible entre « respiration dans un bloc » et « rupture entre deux
+     sections ». Échelle de 4 pas, appliquée partout ci-dessous. */
+  --pas-1: 8px;
+  --pas-2: 16px;
+  --pas-3: 24px;
+  --pas-4: 40px;
+  --pas-5: 64px;
+  --pas-6: 96px;
+
+  /* Mesure de lecture : 66 caractères. Au-delà, l'œil perd la ligne suivante
+     en fin de retour chariot — le bloc faisait ~84 caractères de large. */
+  --mesure: 66ch;
 }
 
 .module {
   position: relative;
   max-width: 760px;
   margin-inline: auto;
-  padding-block: 8px 96px;
+  padding-block: var(--pas-1) var(--pas-6);
 }
 
 /* Lueur unique en haut de page : profondeur, sans décor. */
@@ -50,7 +65,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 40px;
+  margin-bottom: var(--pas-4);
   color: var(--muted);
   font-size: 0.88rem;
   transition: color 0.2s;
@@ -68,12 +83,12 @@
 
 .module-tete {
   position: relative;
-  margin-bottom: 56px;
+  margin-bottom: var(--pas-5);
 }
 
 .module-eyebrow {
   display: block;
-  margin-bottom: 14px;
+  margin-bottom: var(--pas-2);
   font-family: var(--font-display);
   font-size: 0.76rem;
   font-weight: 600;
@@ -90,17 +105,19 @@
   text-transform: uppercase;
 }
 
+/* Accroche : sous-titre du h1, donc rattachée visuellement au titre (marge
+   courte) et nettement détachée de l'étiquette qui suit. */
 .module-accroche {
-  max-width: 620px;
-  margin-top: 20px;
-  font-size: clamp(1.02rem, 2.2vw, 1.2rem);
-  line-height: 1.65;
+  max-width: var(--mesure);
+  margin-top: var(--pas-3);
+  font-size: clamp(1.05rem, 2.2vw, 1.24rem);
+  line-height: 1.6;
   color: var(--muted);
 }
 
 .module-etiquette {
   display: inline-block;
-  margin-top: 24px;
+  margin-top: var(--pas-4);
   padding: 5px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -113,7 +130,7 @@
 }
 
 .module-etiquette.est-debloque {
-  border-color: rgba(56, 225, 255, 0.4);
+  border-color: color-mix(in srgb, var(--accent-etat) 40%, transparent);
   color: var(--accent);
 }
 
@@ -123,7 +140,7 @@
 }
 
 .module-etiquette.est-termine {
-  border-color: rgba(52, 226, 154, 0.4);
+  border-color: color-mix(in srgb, var(--up-etat) 40%, transparent);
   color: var(--up-text);
 }
 
@@ -131,7 +148,7 @@
 
 .module-intro {
   position: relative;
-  padding: 34px 36px;
+  padding: var(--pas-4) var(--pas-4) var(--pas-4) calc(var(--pas-4) + var(--pas-1));
   border: 1px solid var(--line);
   border-left: 2px solid transparent;
   border-radius: 18px;
@@ -142,29 +159,37 @@
   background-clip: padding-box, border-box;
 }
 
+/* Corps de texte en --text, plus en --muted : du gris sur un fond gris
+   (--bg-soft) reste au ras du minimum de contraste et fatigue sur plusieurs
+   paragraphes. La hiérarchie passe désormais par la taille et l'interligne,
+   pas par un affaiblissement de la couleur. */
 .module-intro p {
-  color: var(--muted);
-  line-height: 1.85;
+  max-width: var(--mesure);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.8;
 }
 
 .module-intro p + p {
-  margin-top: 20px;
+  margin-top: var(--pas-3);
 }
 
+/* Chapô : c'est lui qui porte l'entrée en matière. */
 .module-intro p.est-lead {
-  font-size: clamp(1.05rem, 2.4vw, 1.28rem);
-  line-height: 1.7;
+  font-size: clamp(1.08rem, 2.4vw, 1.3rem);
+  line-height: 1.65;
+  letter-spacing: -0.005em;
   color: var(--text);
 }
 
 /* ===== Objectifs ===== */
 
 .module-objectifs {
-  margin-top: 64px;
+  margin-top: var(--pas-5);
 }
 
 .module-sous-titre {
-  margin-bottom: 28px;
+  margin-bottom: var(--pas-3);
   font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 600;
@@ -180,13 +205,22 @@
   list-style: none;
 }
 
+/* align-items: flex-start, et non center : sur un objectif qui passe à deux
+   lignes, une puce centrée verticalement flottait au milieu du texte au lieu
+   de marquer son début. Le décalage optique la cale sur la première ligne. */
 .module-objectifs li {
   display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 18px 4px;
+  align-items: flex-start;
+  gap: var(--pas-2);
+  padding: var(--pas-3) 4px;
   border-bottom: 1px solid var(--line);
   font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.module-objectifs li > span:last-child {
+  max-width: var(--mesure);
+  padding-top: 1px;
 }
 
 .module-objectifs li:last-child {
@@ -197,26 +231,28 @@
   display: grid;
   place-content: center;
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 9px;
   font-family: var(--font-display);
   font-size: 0.76rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--accent);
+  background: var(--accent-soft);
 }
 
 /* ===== Pied / CTA ===== */
 
 .module-pied {
-  margin-top: 64px;
-  padding-top: 40px;
+  margin-top: var(--pas-5);
+  padding-top: var(--pas-4);
   border-top: 1px solid var(--line);
 }
 
 .module-avancee {
-  margin-bottom: 24px;
+  margin-bottom: var(--pas-3);
 }
 
 .avancee-rail {
@@ -247,7 +283,7 @@
 }
 
 .module-annonce {
-  margin-top: 16px;
+  margin-top: var(--pas-2);
   font-size: 0.9rem;
   color: var(--accent);
 }
@@ -255,8 +291,8 @@
 /* ===== Navigation inter-modules ===== */
 
 .module-nav {
-  margin-top: 40px;
-  padding-top: 28px;
+  margin-top: var(--pas-4);
+  padding-top: var(--pas-3);
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
@@ -314,12 +350,12 @@
 }
 
 .module-chapitres {
-  margin-top: 56px;
+  margin-top: var(--pas-5);
 }
 
 .chapitres-liste {
   list-style: none;
-  margin: 20px 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -333,7 +369,7 @@
 }
 
 .chapitre.est-termine {
-  border-color: rgba(52, 226, 154, 0.4);
+  border-color: color-mix(in srgb, var(--up-etat) 40%, transparent);
 }
 
 .chapitre.est-verrouille {
@@ -392,29 +428,25 @@
 }
 
 .chapitre.est-termine .chapitre-type {
-  border-color: rgba(52, 226, 154, 0.4);
-  color: var(--vert, #34e29a);
+  border-color: color-mix(in srgb, var(--up-etat) 40%, transparent);
+  color: var(--up-text);
 }
 
+/* Sur petit écran, l'échelle se resserre d'un cran : les ruptures de section
+   restent perceptibles sans imposer de longs défilements à vide. */
 @media (max-width: 720px) {
-  .module {
-    padding-bottom: 64px;
-  }
-
-  .module-chapitres {
-    margin-top: 44px;
-  }
-
-  .module-tete {
-    margin-bottom: 40px;
+  :host {
+    --pas-4: 32px;
+    --pas-5: 48px;
+    --pas-6: 64px;
   }
 
   .module-intro {
-    padding: 26px 22px;
+    padding: var(--pas-3) var(--pas-3) var(--pas-3) var(--pas-4);
   }
 
-  .module-objectifs {
-    margin-top: 48px;
+  .module-objectifs li {
+    padding-block: var(--pas-2);
   }
 
   .module-cta {

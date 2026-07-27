@@ -93,8 +93,8 @@ import { Reveal } from '../../../shared/reveal';
       border-color: var(--up);
     }
     .prog-point[data-etat='en_cours'] {
-      background: var(--cyan);
-      border-color: var(--cyan);
+      background: var(--accent);
+      border-color: var(--accent);
     }
     .prog-point[data-etat='debloque'] {
       background: var(--violet);

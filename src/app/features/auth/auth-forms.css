@@ -120,9 +120,9 @@
 .form-succes {
   margin: 0 0 18px;
   padding: 14px 16px;
-  border: 1px solid rgba(52, 226, 154, 0.4);
+  border: 1px solid color-mix(in srgb, var(--up-etat) 40%, transparent);
   border-radius: 12px;
-  background: rgba(52, 226, 154, 0.08);
+  background: color-mix(in srgb, var(--up-etat) 9%, transparent);
   color: var(--up-text);
   font-size: 0.95rem;
 }

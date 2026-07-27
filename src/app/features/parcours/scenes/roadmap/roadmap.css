@@ -153,15 +153,15 @@
 /* ===== Accents par état ===== */
 
 .module-carte[data-etat='termine'] {
-  border-color: rgba(52, 226, 154, 0.4);
+  border-color: color-mix(in srgb, var(--up-etat) 40%, transparent);
 }
 .module-carte[data-etat='termine'] .module-etat {
-  border-color: rgba(52, 226, 154, 0.4);
+  border-color: color-mix(in srgb, var(--up-etat) 40%, transparent);
   color: var(--up-text);
 }
 
 .module-carte[data-etat='en_cours'] .module-etat {
-  border-color: rgba(56, 225, 255, 0.4);
+  border-color: color-mix(in srgb, var(--accent-etat) 40%, transparent);
   color: var(--accent);
 }
 

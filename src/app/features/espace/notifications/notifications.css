@@ -62,7 +62,7 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--cyan);
+  background: var(--accent);
 }
 
 .btn-compact:disabled {
