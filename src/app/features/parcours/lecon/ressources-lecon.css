@@ -1,6 +1,13 @@
 /* Ressources complémentaires d'une leçon.
    Reprend les jetons globaux : aucune couleur en dur, thèmes suivis. */
 
+/* Un composant Angular est `inline` par défaut : sans cela, l'hôte ne
+   participe pas au flux de blocs et les marges de la section ne séparent
+   plus correctement le bloc de ce qui le suit. */
+:host {
+  display: block;
+}
+
 .ressources {
   margin-top: 40px;
   padding-top: 32px;
