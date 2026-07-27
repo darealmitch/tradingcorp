@@ -1,0 +1,40 @@
+/* Inventaire des ressources dans la colonne « Médias ».
+   Pastilles compactes : le tableau doit rester lisible d'un coup d'œil. */
+
+.ressources-pastilles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.pastille-ressource {
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--up-etat) 40%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--up-etat) 10%, transparent);
+  color: var(--up-text);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: default;
+}
+
+/* Retirée volontairement : la ressource existe et fonctionne, elle est juste
+   masquée aux apprenants. Traitement neutre, pas d'alerte. */
+.pastille-ressource.est-inactive {
+  border-color: var(--line);
+  background: none;
+  color: var(--muted);
+}
+
+/* Aucune source : la ressource ne peut pas être affichée tant que le fichier
+   n'est pas en ligne. C'est l'état qui demande une action. */
+.pastille-ressource.est-incomplete {
+  border-color: color-mix(in srgb, var(--attention) 45%, transparent);
+  background: color-mix(in srgb, var(--attention) 12%, transparent);
+  color: var(--attention-text);
+}
