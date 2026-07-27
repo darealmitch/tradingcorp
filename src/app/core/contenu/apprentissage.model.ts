@@ -55,6 +55,22 @@ export interface LeconResume {
   video_provider_id: string | null;
   /** public_id Cloudinary du PDF principal de la leçon. */
   pdf_public_id: string | null;
+  /**
+   * Ressources complémentaires — jointes uniquement par `chargerStructure()`
+   * pour l'inventaire du back-office. Absentes des autres lectures.
+   */
+  ressources?: RessourceResume[];
+}
+
+/** Ressource vue depuis le back-office : de quoi juger son état d'un coup d'œil. */
+export interface RessourceResume {
+  id_ressource: string;
+  nom: string;
+  type: TypeRessource;
+  est_active: boolean;
+  cloudinary_public_id: string | null;
+  url: string | null;
+  contenu: string | null;
 }
 
 /** Module (section) d'une formation, avec ses étapes ordonnées. */

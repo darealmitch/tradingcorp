@@ -1,10 +1,23 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ContenuService, LeconResume, Module } from '../../../core/contenu/contenu.service';
+import { RessourceResume, TypeRessource } from '../../../core/contenu/apprentissage.model';
+
+/** Libellés compacts : la colonne Médias est étroite. */
+const TYPES_COURTS: Record<TypeRessource, string> = {
+  pdf: 'PDF',
+  audio: 'Audio',
+  video: 'Vidéo',
+  fichier: 'Fichier',
+  lien: 'Lien',
+  documentation: 'Doc',
+  code: 'Code',
+  partenaire: 'Partenaire',
+};
 
 @Component({
   selector: 'app-contenus',
   templateUrl: './contenus.html',
-  styleUrl: '../espace-pages.css',
+  styleUrls: ['../espace-pages.css', './contenus.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Contenus {
@@ -26,7 +39,7 @@ export class Contenus {
     return lecon.duree_s ? `${Math.round(lecon.duree_s / 60)} min` : '—';
   }
 
-  /** Médias rattachés à l'étape (référence Cloudinary présente ou non). */
+  /** Médias propres à l'étape (vidéo principale et PDF de support). */
   protected medias(lecon: LeconResume): string {
     const items: string[] = [];
     if (lecon.video_provider_id) {
@@ -36,5 +49,30 @@ export class Contenus {
       items.push('PDF');
     }
     return items.length ? items.join(' + ') : '—';
+  }
+
+  protected ressources(lecon: LeconResume): RessourceResume[] {
+    return lecon.ressources ?? [];
+  }
+
+  /** Libellé court du type, pour la pastille de la colonne Médias. */
+  protected typeRessource(r: RessourceResume): string {
+    return TYPES_COURTS[r.type] ?? r.type;
+  }
+
+  /**
+   * Une ressource est exploitable dès qu'elle a une source. Sans source, elle
+   * attend son fichier : la pastille le signale au lieu de laisser croire que
+   * la ressource est en ligne.
+   */
+  protected estPrete(r: RessourceResume): boolean {
+    return Boolean(r.cloudinary_public_id || r.url || r.contenu);
+  }
+
+  protected etatRessource(r: RessourceResume): string {
+    if (!this.estPrete(r)) {
+      return 'Fichier attendu';
+    }
+    return r.est_active ? 'En ligne' : 'Désactivée';
   }
 }

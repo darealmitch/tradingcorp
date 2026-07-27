@@ -48,7 +48,23 @@
               <tr>
                 <td>{{ lecon.titre }}</td>
                 <td class="cellule-discrete">{{ duree(lecon) }}</td>
-                <td class="cellule-discrete">{{ medias(lecon) }}</td>
+                <td>
+                  <span class="cellule-discrete">{{ medias(lecon) }}</span>
+                  @if (ressources(lecon).length > 0) {
+                    <span class="ressources-pastilles">
+                      @for (r of ressources(lecon); track r.id_ressource) {
+                        <span
+                          class="pastille-ressource"
+                          [class.est-inactive]="!r.est_active"
+                          [class.est-incomplete]="!estPrete(r)"
+                          [title]="r.nom + ' — ' + etatRessource(r)"
+                        >
+                          {{ typeRessource(r) }}
+                        </span>
+                      }
+                    </span>
+                  }
+                </td>
                 <td class="cellule-discrete">{{ lecon.apercu_gratuit ? 'Oui' : '—' }}</td>
                 <td>
                   @if (lecon.est_publiee) {
