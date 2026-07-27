@@ -29,7 +29,22 @@ grant execute on function public.lister_profils_admin() to authenticated;
 
 -- changer_surnom : le surnom a été retiré du produit (cf. retrait_surnom),
 -- plus aucun appelant. On coupe tout accès direct.
-revoke execute on function public.changer_surnom(text) from public;
+--
+-- Conditionnel : retrait_surnom (20260717130000) est ANTÉRIEURE et supprime
+-- déjà la fonction. Sur une base rejouée depuis zéro elle n'existe donc plus
+-- ici, et un revoke sec interromprait la migration. Le cas s'est présenté en
+-- réel : retrait_surnom n'avait jamais été appliquée sur la base distante, où
+-- la fonction survivait — d'où ce revoke qui y fonctionnait.
+do $$
+begin
+  if exists (
+    select 1 from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'changer_surnom'
+  ) then
+    execute 'revoke execute on function public.changer_surnom(text) from public';
+  end if;
+end $$;
 
 -- Triggers : jamais appelés en RPC (ils s'exécutent via le déclencheur, pas via
 -- un GRANT). On retire tout accès direct à la racine PUBLIC.

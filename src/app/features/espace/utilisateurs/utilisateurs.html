@@ -151,6 +151,12 @@
               <td>
                 @if (profil.id_profil === auth.profil()?.id_profil) {
                   <span class="cellule-discrete">{{ profil.role }} (toi)</span>
+                } @else if (profil.est_proprietaire) {
+                  <span
+                    class="cellule-discrete"
+                    title="Le compte propriétaire ne peut pas être modifié"
+                    >{{ profil.role }} (propriétaire)</span
+                  >
                 } @else {
                   <select
                     class="selecteur-role"

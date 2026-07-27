@@ -72,9 +72,13 @@ export class AdminService {
     if (!error) {
       return null;
     }
-    return error.message.includes('propre rôle')
-      ? 'Tu ne peux pas modifier ton propre rôle.'
-      : 'Le changement de rôle a échoué. Réessaie.';
+    if (error.message.includes('propre rôle')) {
+      return 'Tu ne peux pas modifier ton propre rôle.';
+    }
+    if (error.message.includes('propriétaire')) {
+      return 'Le compte propriétaire ne peut pas être modifié.';
+    }
+    return 'Le changement de rôle a échoué. Réessaie.';
   }
 
   /**
