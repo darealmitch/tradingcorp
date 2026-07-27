@@ -21,6 +21,7 @@ import { ContenuService } from '../../../core/contenu/contenu.service';
 import { QuizService } from '../../../core/contenu/quiz.service';
 import { MediaService } from '../../../core/media/media.service';
 import { Icone } from '../../../shared/ui/icone';
+import { RessourcesLecon } from './ressources-lecon';
 
 /** Réponses en cours de saisie : id_question -> id_reponse (unique) ou id_reponse[] (multiple). */
 type ReponsesSaisies = Record<string, string | string[]>;
@@ -29,7 +30,7 @@ type ReponsesSaisies = Record<string, string | string[]>;
   selector: 'app-lecon-player',
   templateUrl: './lecon-player.html',
   styleUrl: './lecon-player.css',
-  imports: [RouterLink, Icone],
+  imports: [RouterLink, Icone, RessourcesLecon],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeconPlayer {

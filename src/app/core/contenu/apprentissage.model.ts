@@ -9,15 +9,35 @@ export type VideoProvider = 'youtube' | 'bunny' | 'cloudinary';
 /** Type d'un chapitre : présentation du module, contenu texte, vidéo, ou quiz. */
 export type TypeChapitre = 'intro' | 'article' | 'video' | 'quiz';
 
-/** Ressource complémentaire d'une leçon (PDF, image, fichier…). */
+/**
+ * Nature pédagogique d'une ressource — commande sa présentation.
+ * Aligné sur le CHECK `ressources_type_check`.
+ */
+export type TypeRessource =
+  'pdf' | 'audio' | 'video' | 'fichier' | 'lien' | 'documentation' | 'code' | 'partenaire';
+
+/**
+ * Ressource complémentaire d'une leçon. Trois sources possibles, selon le
+ * type : `cloudinary_public_id` (documents, audio), `url` (lien externe,
+ * vidéo Bunny) ou `contenu` (documentation et code, écrits en base).
+ */
 export interface Ressource {
   id_ressource: string;
   nom: string;
-  type_mime: string;
+  type: TypeRessource;
+  description: string | null;
+  type_mime: string | null;
   /** Référence Cloudinary (prioritaire) ou chemin d'un stockage tiers. */
   cloudinary_public_id: string | null;
   chemin_storage: string | null;
+  /** Source externe : lien partenaire, documentation, vidéo Bunny. */
+  url: string | null;
+  /** Texte embarqué des ressources 'documentation' et 'code'. */
+  contenu: string | null;
+  /** Étiquette du bloc de code (bash, python…). */
+  langage: string | null;
   taille: number | null;
+  position: number;
 }
 
 /** Étape / leçon — version allégée pour les listes (structure du programme). */
