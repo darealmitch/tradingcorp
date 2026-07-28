@@ -23,10 +23,12 @@
             }
 
             @if (href(r); as lien) {
+              <!-- Toujours un nouvel onglet : quitter la leçon en cours ferait
+                   perdre la position de lecture de la vidéo. -->
               <a
                 class="btn btn-ghost btn-compact ressource-action"
                 [href]="lien"
-                [attr.target]="estExterne(r) ? '_blank' : '_blank'"
+                target="_blank"
                 rel="noopener noreferrer"
                 [attr.download]="r.type === 'fichier' ? r.nom : null"
               >

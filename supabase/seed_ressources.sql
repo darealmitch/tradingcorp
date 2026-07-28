@@ -16,6 +16,14 @@
 -- créées `est_active = false` avec le public_id Cloudinary attendu ; elles
 -- apparaîtront dès que le fichier sera en ligne et la ligne activée.
 --
+-- VIDÉOS BUNNY. La bibliothèque 708929 restreint la lecture directe par
+-- referer : seules les requêtes venant de iframe.mediadelivery.net passent.
+--   • une ressource ouverte dans un onglet  -> URL d'EMBED (fonctionne tel quel)
+--   • un chapitre lu par la balise <video>  -> MP4 direct
+--     (vz-8e333926-6ea.b-cdn.net/<id>/play_720p.mp4), qui exige d'ajouter le
+--     domaine du site aux referers autorisés dans Bunny Stream.
+-- Ni l'URL /play/ (page de partage) ni le HLS ne sont lisibles par <video>.
+--
 -- LIENS PARTENAIRES. Les URL ci-dessous sont les adresses PUBLIQUES des
 -- plateformes, pas des liens d'affiliation : à remplacer par les vrais liens
 -- de parrainage. XTB est livré désactivé (partenariat à confirmer).
@@ -51,8 +59,8 @@ with donnees(module, lecon, nom, type, description, cloudinary_public_id, url,
   (4, '4.1 Qu''est-ce que la bourse ?',
    'La Bourse pour les Nuls — Gérard Horny', 'pdf',
    'Ouvrage de référence pour découvrir le fonctionnement des marchés.',
-   'tradingcorp/ressources/module-4/la-bourse-pour-les-nuls', null,
-   null, null, false, 1, 'application/pdf'),
+   'La_bourse_pour_les_nuls_j8o7fd', null,
+   null, null, true, 1, 'application/pdf'),
 
   -- ===== Module 5 — Trading =================================================
   (5, '5.1 Initiation au graphique - Partie 1',
@@ -70,26 +78,26 @@ with donnees(module, lecon, nom, type, description, cloudinary_public_id, url,
   (5, '5.1 Initiation au graphique - Partie 3',
    'Bougies japonaises : anticiper les marchés', 'pdf',
    'Lecture des chandeliers et anticipation des retournements.',
-   'tradingcorp/ressources/module-5/bougies-japonaises-anticiper-les-marches', null,
-   null, null, false, 1, 'application/pdf'),
+   'Anticiper_le_marché_avec_les_bougies_japonaises_mj9t0x', null,
+   null, null, true, 1, 'application/pdf'),
 
   (5, '5.1 Initiation au graphique - Partie 3',
    'Chandeliers japonais', 'pdf',
    'Les figures de chandeliers et leur interprétation.',
-   'tradingcorp/ressources/module-5/chandeliers-japonais', null,
-   null, null, false, 2, 'application/pdf'),
+   'Chandelier_japonais_ianavi', null,
+   null, null, true, 2, 'application/pdf'),
 
   (5, '5.1 Initiation au graphique - Partie 3',
    'La Bourse pour les Nuls', 'pdf',
    'Ouvrage de référence pour découvrir le fonctionnement des marchés.',
-   'tradingcorp/ressources/module-4/la-bourse-pour-les-nuls', null,
-   null, null, false, 3, 'application/pdf'),
+   'La_bourse_pour_les_nuls_j8o7fd', null,
+   null, null, true, 3, 'application/pdf'),
 
   (5, '5.1 Initiation au graphique - Partie 3',
    'Maîtriser l''analyse technique — Thami Kabbaj', 'pdf',
    'Approfondissement de l''analyse technique.',
-   'tradingcorp/ressources/module-5/maitriser-l-analyse-technique', null,
-   null, null, false, 4, 'application/pdf'),
+   'Maitriser_l_analyse_technique_par_Thami_Kabaj_tkymop', null,
+   null, null, true, 4, 'application/pdf'),
 
   (5, '5.2 Le trading - Partie 2',
    'Ouvrir un compte Capital.com', 'partenaire',
@@ -104,11 +112,14 @@ with donnees(module, lecon, nom, type, description, cloudinary_public_id, url,
    null, null, false, 1,
    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
 
+  -- URL d'EMBED Bunny : la ressource s'ouvre dans un nouvel onglet, donc la
+  -- page du lecteur convient et échappe à la protection referer de la
+  -- bibliothèque (cf. note en tête de fichier).
   (5, '5.13 Options',
-   'Supercharts', 'video',
-   'Démonstration de l''outil Supercharts.',
-   null, null,
-   null, null, false, 1, 'video/mp4')
+   'Faire une option sur TradingView', 'video',
+   'Démonstration pas à pas sur TradingView.',
+   null, 'https://iframe.mediadelivery.net/embed/708929/475152ff-da6c-47ac-8b91-5935798783eb',
+   null, null, true, 1, null)
 )
 insert into ressources (
   id_lecon, nom, type, description, cloudinary_public_id, url,
