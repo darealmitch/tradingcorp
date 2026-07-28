@@ -134,6 +134,7 @@
 /* ===== Vidéo ===== */
 
 .lecon-video {
+  position: relative;
   margin-bottom: 40px;
 }
 
@@ -149,7 +150,59 @@
   background: var(--bg-soft);
   border-radius: 16px;
   border: 1px solid var(--line);
-  background: #000;
+}
+
+/* Pastille de lecture. Les contrôles natifs ne se colorisent pas de façon
+   fiable — Chrome n'expose qu'un pseudo-élément propriétaire, et pas toujours
+   rendu. On superpose donc notre propre repère, aux couleurs de la marque, sans
+   toucher aux contrôles natifs qui restent accessibles sous la vidéo.
+   Elle disparaît au premier play, laissant la main au lecteur natif. */
+.video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-content: center;
+  width: 82px;
+  height: 82px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--gradient);
+  box-shadow: 0 10px 32px rgba(5, 6, 11, 0.45);
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--ease-out),
+    box-shadow 0.2s;
+}
+
+.video-play svg {
+  width: 34px;
+  height: 34px;
+  /* Décalage optique : un triangle centré géométriquement paraît trop à gauche. */
+  margin-left: 4px;
+  fill: #05060b;
+}
+
+.video-play:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+  box-shadow: 0 14px 40px rgba(5, 6, 11, 0.55);
+}
+
+.video-play:focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-play {
+    transition: none;
+  }
+
+  .video-play:hover {
+    transform: translate(-50%, -50%);
+  }
 }
 
 .lecon-video-fallback {
