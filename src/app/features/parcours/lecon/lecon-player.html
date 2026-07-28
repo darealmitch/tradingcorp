@@ -61,8 +61,27 @@
               (loadedmetadata)="reprendre(l)"
               (timeupdate)="sauverPosition()"
               (seeking)="surSeek()"
+              (play)="lectureCommencee.set(true)"
               (ended)="videoTerminee()"
             ></video>
+
+            <!-- Pastille de lecture aux couleurs de la marque, posée sur la
+                 couverture. Les contrôles natifs de Chrome ne sont pas
+                 stylables de façon fiable : plutôt que de lutter contre eux,
+                 on ajoute le repère visuel qui manquait. Elle s'efface dès que
+                 la lecture démarre, par ce bouton ou par les contrôles natifs. -->
+            @if (!lectureCommencee()) {
+              <button
+                class="video-play"
+                type="button"
+                (click)="demarrerLecture()"
+                aria-label="Lire la vidéo"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M8 5.5v13l11-6.5z" />
+                </svg>
+              </button>
+            }
           } @else if (videoNonSupportee(l)) {
             <div class="lecon-video-fallback">
               <p>Le lecteur pour ce fournisseur vidéo n'est pas encore intégré.</p>

@@ -28,8 +28,12 @@ import { RessourcesLecon } from './ressources-lecon';
 /** Réponses en cours de saisie : id_question -> id_reponse (unique) ou id_reponse[] (multiple). */
 type ReponsesSaisies = Record<string, string | string[]>;
 
-/** Couverture de marque, servie depuis `public/` (monté à la racine du site). */
-const POSTER_PAR_DEFAUT = '/tradingcorp.png';
+/**
+ * Couverture de marque, servie depuis `public/` (monté à la racine du site).
+ * Casse à respecter au caractère près : macOS masque l'erreur en local, mais
+ * un serveur — dev comme production — renvoie 404 sur `tradingcorp.png`.
+ */
+const POSTER_PAR_DEFAUT = '/tradingCorp.png';
 
 @Component({
   selector: 'app-lecon-player',
@@ -74,6 +78,13 @@ export class LeconPlayer {
   private hls: { destroy(): void } | null = null;
   /** Invalide un attachement HLS dont la leçon a changé pendant le chargement. */
   private generationHls = 0;
+
+  /**
+   * La lecture a démarré au moins une fois sur ce chapitre : masque la pastille
+   * de lecture posée par-dessus la couverture. Passe aussi à vrai si la lecture
+   * est lancée par les contrôles natifs (événement `play`).
+   */
+  protected readonly lectureCommencee = signal(false);
 
   /** La vidéo courante vient d'atteindre sa fin dans cette session. */
   protected readonly videoFinie = signal(false);
@@ -149,6 +160,7 @@ export class LeconPlayer {
     this.chargement.set(true);
     this.idSection = idSection;
     this.videoFinie.set(false);
+    this.lectureCommencee.set(false);
     this.tempsMax = 0;
     this.questions.set([]);
     this.reponses.set({});
@@ -267,6 +279,12 @@ export class LeconPlayer {
     }
     await this.contenu.terminerLecon(l.id_lecon);
     await this.rafraichir(l.id_lecon);
+  }
+
+  /** Lance la lecture depuis la pastille posée sur la couverture. */
+  protected demarrerLecture(): void {
+    this.lectureCommencee.set(true);
+    void this.lecteur()?.nativeElement.play();
   }
 
   /** Reprise : position enregistrée au chargement du lecteur natif. */
