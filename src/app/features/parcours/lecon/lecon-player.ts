@@ -29,11 +29,17 @@ import { RessourcesLecon } from './ressources-lecon';
 type ReponsesSaisies = Record<string, string | string[]>;
 
 /**
- * Couverture de marque, servie depuis `public/` (monté à la racine du site).
- * Casse à respecter au caractère près : macOS masque l'erreur en local, mais
- * un serveur — dev comme production — renvoie 404 sur `tradingcorp.png`.
+ * Couverture de marque, servie depuis `public/`.
+ *
+ * Chemin RELATIF, sans barre oblique initiale : il se résout contre le
+ * `<base href>` du document. En production le site vit sous un sous-chemin
+ * (`ng build --base-href /tradingcorp/`, cf. `.github/workflows/ci.yml`) ;
+ * un chemin absolu viserait la racine du domaine et renverrait 404 — l'erreur
+ * ne se voit pas en local, où la base vaut « / ».
+ *
+ * Casse à respecter au caractère près : macOS l'ignore, pas un serveur Linux.
  */
-const POSTER_PAR_DEFAUT = '/tradingCorp.png';
+const POSTER_PAR_DEFAUT = 'tradingCorp.png';
 
 @Component({
   selector: 'app-lecon-player',
