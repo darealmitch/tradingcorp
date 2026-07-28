@@ -28,6 +28,9 @@ import { RessourcesLecon } from './ressources-lecon';
 /** Réponses en cours de saisie : id_question -> id_reponse (unique) ou id_reponse[] (multiple). */
 type ReponsesSaisies = Record<string, string | string[]>;
 
+/** Couverture de marque, servie depuis `public/` (monté à la racine du site). */
+const POSTER_PAR_DEFAUT = '/tradingcorp.png';
+
 @Component({
   selector: 'app-lecon-player',
   templateUrl: './lecon-player.html',
@@ -205,6 +208,17 @@ export class LeconPlayer {
     }
     const natif = document.createElement('video').canPlayType('application/vnd.apple.mpegurl');
     return natif ? null : url;
+  }
+
+  /**
+   * Image de couverture, affichée tant que la première image n'est pas
+   * décodée. Une couverture de marque par défaut, surchargeable par vidéo via
+   * `video_metadata.poster` — le champ était déjà prévu pour cela, inutile
+   * d'ajouter une colonne.
+   */
+  protected poster(l: LeconJouable): string {
+    const propre = l.video_metadata?.['poster'];
+    return typeof propre === 'string' && propre ? propre : POSTER_PAR_DEFAUT;
   }
 
   /**
