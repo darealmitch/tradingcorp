@@ -42,8 +42,34 @@ export class Contenus {
     this.chargement.set(false);
   }
 
+  /**
+   * Durée exacte, secondes comprises. L'arrondi à la minute précédent
+   * (`Math.round`) faisait passer 767 s pour « 13 min » alors que la vidéo dure
+   * 12 min 47 s : dans un back-office qui sert à contrôler le contenu, la durée
+   * affichée doit être celle de la vidéo, pas une approximation.
+   */
   protected duree(lecon: LeconResume): string {
-    return lecon.duree_s ? `${Math.round(lecon.duree_s / 60)} min` : '—';
+    const total = lecon.duree_s;
+    if (!total) {
+      return '—';
+    }
+    const heures = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const secondes = total % 60;
+
+    const parties: string[] = [];
+    if (heures) {
+      parties.push(`${heures} h`);
+    }
+    if (minutes) {
+      parties.push(`${minutes} min`);
+    }
+    // Les secondes ne sont tues que si elles sont nulles ET qu'autre chose
+    // s'affiche déjà — une durée de 0 s n'existe pas, mais 5 min pile si.
+    if (secondes || parties.length === 0) {
+      parties.push(`${secondes} s`);
+    }
+    return parties.join(' ');
   }
 
   /**
