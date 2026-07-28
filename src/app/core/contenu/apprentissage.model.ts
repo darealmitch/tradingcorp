@@ -49,10 +49,11 @@ export interface LeconResume {
   position: number;
   duree_s: number | null;
   est_publiee: boolean;
-  apercu_gratuit: boolean;
   video_provider: VideoProvider;
   /** public_id Cloudinary (ou id YouTube/Bunny selon le provider). */
   video_provider_id: string | null;
+  /** URL de lecture directe (Bunny MP4) — suffit à elle seule. */
+  video_url: string | null;
   /** public_id Cloudinary du PDF principal de la leçon. */
   pdf_public_id: string | null;
   /**

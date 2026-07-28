@@ -8,7 +8,16 @@
 
 @if (chargement()) {
   <p class="cellule-discrete">Chargement…</p>
-} @else if (modules().length === 0) {
+} @else if (modules().length > 0) {
+  <!-- Code couleur de la colonne Médias, posé une fois pour tout le tableau. -->
+  <p class="legende-media">
+    <span><i class="legende-puce" aria-hidden="true"></i> En ligne</span>
+    <span><i class="legende-puce est-inactive" aria-hidden="true"></i> Désactivée</span>
+    <span><i class="legende-puce est-incomplete" aria-hidden="true"></i> Fichier attendu</span>
+  </p>
+}
+
+@if (modules().length === 0 && !chargement()) {
   <div class="panneau">
     <h2 class="panneau-titre">Aucun module pour l'instant</h2>
     <p class="page-sous">
@@ -39,7 +48,6 @@
               <th>Étape</th>
               <th>Durée</th>
               <th>Médias</th>
-              <th>Aperçu gratuit</th>
               <th>Statut</th>
             </tr>
           </thead>
@@ -49,12 +57,18 @@
                 <td>{{ lecon.titre }}</td>
                 <td class="cellule-discrete">{{ duree(lecon) }}</td>
                 <td>
-                  <span class="cellule-discrete">{{ medias(lecon) }}</span>
-                  @if (ressources(lecon).length > 0) {
-                    <span class="ressources-pastilles">
+                  @if (sansMedia(lecon)) {
+                    <span class="cellule-discrete">—</span>
+                  } @else {
+                    <span class="pastilles-media">
+                      <!-- Média porté par l'étape : rattaché donc en ligne. -->
+                      @for (m of mediasPropres(lecon); track m) {
+                        <span class="pastille-media" [title]="m + ' — en ligne'">{{ m }}</span>
+                      }
+                      <!-- Ressources complémentaires, avec leur état propre. -->
                       @for (r of ressources(lecon); track r.id_ressource) {
                         <span
-                          class="pastille-ressource"
+                          class="pastille-media"
                           [class.est-inactive]="!r.est_active"
                           [class.est-incomplete]="!estPrete(r)"
                           [title]="r.nom + ' — ' + etatRessource(r)"
@@ -65,7 +79,6 @@
                     </span>
                   }
                 </td>
-                <td class="cellule-discrete">{{ lecon.apercu_gratuit ? 'Oui' : '—' }}</td>
                 <td>
                   @if (lecon.est_publiee) {
                     <span class="badge-statut est-succes">Publiée</span>
