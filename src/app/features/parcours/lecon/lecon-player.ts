@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   computed,
+  effect,
   inject,
   signal,
   viewChild,
@@ -60,6 +62,16 @@ export class LeconPlayer {
     return new Map<string, DetailQuestionQuiz>(detail.map((d) => [d.id_question, d]));
   });
 
+  /**
+   * Lecteur HLS attaché à la balise <video>. `hls.js` alimente l'élément par
+   * MediaSource Extensions : la balise reste la source de vérité, donc
+   * `timeupdate`, `ended`, `currentTime` — et avec eux la reprise, l'anti-avance
+   * et le déverrouillage du PDF/quiz — fonctionnent exactement comme en MP4.
+   */
+  private hls: { destroy(): void } | null = null;
+  /** Invalide un attachement HLS dont la leçon a changé pendant le chargement. */
+  private generationHls = 0;
+
   /** La vidéo courante vient d'atteindre sa fin dans cette session. */
   protected readonly videoFinie = signal(false);
   protected readonly validation = signal(false);
@@ -82,6 +94,44 @@ export class LeconPlayer {
     this.route.paramMap
       .pipe(takeUntilDestroyed())
       .subscribe((params) => void this.charger(params.get('id'), params.get('idLecon')));
+
+    // (Ré)attache le flux HLS à chaque changement de chapitre. Le composant est
+    // réutilisé par le routeur : sans détachement, l'instance précédente
+    // continuerait de bufferiser en fond.
+    effect(() => void this.attacherHls(this.lecon(), this.lecteur()?.nativeElement));
+    inject(DestroyRef).onDestroy(() => this.detacherHls());
+  }
+
+  /**
+   * Charge `hls.js` à la demande — import dynamique, pour que la bibliothèque
+   * (~40 Ko) reste hors du bundle des chapitres servis en MP4.
+   */
+  private async attacherHls(
+    l: LeconJouable | null,
+    el: HTMLVideoElement | undefined,
+  ): Promise<void> {
+    const generation = ++this.generationHls;
+    this.detacherHls();
+
+    const source = l ? this.urlHls(l) : null;
+    if (!source || !el) {
+      return;
+    }
+
+    const { default: Hls } = await import('hls.js');
+    // Le chapitre a pu changer pendant le chargement du module.
+    if (generation !== this.generationHls || !Hls.isSupported()) {
+      return;
+    }
+    const hls = new Hls({ enableWorker: true });
+    hls.loadSource(source);
+    hls.attachMedia(el);
+    this.hls = hls;
+  }
+
+  private detacherHls(): void {
+    this.hls?.destroy();
+    this.hls = null;
   }
 
   protected typeLabel(l: LeconJouable): string {
@@ -142,6 +192,28 @@ export class LeconPlayer {
       return this.media.videoUrl(l.video_provider_id);
     }
     return null;
+  }
+
+  /**
+   * Flux HLS à confier à `hls.js`, ou null si la lecture native suffit.
+   * Safari lit le HLS nativement : inutile d'y charger la bibliothèque.
+   */
+  private urlHls(l: LeconJouable): string | null {
+    const url = this.videoUrl(l);
+    if (!url?.includes('.m3u8')) {
+      return null;
+    }
+    const natif = document.createElement('video').canPlayType('application/vnd.apple.mpegurl');
+    return natif ? null : url;
+  }
+
+  /**
+   * Source posée directement sur la balise : MP4, ou HLS là où le navigateur
+   * le lit seul. Null quand `hls.js` prend la main — c'est lui qui alimente
+   * alors l'élément, et un `src` concurrent ferait échouer la lecture.
+   */
+  protected srcDirect(l: LeconJouable): string | null {
+    return this.urlHls(l) ? null : this.videoUrl(l);
   }
 
   protected videoNonSupportee(l: LeconJouable): boolean {
