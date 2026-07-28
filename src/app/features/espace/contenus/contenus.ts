@@ -39,16 +39,35 @@ export class Contenus {
     return lecon.duree_s ? `${Math.round(lecon.duree_s / 60)} min` : '—';
   }
 
-  /** Médias propres à l'étape (vidéo principale et PDF de support). */
-  protected medias(lecon: LeconResume): string {
+  /**
+   * Médias propres à l'étape (vidéo principale et PDF de support), ou null
+   * quand il n'y en a aucun. Le tiret n'est plus rendu ici : la cellule ne doit
+   * afficher « aucun média » que si l'étape n'a NI média propre NI ressource
+   * complémentaire — sinon on annonçait « — » juste au-dessus d'une pastille.
+   */
+  /**
+   * Médias propres à l'étape, rendus comme les ressources : une pastille par
+   * média présent. Un média rattaché est par nature en ligne — donc toujours
+   * vert. Le texte gris précédent opposait deux traitements visuels à une même
+   * information, ce qui rendait la colonne illisible d'un coup d'œil.
+   */
+  protected mediasPropres(lecon: LeconResume): string[] {
     const items: string[] = [];
-    if (lecon.video_provider_id) {
+    // Mêmes sources que le lecteur (`videoUrl()`) : `video_url` prime et suffit
+    // à elle seule. Ne tester que `video_provider_id` faisait passer pour vides
+    // les 63 chapitres servis par une URL Bunny directe.
+    if (lecon.video_url || lecon.video_provider_id) {
       items.push('Vidéo');
     }
     if (lecon.pdf_public_id) {
       items.push('PDF');
     }
-    return items.length ? items.join(' + ') : '—';
+    return items;
+  }
+
+  /** Vrai quand l'étape ne porte strictement aucun média, ressources comprises. */
+  protected sansMedia(lecon: LeconResume): boolean {
+    return this.mediasPropres(lecon).length === 0 && this.ressources(lecon).length === 0;
   }
 
   protected ressources(lecon: LeconResume): RessourceResume[] {

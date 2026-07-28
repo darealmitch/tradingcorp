@@ -103,8 +103,8 @@ export class ContenuService {
       .from('sections')
       .select(
         'id_section, titre, description, position, est_publiee, ' +
-          'lecons(id_lecon, id_section, titre, type, position, duree_s, est_publiee, apercu_gratuit, ' +
-          'video_provider, video_provider_id, pdf_public_id, ' +
+          'lecons(id_lecon, id_section, titre, type, position, duree_s, est_publiee, ' +
+          'video_provider, video_provider_id, video_url, pdf_public_id, ' +
           'ressources(id_ressource, nom, type, est_active, cloudinary_public_id, url, contenu))',
       )
       .order('position')
