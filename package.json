@@ -25,6 +25,7 @@
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.1",
     "gsap": "^3.15.0",
+    "hls.js": "^1.6.16",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

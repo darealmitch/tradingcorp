@@ -49,9 +49,11 @@
       @case ('video') {
         <section class="lecon-video">
           @if (videoUrl(l); as src) {
+            <!-- `src` absent quand hls.js alimente la balise : il pilote alors
+                 lui-même la source via MediaSource. -->
             <video
               #lecteur
-              [src]="src"
+              [attr.src]="srcDirect(l)"
               controls
               playsinline
               preload="metadata"
