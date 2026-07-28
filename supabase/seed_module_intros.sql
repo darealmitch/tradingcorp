@@ -161,8 +161,8 @@ begin
     if not exists (
       select 1 from lecons where id_section = v_id_section and type = 'intro'
     ) then
-      insert into lecons (id_section, titre, type, position, est_publiee, apercu_gratuit)
-      values (v_id_section, 'Introduction', 'intro', 0, true, false);
+      insert into lecons (id_section, titre, type, position, est_publiee)
+      values (v_id_section, 'Introduction', 'intro', 0, true);
     end if;
   end loop;
 

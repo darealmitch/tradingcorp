@@ -52,7 +52,7 @@ begin
   insert into lecons (
     id_section, titre, description, position, duree_s,
     video_provider, video_provider_id, pdf_public_id,
-    apercu_gratuit, est_publiee
+    est_publiee
   )
   values (
     v_id_section,
@@ -63,7 +63,6 @@ begin
     'cloudinary',
     $q$<< PUBLIC_ID VIDÉO CLOUDINARY >>$q$,
     null,                           -- pdf_public_id : public_id du PDF, ou null
-    false,                          -- apercu_gratuit
     true                            -- est_publiee : visible par l'apprenant
   )
   returning id_lecon into v_id_lecon;
