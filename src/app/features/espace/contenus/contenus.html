@@ -13,7 +13,10 @@
   <p class="legende-media">
     <span><i class="legende-puce" aria-hidden="true"></i> En ligne</span>
     <span><i class="legende-puce est-inactive" aria-hidden="true"></i> Désactivée</span>
-    <span><i class="legende-puce est-incomplete" aria-hidden="true"></i> Fichier attendu</span>
+    <span
+      ><i class="legende-puce est-incomplete" aria-hidden="true"></i> À remplacer ou fichier
+      attendu</span
+    >
   </p>
 }
 
@@ -61,9 +64,16 @@
                     <span class="cellule-discrete">—</span>
                   } @else {
                     <span class="pastilles-media">
-                      <!-- Média porté par l'étape : rattaché donc en ligne. -->
-                      @for (m of mediasPropres(lecon); track m) {
-                        <span class="pastille-media" [title]="m + ' — en ligne'">{{ m }}</span>
+                      <!-- Média porté par l'étape. Une vidéo encore servie par
+                           le placeholder de démonstration reste « à remplacer ». -->
+                      @for (m of mediasPropres(lecon); track m.libelle) {
+                        <span
+                          class="pastille-media"
+                          [class.est-incomplete]="m.provisoire"
+                          [title]="m.libelle + (m.provisoire ? ' — à remplacer' : ' — en ligne')"
+                        >
+                          {{ m.libelle }}
+                        </span>
                       }
                       <!-- Ressources complémentaires, avec leur état propre. -->
                       @for (r of ressources(lecon); track r.id_ressource) {
