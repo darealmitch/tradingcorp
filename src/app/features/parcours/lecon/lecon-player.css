@@ -140,6 +140,13 @@
 .lecon-video video {
   display: block;
   width: 100%;
+  /* Ratio réservé : sans lui, la hauteur suit d'abord celle de l'image de
+     couverture (1.53) puis celle de la vidéo (16:9) — la page sautait au
+     démarrage de la lecture. `contain` évite au passage d'étirer une
+     couverture qui n'est pas au format de la vidéo. */
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: var(--bg-soft);
   border-radius: 16px;
   border: 1px solid var(--line);
   background: #000;
