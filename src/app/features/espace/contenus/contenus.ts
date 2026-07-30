@@ -66,8 +66,10 @@ export class Contenus {
     }
     // Les secondes ne sont tues que si elles sont nulles ET qu'autre chose
     // s'affiche déjà — une durée de 0 s n'existe pas, mais 5 min pile si.
+    // Deux chiffres toujours (« 02 s », pas « 2 s ») : évite la lecture
+    // ambiguë de « 29 min 2 s » à côté de « 12 min 47 s ».
     if (secondes || parties.length === 0) {
-      parties.push(`${secondes} s`);
+      parties.push(`${String(secondes).padStart(2, '0')} s`);
     }
     return parties.join(' ');
   }
