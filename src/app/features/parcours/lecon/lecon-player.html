@@ -154,119 +154,19 @@
 
       <!-- ===================== Chapitre QUIZ ===================== -->
       @case ('quiz') {
-        <section class="lecon-quiz">
-          @if (resultatQuiz(); as resultat) {
-            <!-- Bandeau de score -->
-            <div
-              class="quiz-resultat"
-              [class.est-succes]="resultat.reussi"
-              [class.est-echec]="!resultat.reussi"
-            >
-              @if (resultat.reussi) {
-                <p>Quiz réussi — {{ resultat.score }} % (seuil {{ resultat.score_requis }} %).</p>
-                <p class="discret">Le chapitre suivant est débloqué.</p>
-              } @else {
-                <p>
-                  Score {{ resultat.score }} % — {{ resultat.score_requis }} % requis pour valider.
-                </p>
-              }
-            </div>
-
-            <!-- Correction détaillée : bonnes réponses, choix de l'apprenant, explication -->
-            @for (q of questions(); track q.id_question) {
-              @let d = detailQuestion(q.id_question);
-              <fieldset
-                class="quiz-question est-corrigee"
-                [class.est-juste]="d?.correcte"
-                [class.est-faux]="d && !d.correcte"
-              >
-                <legend>
-                  <span class="quiz-verdict">
-                    <app-icone [nom]="d?.correcte ? 'coche' : 'croix'" [taille]="16" />
-                    <span class="lecteur-ecran">
-                      {{ d?.correcte ? 'Question réussie :' : 'Question manquée :' }}
-                    </span>
-                  </span>
-                  {{ q.libelle }}
-                </legend>
-                @for (opt of q.reponses; track opt.id_reponse) {
-                  <div
-                    class="quiz-option quiz-option-corrigee"
-                    [class.est-bonne]="estBonneReponse(q.id_question, opt.id_reponse)"
-                    [class.est-mauvaise]="
-                      aEteCochee(q.id_question, opt.id_reponse) &&
-                      !estBonneReponse(q.id_question, opt.id_reponse)
-                    "
-                  >
-                    <span class="quiz-marque">
-                      @if (estBonneReponse(q.id_question, opt.id_reponse)) {
-                        <app-icone nom="coche" [taille]="16" />
-                        <span class="lecteur-ecran">Bonne réponse :</span>
-                      } @else if (aEteCochee(q.id_question, opt.id_reponse)) {
-                        <app-icone nom="croix" [taille]="16" />
-                        <span class="lecteur-ecran">Votre réponse, incorrecte :</span>
-                      }
-                    </span>
-                    <span>{{ opt.contenu }}</span>
-                  </div>
-                }
-                @if (d?.explication; as explication) {
-                  <p class="quiz-explication">{{ explication }}</p>
-                }
-              </fieldset>
-            }
-
-            @if (!resultat.reussi) {
-              <button class="btn btn-ghost" type="button" (click)="reessayerQuiz()">
-                Réessayer
-              </button>
-            }
-          } @else if (l.terminee_le) {
-            <div class="quiz-resultat est-succes">
-              <app-icone nom="coche" [taille]="20" />
-              <p>Quiz réussi — chapitre validé.</p>
-            </div>
-          } @else if (chargementQuiz()) {
-            <p class="discret">Chargement du quiz…</p>
-          } @else if (questions().length === 0) {
+        <!-- La passation vit dans son propre composant : le lecteur ne connaît
+             que le fait qu'un quiz a été réussi, pour rafraîchir la leçon. -->
+        @if (l.id_quiz; as idQuiz) {
+          <app-quiz-lecon
+            [idQuiz]="idQuiz"
+            [dejaValide]="!!l.terminee_le"
+            (reussi)="surQuizReussi()"
+          />
+        } @else {
+          <section class="lecon-quiz">
             <p class="discret">Ce quiz n'est pas encore configuré.</p>
-          } @else {
-            @for (q of questions(); track q.id_question) {
-              <fieldset class="quiz-question">
-                <legend>{{ q.libelle }}</legend>
-                @for (opt of q.reponses; track opt.id_reponse) {
-                  <label class="quiz-option" [for]="opt.id_reponse">
-                    @if (q.type === 'choix_unique') {
-                      <input
-                        [id]="opt.id_reponse"
-                        type="radio"
-                        [name]="q.id_question"
-                        [checked]="estCochee(q.id_question, opt.id_reponse)"
-                        (change)="repondreUnique(q.id_question, opt.id_reponse)"
-                      />
-                    } @else {
-                      <input
-                        [id]="opt.id_reponse"
-                        type="checkbox"
-                        [checked]="estCochee(q.id_question, opt.id_reponse)"
-                        (change)="basculerMultiple(q.id_question, opt.id_reponse)"
-                      />
-                    }
-                    <span>{{ opt.contenu }}</span>
-                  </label>
-                }
-              </fieldset>
-            }
-            <button
-              class="btn btn-primary"
-              type="button"
-              [disabled]="!toutesRepondues() || envoiQuiz()"
-              (click)="soumettreQuiz()"
-            >
-              {{ envoiQuiz() ? 'Envoi…' : 'Valider mes réponses' }}
-            </button>
-          }
-        </section>
+          </section>
+        }
       }
     }
 

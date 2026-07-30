@@ -1,0 +1,134 @@
+/* Passation d'un quiz de chapitre.
+   Ces styles vivaient dans `lecon-player.css` ; ils suivent le composant.
+   `.lecon-quiz.est-validee` reste chez le parent : les chapitres vidéo et
+   article s'en servent pour leur propre bandeau « validé ». */
+
+.lecon-quiz {
+  margin-bottom: 40px;
+  padding: 28px 30px;
+  border-radius: 18px;
+  background:
+    linear-gradient(var(--bg-soft), var(--bg-soft)) padding-box,
+    var(--gradient) border-box;
+  border: 1px solid transparent;
+}
+
+.discret {
+  color: var(--muted);
+}
+
+.quiz-question {
+  margin-bottom: 24px;
+  padding: 0;
+  border: 0;
+}
+
+.quiz-question legend {
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.quiz-option:last-child {
+  border-bottom: none;
+}
+
+.quiz-resultat {
+  padding: 16px 0;
+}
+
+.quiz-resultat.est-succes {
+  color: var(--up-text);
+}
+
+.quiz-resultat.est-echec {
+  color: var(--down-text);
+}
+
+.quiz-resultat button {
+  margin-top: 12px;
+}
+
+/* ---- Correction détaillée (retour pédagogique après soumission) ---- */
+
+.quiz-question.est-corrigee {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.quiz-question.est-corrigee.est-juste {
+  border-color: color-mix(in srgb, var(--up) 40%, var(--line));
+}
+
+.quiz-question.est-corrigee.est-faux {
+  border-color: color-mix(in srgb, var(--down) 40%, var(--line));
+}
+
+.quiz-verdict {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  vertical-align: -3px;
+}
+
+.est-juste .quiz-verdict {
+  color: var(--up-text);
+}
+
+.est-faux .quiz-verdict {
+  color: var(--down-text);
+}
+
+.quiz-option-corrigee {
+  cursor: default;
+  border-bottom: none;
+  border-radius: 8px;
+}
+
+.quiz-option-corrigee.est-bonne {
+  background: color-mix(in srgb, var(--up) 12%, transparent);
+  color: var(--up-text);
+}
+
+.quiz-option-corrigee.est-mauvaise {
+  background: color-mix(in srgb, var(--down) 12%, transparent);
+  color: var(--down-text);
+}
+
+.quiz-marque {
+  display: inline-flex;
+  flex: 0 0 16px;
+  justify-content: center;
+}
+
+.quiz-explication {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+/* Le bandeau « validé » du quiz réutilise la teinte de réussite. */
+.quiz-resultat.est-succes {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .lecon-quiz {
+    padding: 20px;
+  }
+}

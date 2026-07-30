@@ -3,7 +3,6 @@ import {
   Component,
   DestroyRef,
   ElementRef,
-  computed,
   effect,
   inject,
   signal,
@@ -11,22 +10,13 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  DetailQuestionQuiz,
-  LeconEtape,
-  LeconJouable,
-  QuestionQuiz,
-  ResultatQuiz,
-} from '../../../core/contenu/apprentissage.model';
+import { LeconEtape, LeconJouable } from '../../../core/contenu/apprentissage.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ContenuService } from '../../../core/contenu/contenu.service';
-import { QuizService } from '../../../core/contenu/quiz.service';
 import { MediaService } from '../../../core/media/media.service';
 import { Icone } from '../../../shared/ui/icone';
+import { QuizLecon } from './quiz-lecon';
 import { RessourcesLecon } from './ressources-lecon';
-
-/** Réponses en cours de saisie : id_question -> id_reponse (unique) ou id_reponse[] (multiple). */
-type ReponsesSaisies = Record<string, string | string[]>;
 
 /**
  * Couverture de marque, servie depuis `public/`.
@@ -45,12 +35,11 @@ const POSTER_PAR_DEFAUT = 'tradingCorp.png';
   selector: 'app-lecon-player',
   templateUrl: './lecon-player.html',
   styleUrl: './lecon-player.css',
-  imports: [RouterLink, Icone, RessourcesLecon],
+  imports: [RouterLink, Icone, QuizLecon, RessourcesLecon],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeconPlayer {
   private readonly contenu = inject(ContenuService);
-  private readonly quizService = inject(QuizService);
   private readonly auth = inject(AuthService);
   protected readonly media = inject(MediaService);
   private readonly route = inject(ActivatedRoute);
@@ -62,18 +51,6 @@ export class LeconPlayer {
   protected readonly lecon = signal<LeconJouable | null>(null);
   protected readonly etapes = signal<LeconEtape[]>([]);
   protected readonly avertissement = signal<string | null>(null);
-
-  protected readonly questions = signal<QuestionQuiz[]>([]);
-  protected readonly chargementQuiz = signal(false);
-  protected readonly reponses = signal<ReponsesSaisies>({});
-  protected readonly envoiQuiz = signal(false);
-  protected readonly resultatQuiz = signal<ResultatQuiz | null>(null);
-
-  /** Correction indexée par id_question, pour le retour pédagogique après envoi. */
-  protected readonly detailParQuestion = computed(() => {
-    const detail = this.resultatQuiz()?.detail ?? [];
-    return new Map<string, DetailQuestionQuiz>(detail.map((d) => [d.id_question, d]));
-  });
 
   /**
    * Lecteur HLS attaché à la balise <video>. `hls.js` alimente l'élément par
@@ -168,9 +145,6 @@ export class LeconPlayer {
     this.videoFinie.set(false);
     this.lectureCommencee.set(false);
     this.tempsMax = 0;
-    this.questions.set([]);
-    this.reponses.set({});
-    this.resultatQuiz.set(null);
 
     const [lecon, etapes] = await Promise.all([
       this.contenu.chargerLeconJouable(idLecon),
@@ -188,16 +162,6 @@ export class LeconPlayer {
     // La timeline ne montre que les chapitres jouables (l'intro est exclue).
     this.etapes.set(etapes.filter((e) => e.type !== 'intro'));
     this.chargement.set(false);
-
-    if (lecon?.id_quiz) {
-      await this.chargerQuiz(lecon.id_quiz);
-    }
-  }
-
-  private async chargerQuiz(idQuiz: string): Promise<void> {
-    this.chargementQuiz.set(true);
-    this.questions.set(await this.quizService.chargerQuestions(idQuiz));
-    this.chargementQuiz.set(false);
   }
 
   /**
@@ -272,9 +236,6 @@ export class LeconPlayer {
     ]);
     this.lecon.set(maj);
     this.etapes.set(etapes);
-    if (maj?.id_quiz) {
-      await this.chargerQuiz(maj.id_quiz);
-    }
   }
 
   /** Valide un chapitre article (« marquer comme lu »). */
@@ -387,67 +348,15 @@ export class LeconPlayer {
     this.validation.set(false);
   }
 
-  protected repondreUnique(idQuestion: string, idReponse: string): void {
-    this.reponses.update((r) => ({ ...r, [idQuestion]: idReponse }));
-  }
-
-  protected estCochee(idQuestion: string, idReponse: string): boolean {
-    const valeur = this.reponses()[idQuestion];
-    return Array.isArray(valeur) ? valeur.includes(idReponse) : valeur === idReponse;
-  }
-
-  protected basculerMultiple(idQuestion: string, idReponse: string): void {
-    this.reponses.update((r) => {
-      const actuel = r[idQuestion];
-      const liste = Array.isArray(actuel) ? actuel : [];
-      const suivante = liste.includes(idReponse)
-        ? liste.filter((id) => id !== idReponse)
-        : [...liste, idReponse];
-      return { ...r, [idQuestion]: suivante };
-    });
-  }
-
-  protected toutesRepondues(): boolean {
-    const r = this.reponses();
-    return this.questions().every((q) => {
-      const v = r[q.id_question];
-      return Array.isArray(v) ? v.length > 0 : !!v;
-    });
-  }
-
-  protected async soumettreQuiz(): Promise<void> {
+  /**
+   * Le quiz vient d'être réussi : on recharge la leçon et la timeline pour que
+   * l'étape suivante s'ouvre. La passation elle-même ne nous regarde pas.
+   */
+  protected async surQuizReussi(): Promise<void> {
     const l = this.lecon();
-    if (!l?.id_quiz || !this.toutesRepondues()) {
-      return;
-    }
-    this.envoiQuiz.set(true);
-    const resultat = await this.quizService.soumettre(l.id_quiz, this.reponses());
-    this.resultatQuiz.set(resultat);
-    this.envoiQuiz.set(false);
-
-    if (resultat?.reussi) {
+    if (l) {
       await this.rafraichir(l.id_lecon);
     }
-  }
-
-  protected reessayerQuiz(): void {
-    this.resultatQuiz.set(null);
-    this.reponses.set({});
-  }
-
-  /** Correction d'une question (null tant que le quiz n'a pas été soumis). */
-  protected detailQuestion(idQuestion: string): DetailQuestionQuiz | undefined {
-    return this.detailParQuestion().get(idQuestion);
-  }
-
-  /** Une option fait-elle partie des bonnes réponses (révélées après correction) ? */
-  protected estBonneReponse(idQuestion: string, idReponse: string): boolean {
-    return this.detailQuestion(idQuestion)?.bonnes_reponses.includes(idReponse) ?? false;
-  }
-
-  /** L'apprenant avait-il coché cette option ? */
-  protected aEteCochee(idQuestion: string, idReponse: string): boolean {
-    return this.detailQuestion(idQuestion)?.reponses_donnees.includes(idReponse) ?? false;
   }
 
   protected etapeSuivante(): LeconEtape | null {
