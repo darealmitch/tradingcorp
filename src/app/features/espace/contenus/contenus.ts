@@ -61,13 +61,14 @@ export class Contenus {
     if (heures) {
       parties.push(`${heures} h`);
     }
+    // Deux chiffres toujours (« 02 min », « 02 s »), pas seulement pour les
+    // secondes : sinon « 1 h 2 min 05 s » et « 1 h 02 min 5 s » cohabitent
+    // selon la vidéo, une incohérence visuelle sans raison.
     if (minutes) {
-      parties.push(`${minutes} min`);
+      parties.push(`${String(minutes).padStart(2, '0')} min`);
     }
     // Les secondes ne sont tues que si elles sont nulles ET qu'autre chose
     // s'affiche déjà — une durée de 0 s n'existe pas, mais 5 min pile si.
-    // Deux chiffres toujours (« 02 s », pas « 2 s ») : évite la lecture
-    // ambiguë de « 29 min 2 s » à côté de « 12 min 47 s ».
     if (secondes || parties.length === 0) {
       parties.push(`${String(secondes).padStart(2, '0')} s`);
     }
