@@ -7,8 +7,10 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AdminService, PaiementLigne, compteDansCa } from '../../../core/admin/admin.service';
-import { ProfilAdmin } from '../../../core/admin/profil-admin.model';
+import { ProfilAdmin } from '../../../core/comptes/comptes.model';
+import { ComptesService } from '../../../core/comptes/comptes.service';
+import { PaiementLigne, compteDansCa } from '../../../core/finance/finance.model';
+import { FinanceService } from '../../../core/finance/finance.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
@@ -63,7 +65,8 @@ export class Accueil {
   // de la plateforme. D'où deux services, et non un service élargi.
   private readonly pilotage = inject(PilotageService);
   private readonly moderation = inject(ModerationService);
-  private readonly adminService = inject(AdminService);
+  private readonly comptes = inject(ComptesService);
+  private readonly finance = inject(FinanceService);
 
   protected readonly auth = inject(AuthService);
 
@@ -146,9 +149,9 @@ export class Accueil {
 
   private async chargerAdmin(): Promise<void> {
     const [paiements, profils, certificats] = await Promise.all([
-      this.adminService.listerPaiements(),
-      this.adminService.listerProfils(),
-      this.adminService.compterCertificats(),
+      this.finance.listerPaiements(),
+      this.comptes.lister(),
+      this.pilotage.compterCertificats(),
     ]);
     // Seuls les paiements réels d'apprenants comptent (ni test, ni staff).
     const reels = paiements.filter(compteDansCa);

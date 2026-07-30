@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { AdminService, PaiementLigne, compteDansCa } from '../../../core/admin/admin.service';
+import { PaiementLigne, compteDansCa } from '../../../core/finance/finance.model';
+import { FinanceService } from '../../../core/finance/finance.service';
 import { StatCard } from '../../../shared/ui/stat-card';
 
 @Component({
@@ -10,7 +11,7 @@ import { StatCard } from '../../../shared/ui/stat-card';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Paiements {
-  private readonly admin = inject(AdminService);
+  private readonly finance = inject(FinanceService);
 
   protected readonly chargement = signal(true);
   protected readonly paiements = signal<PaiementLigne[]>([]);
@@ -53,7 +54,7 @@ export class Paiements {
   }
 
   private async charger(): Promise<void> {
-    this.paiements.set(await this.admin.listerPaiements());
+    this.paiements.set(await this.finance.listerPaiements());
     this.chargement.set(false);
   }
 

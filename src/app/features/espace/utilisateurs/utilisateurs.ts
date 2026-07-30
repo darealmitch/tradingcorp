@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AdminService } from '../../../core/admin/admin.service';
-import { ProfilAdmin } from '../../../core/admin/profil-admin.model';
+import { ComptesService } from '../../../core/comptes/comptes.service';
+import { ProfilAdmin } from '../../../core/comptes/comptes.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
@@ -18,7 +18,7 @@ const ROLES: Role[] = ['apprenant', 'formateur', 'admin'];
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Utilisateurs {
-  private readonly admin = inject(AdminService);
+  private readonly comptes = inject(ComptesService);
   private readonly commerce = inject(CommerceService);
   private readonly fb = inject(NonNullableFormBuilder);
 
@@ -61,7 +61,7 @@ export class Utilisateurs {
 
   private async charger(): Promise<void> {
     const [profils, formations] = await Promise.all([
-      this.admin.listerProfils(),
+      this.comptes.lister(),
       this.commerce.chargerFormations(),
     ]);
     this.profils.set(profils);
@@ -80,7 +80,7 @@ export class Utilisateurs {
     this.creationEnCours.set(true);
 
     const { prenom, nom, email, role, id_formation } = this.formCreation.getRawValue();
-    const resultat = await this.admin.creerCompte({
+    const resultat = await this.comptes.creer({
       email: email.trim(),
       prenom: prenom.trim(),
       nom: nom.trim(),
@@ -99,7 +99,7 @@ export class Utilisateurs {
         role: 'apprenant',
         id_formation: '',
       });
-      this.profils.set(await this.admin.listerProfils());
+      this.profils.set(await this.comptes.lister());
     }
     this.creationEnCours.set(false);
   }
@@ -115,11 +115,11 @@ export class Utilisateurs {
   protected async changerRole(profil: ProfilAdmin, role: string): Promise<void> {
     this.erreur.set(null);
     this.enregistrement.set(true);
-    const erreur = await this.admin.changerRole(profil.id_profil, role as Role);
+    const erreur = await this.comptes.changerRole(profil.id_profil, role as Role);
     if (erreur) {
       this.erreur.set(erreur);
       // Recharge pour réaligner le sélecteur sur la valeur réelle en base.
-      this.profils.set(await this.admin.listerProfils());
+      this.profils.set(await this.comptes.lister());
     } else {
       this.profils.update((profils) =>
         profils.map((p) => (p.id_profil === profil.id_profil ? { ...p, role: role as Role } : p)),
@@ -131,10 +131,10 @@ export class Utilisateurs {
   protected async basculerTest(profil: ProfilAdmin, estTest: boolean): Promise<void> {
     this.erreur.set(null);
     this.enregistrement.set(true);
-    const erreur = await this.admin.definirCompteTest(profil.id_profil, estTest);
+    const erreur = await this.comptes.definirCompteTest(profil.id_profil, estTest);
     if (erreur) {
       this.erreur.set(erreur);
-      this.profils.set(await this.admin.listerProfils());
+      this.profils.set(await this.comptes.lister());
     } else {
       this.profils.update((profils) =>
         profils.map((p) => (p.id_profil === profil.id_profil ? { ...p, est_test: estTest } : p)),
@@ -160,7 +160,7 @@ export class Utilisateurs {
     this.erreur.set(null);
     this.enregistrement.set(true);
     const { prenom, nom } = this.formCorrection.getRawValue();
-    const erreur = await this.admin.corrigerIdentite(profil.id_profil, prenom, nom);
+    const erreur = await this.comptes.corrigerIdentite(profil.id_profil, prenom, nom);
     if (erreur) {
       this.erreur.set(erreur);
     } else {
@@ -203,11 +203,11 @@ export class Utilisateurs {
   protected async confirmerSuppression(profil: ProfilAdmin): Promise<void> {
     this.erreur.set(null);
     this.suppressionEnCours.set(true);
-    const erreur = await this.admin.supprimerProfil(profil.id_profil);
+    const erreur = await this.comptes.supprimer(profil.id_profil);
     if (erreur) {
       this.erreur.set(erreur);
       // Le refus peut venir d'un état devenu obsolète (rôle changé ailleurs).
-      this.profils.set(await this.admin.listerProfils());
+      this.profils.set(await this.comptes.lister());
     } else {
       this.profils.update((profils) => profils.filter((p) => p.id_profil !== profil.id_profil));
     }
