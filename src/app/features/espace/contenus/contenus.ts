@@ -76,16 +76,13 @@ export class Contenus {
   }
 
   /**
-   * Médias propres à l'étape (vidéo principale et PDF de support), ou null
-   * quand il n'y en a aucun. Le tiret n'est plus rendu ici : la cellule ne doit
-   * afficher « aucun média » que si l'étape n'a NI média propre NI ressource
-   * complémentaire — sinon on annonçait « — » juste au-dessus d'une pastille.
-   */
-  /**
-   * Médias propres à l'étape, rendus comme les ressources : une pastille par
-   * média présent. Un média rattaché est par nature en ligne — donc toujours
-   * vert. Le texte gris précédent opposait deux traitements visuels à une même
-   * information, ce qui rendait la colonne illisible d'un coup d'œil.
+   * Contenu porté par l'étape elle-même, rendu comme les ressources : une
+   * pastille par élément. Le texte gris précédent opposait deux traitements
+   * visuels à une même information, ce qui rendait la colonne illisible.
+   *
+   * Le tiret n'est plus produit ici : la cellule n'affiche « aucun média » que
+   * si l'étape n'a NI contenu propre NI ressource complémentaire — sinon on
+   * annonçait « — » juste au-dessus d'une pastille.
    */
   protected mediasPropres(lecon: LeconResume): { libelle: string; provisoire: boolean }[] {
     const items: { libelle: string; provisoire: boolean }[] = [];
@@ -97,6 +94,11 @@ export class Contenus {
     }
     if (lecon.pdf_public_id) {
       items.push({ libelle: 'PDF', provisoire: false });
+    }
+    // Un chapitre quiz porte ses questions, pas un fichier : sans pastille il
+    // tombait dans le tiret, comme s'il était vide.
+    if (lecon.type === 'quiz') {
+      items.push({ libelle: 'Quiz', provisoire: false });
     }
     return items;
   }
