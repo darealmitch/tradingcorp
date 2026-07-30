@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { ApprenantSuivi, ContenuService } from '../../../core/contenu/contenu.service';
+import { ApprenantSuivi } from '../../../core/pilotage/pilotage.model';
+import { PilotageService } from '../../../core/pilotage/pilotage.service';
 import { BarreProgression } from '../../../shared/ui/barre-progression';
 
 @Component({
@@ -10,7 +11,7 @@ import { BarreProgression } from '../../../shared/ui/barre-progression';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Apprenants {
-  private readonly contenu = inject(ContenuService);
+  private readonly pilotage = inject(PilotageService);
 
   protected readonly chargement = signal(true);
   protected readonly apprenants = signal<ApprenantSuivi[]>([]);
@@ -20,7 +21,7 @@ export class Apprenants {
   }
 
   private async charger(): Promise<void> {
-    this.apprenants.set(await this.contenu.suivreApprenants());
+    this.apprenants.set(await this.pilotage.suivreApprenants());
     this.chargement.set(false);
   }
 

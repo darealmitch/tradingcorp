@@ -12,12 +12,10 @@ import { ProfilAdmin } from '../../../core/admin/profil-admin.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
-import {
-  ContenuService,
-  InscriptionRecente,
-  LeconResume,
-  ProgressionResume,
-} from '../../../core/contenu/contenu.service';
+import { LeconResume, ProgressionResume } from '../../../core/contenu/apprentissage.model';
+import { ContenuService } from '../../../core/contenu/contenu.service';
+import { InscriptionRecente } from '../../../core/pilotage/pilotage.model';
+import { PilotageService } from '../../../core/pilotage/pilotage.service';
 import {
   CommentaireEnAttente,
   ModerationService,
@@ -60,6 +58,10 @@ export class Accueil {
   private readonly router = inject(Router);
   private readonly commerce = inject(CommerceService);
   private readonly contenu = inject(ContenuService);
+  // Le tableau de bord est le seul écran à croiser les deux domaines : la
+  // progression de l'utilisateur courant, et — pour le staff — les chiffres
+  // de la plateforme. D'où deux services, et non un service élargi.
+  private readonly pilotage = inject(PilotageService);
   private readonly moderation = inject(ModerationService);
   private readonly adminService = inject(AdminService);
 
@@ -125,12 +127,12 @@ export class Accueil {
   private async chargerFormateur(): Promise<void> {
     const [apprenants, lecons, commentairesEnAttente, noteMoyenne, commentaires, inscriptions] =
       await Promise.all([
-        this.contenu.compterApprenants(),
-        this.contenu.compterLecons(),
+        this.pilotage.compterApprenants(),
+        this.pilotage.compterLecons(),
         this.moderation.compterCommentairesEnAttente(),
         this.moderation.noteMoyenne(),
         this.moderation.commentairesEnAttente(),
-        this.contenu.inscriptionsRecentes(4),
+        this.pilotage.inscriptionsRecentes(4),
       ]);
     this.formateur.set({
       apprenants,
