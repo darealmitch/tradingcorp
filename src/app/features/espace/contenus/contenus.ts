@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { ContenuService, LeconResume, Module } from '../../../core/contenu/contenu.service';
-import { RessourceResume, TypeRessource } from '../../../core/contenu/apprentissage.model';
+import { ContenuService } from '../../../core/contenu/contenu.service';
+import {
+  LeconResume,
+  Module,
+  RessourceResume,
+  TypeRessource,
+} from '../../../core/contenu/apprentissage.model';
 
 /**
  * Hébergeurs officiels du projet. Une vidéo servie depuis un autre domaine est

@@ -11,41 +11,16 @@ import {
   Ressource,
 } from './apprentissage.model';
 
-export type {
-  EtatLecon,
-  EtatModule,
-  LeconEtape,
-  LeconJouable,
-  LeconResume,
-  Module,
-  ModuleParcours,
-  OptionReponse,
-  Parcours,
-  ProgressionResume,
-  QuestionQuiz,
-  ResultatQuiz,
-  Ressource,
-  TypeChapitre,
-} from './apprentissage.model';
-
-export interface ApprenantSuivi {
-  id_profil: string;
-  prenom: string;
-  nom: string;
-  date_creation: string;
-  est_test: boolean;
-  inscrit: boolean;
-  terminees: number;
-  total: number;
-}
-
-export interface InscriptionRecente {
-  date_inscription: string;
-  profils: { prenom: string; nom: string } | null;
-  formations: { titre: string } | null;
-}
-
-/** Structure pédagogique et progression (RLS : gating par inscription, staff voit tout). */
+/**
+ * Le programme et le parcours d'un apprenant : catalogue des modules, contenu
+ * jouable d'une leçon, progression personnelle.
+ *
+ * Les agrégats d'administration (suivi des apprenants, compteurs, inscriptions
+ * récentes) vivent dans `PilotageService` : ils répondent à d'autres questions,
+ * pour d'autres écrans, et n'ont pas à peser sur l'API vue par le parcours.
+ *
+ * La RLS reste l'autorité d'accès — ce service ne filtre rien lui-même.
+ */
 @Injectable({ providedIn: 'root' })
 export class ContenuService {
   private readonly supabase = inject(SUPABASE);
@@ -218,72 +193,5 @@ export class ContenuService {
       .flatMap((section) => section.lecons)
       .filter((lecon) => !faites.has(lecon.id_lecon))
       .slice(0, limite);
-  }
-
-  /** Nombre de comptes apprenants réels — les comptes test sont exclus. */
-  async compterApprenants(): Promise<number> {
-    const { count } = await this.supabase
-      .from('profils')
-      .select('id_profil', { count: 'exact', head: true })
-      .eq('role', 'apprenant')
-      .eq('est_test', false);
-    return count ?? 0;
-  }
-
-  /** Nombre total de leçons du programme. */
-  async compterLecons(): Promise<number> {
-    const { count } = await this.supabase
-      .from('lecons')
-      .select('id_lecon', { count: 'exact', head: true });
-    return count ?? 0;
-  }
-
-  /** Suivi par apprenant : inscription active et leçons terminées (staff). */
-  async suivreApprenants(): Promise<ApprenantSuivi[]> {
-    const [profils, inscriptions, progression, total] = await Promise.all([
-      this.supabase
-        .from('profils')
-        .select('id_profil, prenom, nom, date_creation, est_test')
-        .eq('role', 'apprenant')
-        .order('date_creation'),
-      this.supabase.from('inscriptions').select('id_profil').eq('statut', 'active'),
-      this.supabase.from('progression_lecons').select('id_profil').not('terminee_le', 'is', null),
-      this.compterLecons(),
-    ]);
-
-    const inscrits = new Set(
-      ((inscriptions.data as { id_profil: string }[] | null) ?? []).map((i) => i.id_profil),
-    );
-    const terminees = new Map<string, number>();
-    for (const ligne of (progression.data as { id_profil: string }[] | null) ?? []) {
-      terminees.set(ligne.id_profil, (terminees.get(ligne.id_profil) ?? 0) + 1);
-    }
-
-    const lignes =
-      (profils.data as
-        | {
-            id_profil: string;
-            prenom: string;
-            nom: string;
-            date_creation: string;
-            est_test: boolean;
-          }[]
-        | null) ?? [];
-    return lignes.map((profil) => ({
-      ...profil,
-      inscrit: inscrits.has(profil.id_profil),
-      terminees: terminees.get(profil.id_profil) ?? 0,
-      total,
-    }));
-  }
-
-  /** Dernières inscriptions à une formation (staff). */
-  async inscriptionsRecentes(limite: number): Promise<InscriptionRecente[]> {
-    const { data } = await this.supabase
-      .from('inscriptions')
-      .select('date_inscription, profils(prenom, nom), formations(titre)')
-      .order('date_inscription', { ascending: false })
-      .limit(limite);
-    return (data as unknown as InscriptionRecente[] | null) ?? [];
   }
 }
