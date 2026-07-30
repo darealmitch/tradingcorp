@@ -1,68 +1,36 @@
 import { Injectable, inject } from '@angular/core';
 import { FunctionsHttpError } from '@supabase/supabase-js';
-import { SUPABASE } from '../supabase/supabase.client';
 import { Role } from '../auth/profil.model';
-import { ProfilAdmin } from './profil-admin.model';
-
-export interface PaiementLigne {
-  id_paiement: string;
-  montant_centimes: number;
-  devise: string;
-  statut: 'en_attente' | 'reussi' | 'rembourse' | 'echoue';
-  moyen_paiement: string | null;
-  reference_transaction: string;
-  email: string | null;
-  date_paiement: string;
-  /** Paiement réalisé avec les clés de test Stripe (livemode false). */
-  mode_test: boolean;
-  profils: { role: Role; est_test: boolean } | null;
-}
-
-export interface EntreeJournal {
-  id_journal: string;
-  action: string;
-  cible: string | null;
-  date_action: string;
-  /** E-mail de l'auteur figé à l'écriture — seul repli si son compte a été supprimé. */
-  auteur: string | null;
-  profils: { prenom: string; nom: string } | null;
-}
-
-export interface CreationCompte {
-  email: string;
-  prenom: string;
-  nom: string;
-  role: 'apprenant' | 'formateur';
-  id_formation: string | null;
-}
+import { SUPABASE } from '../supabase/supabase.client';
+import { CreationCompte, ProfilAdmin } from './comptes.model';
 
 /**
- * Un paiement compte dans le chiffre d'affaires s'il est réussi, hors mode
- * test Stripe, et payé par un apprenant non marqué test. Un payeur au profil
- * supprimé reste compté : c'était un client réel.
+ * Cycle de vie des comptes utilisateurs : lister, créer, corriger, promouvoir,
+ * supprimer.
+ *
+ * Extrait d'`AdminService`, qui réunissait comptes, paiements, audit et
+ * certificats derrière une seule façade. La page Paiements y héritait des
+ * méthodes de suppression de compte, la page Journal de celles de création :
+ * autant de pouvoir offert à des écrans qui n'en font rien.
+ *
+ * Chaque méthode de mutation renvoie un message d'erreur **prêt à afficher**,
+ * ou `null` en cas de succès. Le service traduit ici les refus du serveur —
+ * les composants n'ont pas à connaître le texte des exceptions SQL, ni à les
+ * interpréter chacun à leur façon.
  */
-export function compteDansCa(paiement: PaiementLigne): boolean {
-  if (paiement.statut !== 'reussi' || paiement.mode_test) {
-    return false;
-  }
-  const profil = paiement.profils;
-  return !profil || (profil.role === 'apprenant' && !profil.est_test);
-}
-
 @Injectable({ providedIn: 'root' })
-export class AdminService {
+export class ComptesService {
   private readonly supabase = inject(SUPABASE);
 
   /** Tous les profils avec e-mail (RPC réservée aux admins — vide sinon). */
-  async listerProfils(): Promise<ProfilAdmin[]> {
+  async lister(): Promise<ProfilAdmin[]> {
     const { data } = await this.supabase.rpc('lister_profils_admin');
     return (data as ProfilAdmin[] | null) ?? [];
   }
 
   /**
-   * Change le rôle d'un profil via la fonction SQL changer_role — seule voie
+   * Change le rôle d'un profil via la fonction SQL `changer_role` — seule voie
    * possible, la colonne `role` n'étant plus modifiable directement.
-   * Retourne un message d'erreur prêt à afficher, ou null en cas de succès.
    */
   async changerRole(idProfil: string, role: Role): Promise<string | null> {
     const { error } = await this.supabase.rpc('changer_role', {
@@ -108,7 +76,7 @@ export class AdminService {
    * et renvoie le mot de passe temporaire à transmettre — affiché une seule
    * fois, l'utilisateur devra le remplacer à sa première connexion.
    */
-  async creerCompte(donnees: CreationCompte): Promise<{ motDePasse?: string; erreur?: string }> {
+  async creer(donnees: CreationCompte): Promise<{ motDePasse?: string; erreur?: string }> {
     const { data, error } = await this.supabase.functions.invoke<{ mot_de_passe?: string }>(
       'creer-compte',
       { body: donnees },
@@ -127,9 +95,8 @@ export class AdminService {
    * Supprime définitivement un compte via l'Edge Function `supprimer-compte`
    * (auth.users n'est pas accessible au client). Les données liées suivent les
    * cascades du schéma ; les paiements sont conservés, détachés du profil.
-   * Retourne un message d'erreur prêt à afficher, ou null en cas de succès.
    */
-  async supprimerProfil(idProfil: string): Promise<string | null> {
+  async supprimer(idProfil: string): Promise<string | null> {
     const { error } = await this.supabase.functions.invoke('supprimer-compte', {
       body: { id_profil: idProfil },
     });
@@ -141,34 +108,5 @@ export class AdminService {
       return corps?.erreur ?? 'La suppression du compte a échoué.';
     }
     return 'La suppression du compte a échoué.';
-  }
-
-  /** Historique complet des paiements avec le profil payeur (RLS : admin). */
-  async listerPaiements(): Promise<PaiementLigne[]> {
-    const { data } = await this.supabase
-      .from('paiements')
-      .select(
-        'id_paiement, montant_centimes, devise, statut, moyen_paiement, reference_transaction, email, date_paiement, mode_test, profils(role, est_test)',
-      )
-      .order('date_paiement', { ascending: false });
-    return (data as unknown as PaiementLigne[] | null) ?? [];
-  }
-
-  /** Piste d'audit (RLS : admin uniquement). */
-  async listerJournal(): Promise<EntreeJournal[]> {
-    const { data } = await this.supabase
-      .from('journal_admin')
-      .select('id_journal, action, cible, date_action, auteur, profils(prenom, nom)')
-      .order('date_action', { ascending: false })
-      .limit(100);
-    return (data as unknown as EntreeJournal[] | null) ?? [];
-  }
-
-  /** Nombre de certificats émis (lecture staff via RLS). */
-  async compterCertificats(): Promise<number> {
-    const { count } = await this.supabase
-      .from('certificats')
-      .select('id_certificat', { count: 'exact', head: true });
-    return count ?? 0;
   }
 }

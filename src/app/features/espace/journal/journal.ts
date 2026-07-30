@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { AdminService, EntreeJournal } from '../../../core/admin/admin.service';
+import { EntreeJournal } from '../../../core/audit/audit.model';
+import { AuditService } from '../../../core/audit/audit.service';
 
 const LIBELLES_ACTIONS: Record<string, string> = {
   changement_role: 'Changement de rôle',
@@ -15,7 +16,7 @@ const LIBELLES_ACTIONS: Record<string, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Journal {
-  private readonly admin = inject(AdminService);
+  private readonly audit = inject(AuditService);
 
   protected readonly chargement = signal(true);
   protected readonly entrees = signal<EntreeJournal[]>([]);
@@ -25,7 +26,7 @@ export class Journal {
   }
 
   private async charger(): Promise<void> {
-    this.entrees.set(await this.admin.listerJournal());
+    this.entrees.set(await this.audit.listerJournal());
     this.chargement.set(false);
   }
 

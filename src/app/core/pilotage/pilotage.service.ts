@@ -39,6 +39,19 @@ export class PilotageService {
   }
 
   /**
+   * Nombre de certificats émis (lecture staff via RLS).
+   *
+   * Rejoint ici les autres compteurs du tableau de bord : la question posée est
+   * la même — « où en est la plateforme ? » — quand bien même la table diffère.
+   */
+  async compterCertificats(): Promise<number> {
+    const { count } = await this.supabase
+      .from('certificats')
+      .select('id_certificat', { count: 'exact', head: true });
+    return count ?? 0;
+  }
+
+  /**
    * Suivi par apprenant : inscription active et leçons terminées.
    *
    * Les quatre lectures partent en parallèle puis sont recoupées en mémoire :
