@@ -1,5 +1,28 @@
-<div class="espace-layout">
-  <aside class="lateral" [class.est-replie]="replie()">
+<div class="espace-layout" [class.tiroir-ouvert]="tiroirOuvert()">
+  <!-- Ouvre la latérale sur mobile ; masqué au-delà, où elle est déjà visible. -->
+  <button
+    class="tiroir-bouton"
+    type="button"
+    (click)="basculerTiroir()"
+    [attr.aria-expanded]="tiroirOuvert()"
+    aria-controls="lateral-espace"
+    [attr.aria-label]="tiroirOuvert() ? 'Fermer le menu' : 'Ouvrir le menu'"
+  >
+    <app-icone [nom]="tiroirOuvert() ? 'fermer' : 'liste'" [taille]="20" />
+  </button>
+
+  <!-- Voile : referme au clic hors du tiroir. Inerte tant qu'il est fermé. -->
+  @if (tiroirOuvert()) {
+    <button
+      class="tiroir-voile"
+      type="button"
+      tabindex="-1"
+      aria-hidden="true"
+      (click)="fermerTiroir()"
+    ></button>
+  }
+
+  <aside class="lateral" id="lateral-espace" [class.est-replie]="replie()">
     <a class="marque" routerLink="/espace" title="Tableau de bord">
       <app-logo [taille]="17" />
       @if (auth.profil()?.role; as role) {

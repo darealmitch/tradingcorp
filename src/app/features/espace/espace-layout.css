@@ -195,3 +195,97 @@
     padding: 24px 16px 64px;
   }
 }
+
+/* ===========================================================================
+   TIROIR MOBILE (sous 720px)
+   ===========================================================================
+   Au-delà de ce seuil, la latérale reste dans le flux : le bouton et le voile
+   n'existent pas visuellement, et rien du comportement précédent ne change.
+
+   En dessous, elle sort du flux et glisse par-dessus le contenu. Motif : la
+   garder en icônes ne laissait que ~267 px utiles sur un téléphone courant
+   (375 − 76 de latérale − 32 de gouttières), trop peu pour les tableaux de
+   l'administration. */
+
+.tiroir-bouton,
+.tiroir-voile {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .tiroir-bouton {
+    position: fixed;
+    top: 84px;
+    left: 12px;
+    z-index: 45;
+    display: grid;
+    place-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+  }
+
+  .tiroir-bouton:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .tiroir-voile {
+    position: fixed;
+    inset: 0;
+    z-index: 44;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: rgba(5, 6, 11, 0.55);
+    cursor: pointer;
+  }
+
+  /* Hors du flux : le contenu récupère toute la largeur. */
+  .lateral {
+    position: fixed;
+    top: 72px;
+    left: 0;
+    z-index: 46;
+    width: 248px;
+    height: calc(100svh - 72px);
+    transform: translateX(-100%);
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .tiroir-ouvert .lateral {
+    transform: translateX(0);
+  }
+
+  /* Le tiroir affiche les libellés : c'est tout l'intérêt de l'ouvrir. */
+  .lateral .lien-libelle {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .lateral .marque {
+    display: flex;
+  }
+
+  .contenu {
+    padding: 24px 16px 64px;
+  }
+
+  /* La gouttière laisse la place au bouton, qui flotte au-dessus. */
+  .contenu-interieur {
+    padding-top: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lateral {
+    transition: none;
+  }
+}
