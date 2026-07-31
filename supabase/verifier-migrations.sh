@@ -26,22 +26,26 @@ fi
 
 if ! command -v psql >/dev/null 2>&1; then
   echo "✖  psql introuvable — impossible de vérifier."
+  echo "   macOS : brew install libpq && brew link --force libpq"
+  echo "   Debian/Ubuntu : apt-get install postgresql-client"
   exit 1
 fi
 
-# Versions présentes dans le dépôt : préfixe horodaté du nom de fichier.
+# Dépôt : chaque fichier est « <version>_<nom>.sql ».
 fichiers=$(find "$DOSSIER" -maxdepth 1 -name '*.sql' -exec basename {} \; \
-           | sed 's/_.*//' | sort -u)
+           | sed 's/\.sql$//' | sort -u)
+versions_fichiers=$(echo "$fichiers" | sed 's/_.*//' | sort -u)
 
-# Versions enregistrées comme appliquées en base.
+# Base : versions enregistrées comme appliquées, avec leur nom.
 base=$(psql "$SUPABASE_DB_URL" -Atc \
-       "select version from supabase_migrations.schema_migrations order by version") || {
+       "select version || '_' || coalesce(name, '') from supabase_migrations.schema_migrations order by version") || {
   echo "✖  Connexion à la base impossible."
   exit 1
 }
+versions_base=$(echo "$base" | sed 's/_.*//' | sort -u)
 
-manquantes_en_base=$(comm -23 <(echo "$fichiers") <(echo "$base"))
-manquantes_au_depot=$(comm -13 <(echo "$fichiers") <(echo "$base"))
+manquantes_en_base=$(comm -23 <(echo "$versions_fichiers") <(echo "$versions_base"))
+manquantes_au_depot=$(comm -13 <(echo "$versions_fichiers") <(echo "$versions_base"))
 
 statut=0
 
@@ -61,8 +65,30 @@ if [ -n "$manquantes_au_depot" ]; then
   echo "     SQL réellement exécuté."
 fi
 
+# Même version des deux côtés, mais nom différent : la CLI et le dépôt ne
+# désignent alors pas la même chose. Invisible si l'on ne compare que les
+# versions — c'est pourtant l'erreur la plus facile à commettre en renommant.
+divergences=""
+while IFS= read -r ligne; do
+  [ -z "$ligne" ] && continue
+  version="${ligne%%_*}"
+  nom_base="${ligne#*_}"
+  nom_fichier=$(echo "$fichiers" | grep "^${version}_" | head -1)
+  nom_fichier="${nom_fichier#*_}"
+  if [ -n "$nom_fichier" ] && [ "$nom_fichier" != "$nom_base" ]; then
+    divergences="${divergences}     ${version} : dépôt « ${nom_fichier} » ≠ base « ${nom_base} »"$'\n'
+  fi
+done <<< "$base"
+
+if [ -n "$divergences" ]; then
+  statut=1
+  echo "✖  Même version, nom différent entre le dépôt et la base :"
+  printf '%s' "$divergences"
+  echo "   → renommer le fichier pour qu'il porte le nom enregistré en base."
+fi
+
 if [ "$statut" -eq 0 ]; then
-  echo "✔  Migrations cohérentes — $(echo "$fichiers" | wc -l | tr -d ' ') versions alignées entre le dépôt et la base."
+  echo "✔  Migrations cohérentes — $(echo "$versions_fichiers" | wc -l | tr -d ' ') versions alignées entre le dépôt et la base (versions et noms)."
 fi
 
 exit "$statut"
