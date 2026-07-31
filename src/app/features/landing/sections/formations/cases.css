@@ -170,7 +170,7 @@
   opacity: 1;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 980px) {
   .slide-visual {
     right: -12vw;
     width: 62vw;
