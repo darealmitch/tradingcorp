@@ -53,6 +53,8 @@ export class QuizLecon {
   protected readonly reponses = signal<ReponsesSaisies>({});
   protected readonly envoi = signal(false);
   protected readonly resultat = signal<ResultatQuiz | null>(null);
+  /** Échec de la correction — distinct d'un quiz raté, qui est un résultat. */
+  protected readonly erreur = signal<string | null>(null);
 
   /** Correction indexée par question, pour le retour pédagogique après envoi. */
   private readonly detailParQuestion = computed(() => {
@@ -118,10 +120,19 @@ export class QuizLecon {
       return;
     }
     this.envoi.set(true);
-    const resultat = await this.quizService.soumettre(this.idQuiz(), this.reponses());
-    this.resultat.set(resultat);
+    this.erreur.set(null);
+    const { resultat, erreur } = await this.quizService.soumettre(this.idQuiz(), this.reponses());
     this.envoi.set(false);
 
+    // Une correction qui n'aboutit pas laissait l'écran identique à lui-même :
+    // l'apprenant ne savait pas si ses réponses étaient parties, et les
+    // renvoyait. Les réponses saisies sont conservées pour qu'il puisse
+    // simplement réessayer.
+    if (erreur) {
+      this.erreur.set(erreur);
+      return;
+    }
+    this.resultat.set(resultat ?? null);
     if (resultat?.reussi) {
       this.reussi.emit();
     }
@@ -129,6 +140,7 @@ export class QuizLecon {
 
   protected reessayer(): void {
     this.resultat.set(null);
+    this.erreur.set(null);
     this.reponses.set({});
   }
 

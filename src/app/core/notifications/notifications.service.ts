@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { SUPABASE } from '../supabase/supabase.client';
+import { AccesDonnees } from '../supabase/acces-donnees';
 
 /**
  * `urgente` demande une action (un achat engage un client) ; `information`
@@ -31,7 +31,7 @@ interface LigneNotification {
  */
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
-  private readonly supabase = inject(SUPABASE);
+  private readonly acces = inject(AccesDonnees);
 
   private readonly listeSig = signal<Notification[]>([]);
 
@@ -50,32 +50,61 @@ export class NotificationsService {
   }
 
   async recharger(): Promise<void> {
-    const { data } = await this.supabase
-      .from('notifications')
-      .select('id_notification, titre, message, date_envoi, lu_le, priorite')
-      .order('date_envoi', { ascending: false });
-    const lignes = (data as LigneNotification[] | null) ?? [];
+    const lignes = await this.acces.lire<LigneNotification[]>(
+      'lecture des notifications',
+      this.acces
+        .table('notifications')
+        .select('id_notification, titre, message, date_envoi, lu_le, priorite')
+        .order('date_envoi', { ascending: false }),
+      [],
+    );
     this.listeSig.set(
       lignes.map(({ lu_le, ...notification }) => ({ ...notification, lue: lu_le !== null })),
     );
   }
 
-  async marquerLue(id: string): Promise<void> {
+  /**
+   * Marque une notification lue. L'affichage est mis à jour d'abord — le clic
+   * doit répondre tout de suite — mais **remis à son état antérieur si
+   * l'écriture échoue** : sans ce retour arrière, la pastille disparaissait de
+   * l'écran et réapparaissait au rechargement suivant, sans explication.
+   */
+  async marquerLue(id: string): Promise<string | null> {
+    const avant = this.listeSig();
     this.listeSig.update((liste) =>
       liste.map((n) => (n.id_notification === id ? { ...n, lue: true } : n)),
     );
-    await this.supabase
-      .from('notifications')
-      .update({ lu_le: new Date().toISOString() })
-      .eq('id_notification', id)
-      .is('lu_le', null);
+
+    const erreur = await this.acces.ecrire(
+      'marquage d’une notification',
+      this.acces
+        .table('notifications')
+        .update({ lu_le: new Date().toISOString() })
+        .eq('id_notification', id)
+        .is('lu_le', null),
+      'La notification n’a pas pu être marquée comme lue.',
+    );
+    if (erreur) {
+      this.listeSig.set(avant);
+    }
+    return erreur;
   }
 
-  async toutMarquerLues(): Promise<void> {
+  async toutMarquerLues(): Promise<string | null> {
+    const avant = this.listeSig();
     this.listeSig.update((liste) => liste.map((n) => ({ ...n, lue: true })));
-    await this.supabase
-      .from('notifications')
-      .update({ lu_le: new Date().toISOString() })
-      .is('lu_le', null);
+
+    const erreur = await this.acces.ecrire(
+      'marquage de toutes les notifications',
+      this.acces
+        .table('notifications')
+        .update({ lu_le: new Date().toISOString() })
+        .is('lu_le', null),
+      'Les notifications n’ont pas pu être marquées comme lues.',
+    );
+    if (erreur) {
+      this.listeSig.set(avant);
+    }
+    return erreur;
   }
 }

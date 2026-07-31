@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { SUPABASE } from '../supabase/supabase.client';
+import { AccesDonnees } from '../supabase/acces-donnees';
 import { PaiementLigne } from './finance.model';
 
 /**
@@ -11,16 +11,19 @@ import { PaiementLigne } from './finance.model';
  */
 @Injectable({ providedIn: 'root' })
 export class FinanceService {
-  private readonly supabase = inject(SUPABASE);
+  private readonly acces = inject(AccesDonnees);
 
   /** Historique complet avec le profil payeur (RLS : admin). */
   async listerPaiements(): Promise<PaiementLigne[]> {
-    const { data } = await this.supabase
-      .from('paiements')
-      .select(
-        'id_paiement, montant_centimes, devise, statut, moyen_paiement, reference_transaction, email, date_paiement, mode_test, profils(role, est_test)',
-      )
-      .order('date_paiement', { ascending: false });
-    return (data as unknown as PaiementLigne[] | null) ?? [];
+    return this.acces.lire<PaiementLigne[]>(
+      'lecture des paiements',
+      this.acces
+        .table('paiements')
+        .select(
+          'id_paiement, montant_centimes, devise, statut, moyen_paiement, reference_transaction, email, date_paiement, mode_test, profils(role, est_test)',
+        )
+        .order('date_paiement', { ascending: false }),
+      [],
+    );
   }
 }

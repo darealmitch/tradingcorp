@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { AccesDonnees } from '../supabase/acces-donnees';
 import { SUPABASE } from '../supabase/supabase.client';
 import { ContenuService } from './contenu.service';
 
@@ -10,6 +11,8 @@ import { ContenuService } from './contenu.service';
 interface Reponse {
   data?: unknown;
   count?: number;
+  /** Erreur PostgREST — `code: 'P0001'` pour un refus métier rédigé en SQL. */
+  error?: { message: string; code?: string };
 }
 
 /**
@@ -203,6 +206,57 @@ describe('ContenuService', () => {
       });
 
       expect(await service.prochainesLecons(5)).toEqual([]);
+    });
+  });
+
+  describe('terminerLecon', () => {
+    it('rend null quand la validation passe', async () => {
+      const { service } = creerService({ rpc: { terminer_lecon: { data: null } } });
+
+      expect(await service.terminerLecon('l-1')).toBeNull();
+    });
+
+    it('rend le refus du serveur, rédigé pour l’apprenant', async () => {
+      // Ces messages existent depuis toujours côté base ; ils étaient jetés à
+      // l'arrivée, et le clic sur « valider » restait sans réaction visible.
+      const { service } = creerService({
+        rpc: {
+          terminer_lecon: {
+            error: { message: 'La vidéo doit être visionnée jusqu’à la fin', code: 'P0001' },
+          },
+        },
+      });
+
+      expect(await service.terminerLecon('l-1')).toBe(
+        'La vidéo doit être visionnée jusqu’à la fin',
+      );
+    });
+
+    it('reste générique sur une erreur technique', async () => {
+      const { service } = creerService({
+        rpc: {
+          terminer_lecon: {
+            error: { message: 'permission denied for function terminer_lecon', code: '42501' },
+          },
+        },
+      });
+
+      expect(await service.terminerLecon('l-1')).toBe(
+        'La validation de l’étape a échoué. Réessaie.',
+      );
+    });
+  });
+
+  describe('lectures en échec', () => {
+    it('rend une liste vide sans la faire passer pour un programme vide', async () => {
+      const { service } = creerService({
+        tables: { sections: { error: { message: 'connection refused' } } },
+      });
+
+      expect(await service.chargerStructure()).toEqual([]);
+      // C'est ce drapeau qui distingue « aucun module » de « lecture en panne » :
+      // sans lui, l'écran afficherait un programme vide en toute confiance.
+      expect(TestBed.inject(AccesDonnees).lectureEnEchec()).toBe(true);
     });
   });
 

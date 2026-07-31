@@ -244,7 +244,11 @@ export class LeconPlayer {
     if (!l || l.terminee_le) {
       return;
     }
-    await this.contenu.terminerLecon(l.id_lecon);
+    const refus = await this.contenu.terminerLecon(l.id_lecon);
+    if (refus) {
+      this.signaler(refus, 5000);
+      return;
+    }
     await this.rafraichir(l.id_lecon);
   }
 
@@ -343,9 +347,18 @@ export class LeconPlayer {
     this.validation.set(true);
     // Garantit video_terminee_le côté serveur avant la validation (anti-course).
     await this.contenu.marquerVideoTerminee(l.id_lecon);
-    await this.contenu.terminerLecon(l.id_lecon);
-    await this.rafraichir(l.id_lecon);
+    const refus = await this.contenu.terminerLecon(l.id_lecon);
     this.validation.set(false);
+
+    // Le serveur rédige ses refus lui-même (« Chapitre verrouillé », « La
+    // vidéo doit être visionnée jusqu'à la fin ») : les afficher tels quels
+    // vaut mieux que de les remplacer par une formule vague — et évite qu'un
+    // clic reste sans réponse, ce qui poussait à recliquer.
+    if (refus) {
+      this.signaler(refus, 5000);
+      return;
+    }
+    await this.rafraichir(l.id_lecon);
   }
 
   /**
@@ -385,10 +398,24 @@ export class LeconPlayer {
   /** Navigation directe sur une étape de la timeline — jamais une verrouillée. */
   protected async ouvrirEtape(e: LeconEtape): Promise<void> {
     if (e.etat === 'verrouille') {
-      this.avertissement.set('Termine les étapes précédentes pour y accéder.');
-      setTimeout(() => this.avertissement.set(null), 2500);
+      this.signaler('Termine les étapes précédentes pour y accéder.');
       return;
     }
     await this.router.navigate(['/parcours', this.idSection, 'lecon', e.id_lecon]);
+  }
+
+  /**
+   * Affiche un message passager. Les refus du serveur restent plus longtemps
+   * que les rappels d'interface : « La vidéo doit être visionnée jusqu'à la
+   * fin » demande à être lu, là où « termine les étapes précédentes » ne fait
+   * que confirmer ce que l'écran montre déjà.
+   */
+  private signaler(message: string, dureeMs = 2500): void {
+    this.avertissement.set(message);
+    setTimeout(() => {
+      if (this.avertissement() === message) {
+        this.avertissement.set(null);
+      }
+    }, dureeMs);
   }
 }

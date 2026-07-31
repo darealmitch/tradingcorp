@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Cloudinary } from '@cloudinary/url-gen';
 import { environment } from '../../../environments/environment';
-import { SUPABASE } from '../supabase/supabase.client';
+import { AccesDonnees } from '../supabase/acces-donnees';
 
 /** Média téléversé sur Cloudinary — à stocker dans la table métier concernée. */
 export interface MediaTeleverse {
@@ -33,7 +33,7 @@ interface SignatureUpload {
  */
 @Injectable({ providedIn: 'root' })
 export class MediaService {
-  private readonly supabase = inject(SUPABASE);
+  private readonly acces = inject(AccesDonnees);
 
   // Instance de livraison : construit les URLs optimisées (Cloud Name public).
   // analytics/forceVersion off → URLs canoniques, sans suffixe `_a` ni `v1`.
@@ -60,14 +60,20 @@ export class MediaService {
   /**
    * Téléverse un média (réservé au staff). Demande une signature à l'Edge
    * Function, puis POST direct vers Cloudinary. Retourne null en cas d'échec.
+   *
+   * Les deux étapes peuvent échouer séparément et pour des raisons distinctes
+   * (refus de signature, rejet de Cloudinary) : chacune laisse donc sa propre
+   * trace, faute de quoi un téléversement raté ne dit pas où il a buté.
+   *
    * @param dossier sous-dossier Cloudinary (ex. 'formations', 'ressources').
    */
   async televerser(fichier: File, dossier = 'tradingcorp'): Promise<MediaTeleverse | null> {
-    const { data: sig, error } = await this.supabase.functions.invoke<SignatureUpload>(
+    const { donnees: sig } = await this.acces.invoquer<SignatureUpload>(
+      'signature de téléversement',
       'cloudinary-signature',
-      { body: { folder: dossier } },
+      { folder: dossier },
     );
-    if (error || !sig) {
+    if (!sig) {
       return null;
     }
 
@@ -81,8 +87,13 @@ export class MediaService {
     const reponse = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/auto/upload`, {
       method: 'POST',
       body: form,
-    });
-    if (!reponse.ok) {
+    }).catch(() => null);
+    if (!reponse?.ok) {
+      // Cloudinary est hors du périmètre d'`AccesDonnees` (ce n'est pas
+      // Supabase), mais son échec doit laisser la même trace que les autres.
+      console.error(
+        `[TradingCorp] téléversement Cloudinary — ${reponse ? `HTTP ${reponse.status}` : 'réseau injoignable'}`,
+      );
       return null;
     }
 

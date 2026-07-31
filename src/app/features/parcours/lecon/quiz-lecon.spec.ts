@@ -46,10 +46,13 @@ describe('QuizLecon', () => {
   let interne: Interne;
   let soumissions: { idQuiz: string; reponses: unknown }[];
   let resultatServeur: ResultatQuiz | null;
+  /** Échec de la correction — distinct d'un quiz raté, qui reste un résultat. */
+  let erreurServeur: string | null;
 
   beforeEach(async () => {
     soumissions = [];
     resultatServeur = null;
+    erreurServeur = null;
 
     await TestBed.configureTestingModule({
       imports: [QuizLecon],
@@ -60,7 +63,11 @@ describe('QuizLecon', () => {
             chargerQuestions: () => Promise.resolve(QUESTIONS),
             soumettre: (idQuiz: string, reponses: unknown) => {
               soumissions.push({ idQuiz, reponses });
-              return Promise.resolve(resultatServeur);
+              return Promise.resolve(
+                erreurServeur
+                  ? { erreur: erreurServeur }
+                  : { resultat: resultatServeur ?? undefined },
+              );
             },
           },
         },
