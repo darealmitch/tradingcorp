@@ -181,6 +181,37 @@
   color-scheme: light;
 }
 
+/* ===========================================================================
+   POINTS DE RUPTURE — échelle commune
+   ===========================================================================
+
+   Les media queries n'acceptant pas `var()`, l'échelle ne peut pas être posée
+   en jetons : elle tient par convention. S'y tenir plutôt que d'inventer un
+   seuil au cas par cas — la landing en comptait cinq pour huit sections, ce
+   qui rendait tout ajustement global impossible à raisonner.
+
+     560px   mobile étroit   grilles secondaires qui tiennent encore à deux
+                             colonnes sur un mobile standard
+     720px   mobile          bascule principale : espacements, tailles, piles
+     980px   tablette        passage des grilles multi-colonnes en une colonne
+
+   Deux paliers supplémentaires servent les écrans DOTÉS D'UNE BARRE LATÉRALE
+   (l'espace connecté), où la zone utile est amputée de 264 px :
+
+     860px   navigation compacte   la latérale se réduit à ses icônes, et le
+                                   header bascule sur son menu (header.css et
+                                   espace-layout.css, même bascule)
+     1080px  colonne unique        `.grille-deux` : 1080 − 264 laisse déjà tout
+                                   juste la place à deux colonnes
+
+   Ces deux-là ne sont pas des doublons des précédents : les abaisser vers 980
+   comprimerait la zone utile au lieu de l'élargir.
+
+   Au-delà, deux paliers `min-width` (1600px, 2200px) traités en fin de fichier.
+
+   En cas de doute, préférer le seuil SUPÉRIEUR : passer en colonne unique un
+   peu tôt laisse seulement plus de place, tandis que tarder fait déborder. */
+
 html {
   scroll-padding-top: 88px;
 }
@@ -479,5 +510,58 @@ h3 {
 
   .section-head {
     margin-bottom: 44px;
+  }
+}
+
+/* ===========================================================================
+   GRANDS ÉCRANS — moniteurs larges, 4K, téléviseurs
+   ===========================================================================
+
+   Le reste de la feuille est écrit en `max-width` : les paliers ci-dessous
+   sont les seuls `min-width`, et ne retirent donc rien à ce qui précède.
+
+   Sur un très grand écran, le problème n'est pas la largeur — `.container`
+   plafonne déjà à 1200 px, ce qui préserve une longueur de ligne lisible —
+   mais la TAILLE APPARENTE : un écran de 40 pouces se regarde de plus loin
+   qu'un portable, et 16 px y deviennent minuscules.
+
+   On agit donc sur la base typographique. La mise en page étant écrite en rem
+   (174 occurrences contre une seule taille en px), tout suit sans retoucher un
+   seul composant : titres, espacements, boutons, pastilles.
+
+   Les largeurs de LECTURE (leçon, introduction de module) gardent
+   volontairement leur plafond : au-delà d'environ 70 caractères, une ligne
+   devient pénible à suivre, quelle que soit la taille de l'écran. */
+
+@media (min-width: 1600px) {
+  body {
+    font-size: 17px;
+  }
+
+  .container {
+    width: min(100% - 64px, 1360px);
+  }
+}
+
+/* 4K et téléviseurs : distance de lecture nettement plus grande. */
+@media (min-width: 2200px) {
+  body {
+    font-size: 19px;
+  }
+
+  .container {
+    width: min(100% - 96px, 1560px);
+  }
+}
+
+/* ===========================================================================
+   ÉCRANS COURTS EN HAUTEUR — mobile en paysage, tablette inclinée
+   ===========================================================================
+   Le rembourrage vertical des sections, calibré pour un écran debout, mange
+   ici tout l'espace utile. On le resserre sans toucher aux marges latérales. */
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .section {
+    padding-block: 56px;
   }
 }
