@@ -49,6 +49,14 @@ jobs:
         env:
           CI: 'true'
 
+      # Le dépôt et la base avaient divergé sans aucun signal — une migration
+      # de sécurité n'avait jamais été appliquée. Cette étape le rend visible.
+      # Sans le secret SUPABASE_DB_URL, elle s'ignore au lieu d'échouer.
+      - name: Cohérence des migrations
+        run: ./supabase/verifier-migrations.sh
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
       # base-href = chemin du site Pages (https://<user>.github.io/tradingcorp/).
       - name: Build de production
         run: npx ng build --base-href /tradingcorp/

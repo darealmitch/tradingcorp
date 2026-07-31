@@ -128,8 +128,11 @@ export class AuthService {
 
   /**
    * Le trigger SQL handle_new_user lit prenom/nom/date_naissance dans les
-   * métadonnées et refuse la création d'un compte de moins de 18 ans (verrou
-   * serveur infalsifiable, en plus de la validation du formulaire).
+   * métadonnées et refuse la création d'un compte de moins de 18 ans. Le
+   * contrôle vit côté serveur : il s'applique donc aussi à un appel direct à
+   * signUp, pas seulement au formulaire. Un second trigger sur `profils`
+   * (trg_profils_majeur) porte le même invariant quel que soit le chemin
+   * d'écriture. Couvert par le test « inscription d'un mineur refusée ».
    */
   async inscription(
     email: string,
