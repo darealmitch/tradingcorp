@@ -39,6 +39,11 @@ jobs:
       - name: Formatage (Prettier)
         run: npx prettier --check .
 
+      # Placé avant les tests : une erreur de lint se corrige en quelques
+      # secondes, autant ne pas attendre la fin d'une suite complète.
+      - name: Qualité (ESLint)
+        run: npx ng lint
+
       - name: Tests unitaires
         run: npx ng test
         env:

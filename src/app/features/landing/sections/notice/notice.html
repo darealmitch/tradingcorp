@@ -1,4 +1,4 @@
-<section class="notice" id="notice" [class.is-static]="reducedMotion()">
+<section class="notice" id="notice">
   <div class="notice-stage" #stage>
     <div class="container">
       <div class="section-head centered notice-head" appReveal>
@@ -8,12 +8,27 @@
       </div>
     </div>
 
+    <!-- Bande en défilement continu : la liste est posée deux fois et la piste
+         translate de -50 %, si bien que la seconde copie prend exactement la
+         place de la première — la boucle est invisible. Même mécanique que la
+         section Résultats qui suit. -->
     <div class="gallery">
-      <div class="gallery-track" #track>
-        @for (item of avis; track item.img; let i = $index) {
-          <button type="button" class="gallery-card" (click)="openAvis(i, $event)">
-            <img [src]="media.url(item.img)" [alt]="item.alt" loading="lazy" />
-          </button>
+      <div class="gallery-track" [class.est-en-pause]="activeAvis()">
+        @for (copie of [0, 1]; track copie) {
+          <ul class="gallery-list" [attr.aria-hidden]="copie === 1 ? true : null">
+            @for (item of avis; track item.img; let i = $index) {
+              <li>
+                <button
+                  type="button"
+                  class="gallery-card"
+                  [attr.tabindex]="copie === 1 ? -1 : null"
+                  (click)="openAvis(i, $event)"
+                >
+                  <img [src]="media.url(item.img)" [alt]="item.alt" loading="lazy" />
+                </button>
+              </li>
+            }
+          </ul>
         }
       </div>
     </div>

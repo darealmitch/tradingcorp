@@ -1,14 +1,14 @@
 /* ===== Galerie horizontale des avis membres ===== */
 
-/* Scène épinglée : titre + galerie composés sur un seul écran, sans vides */
+/* Section de hauteur libre : la bande défile d'elle-même, la page n'est plus
+   immobilisée pendant la traversée. */
 .notice-stage {
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 56px;
-  height: 100vh;
-  height: 100svh;
+  padding-block: 96px;
   overflow: hidden;
 }
 
@@ -16,19 +16,41 @@
   margin-bottom: 0;
 }
 
+/* Le masque estompe les deux bords : la bande semble venir de nulle part et
+   repartir, au lieu d'être coupée net par le bord de l'écran. */
 .gallery {
   position: relative;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
 }
 
 .gallery-track {
   display: flex;
-  flex-wrap: nowrap;
   width: max-content;
+  animation: notice-defilement 120s linear infinite;
+}
+
+.gallery-list {
+  display: flex;
+  flex-wrap: nowrap;
   gap: 20px;
-  /* La bande démarre alignée sur le conteneur central du site */
-  padding-inline: max(24px, calc((100vw - 1200px) / 2)) 24px;
-  will-change: transform;
+  margin: 0;
+  padding: 0 10px;
+  list-style: none;
+}
+
+/* Au survol comme pendant la lecture d'un témoignage en grand : on suspend,
+   sinon la carte visée se dérobe sous le curseur. */
+.gallery-track:hover,
+.gallery-track.est-en-pause {
+  animation-play-state: paused;
+}
+
+@keyframes notice-defilement {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 /* Cartes strictement uniformes : même largeur, même hauteur, même ratio */
@@ -66,6 +88,18 @@
 @media (max-width: 720px) {
   .notice-stage {
     gap: 36px;
+    padding-block: 64px;
+  }
+}
+
+/* Sans animation : la bande redevient une liste que l'on parcourt soi-même. */
+@media (prefers-reduced-motion: reduce) {
+  .gallery {
+    overflow-x: auto;
+  }
+
+  .gallery-track {
+    animation: none;
   }
 }
 
@@ -199,20 +233,4 @@
   .avis-modal-img {
     animation: none;
   }
-}
-
-/* ===== Repli statique (prefers-reduced-motion) : bande défilable au doigt ===== */
-
-.is-static .notice-stage {
-  height: auto;
-  padding-block: 80px;
-}
-
-.is-static .gallery {
-  overflow-x: auto;
-  padding-block: 8px;
-}
-
-.is-static .gallery-track {
-  will-change: auto;
 }
