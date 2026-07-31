@@ -4,11 +4,12 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { Footer } from './layout/footer/footer';
 import { Header } from './layout/header/header';
+import { BandeauIncident } from './shared/ui/bandeau-incident';
 import { RetourHaut } from './shared/ui/retour-haut';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer, RetourHaut],
+  imports: [RouterOutlet, Header, Footer, RetourHaut, BandeauIncident],
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -167,7 +167,15 @@ export class ModuleIntro {
 
     const intro = this.intro();
     if (intro && intro.etat !== 'termine') {
-      await this.contenu.terminerLecon(intro.id_lecon);
+      const refus = await this.contenu.terminerLecon(intro.id_lecon);
+      // Un refus ici veut dire que l'intro n'est pas validable : entrer dans le
+      // module quand même laisserait l'apprenant dans un état incohérent, avec
+      // une étape marquée à faire derrière lui et aucune explication.
+      if (refus) {
+        this.annonce.set(refus);
+        this.ouverture.set(false);
+        return;
+      }
     }
 
     const premiere = this.chapitres()[0];

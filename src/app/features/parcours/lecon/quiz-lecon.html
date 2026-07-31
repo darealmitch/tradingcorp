@@ -93,6 +93,9 @@
         }
       </fieldset>
     }
+    @if (erreur(); as message) {
+      <p class="quiz-erreur" role="alert">{{ message }}</p>
+    }
     <button
       class="btn btn-primary"
       type="button"
