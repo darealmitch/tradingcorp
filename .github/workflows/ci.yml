@@ -72,8 +72,57 @@ jobs:
         with:
           path: dist/TradingCorp/browser
 
+  # Les Edge Functions vivent hors du projet Angular, dans un autre exécutable :
+  # rien ne les compilait jusqu'ici, et une erreur de type n'apparaissait qu'au
+  # déploiement, en production.
+  fonctions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Typage des Edge Functions
+        run: deno check supabase/functions/*/index.ts
+
+  # Tests d'autorisation : une base éphémère est reconstruite à partir des
+  # seules migrations du dépôt, puis interrogée sous chaque identité.
+  #
+  # Ce job vérifie deux choses d'un coup : que les policies refusent bien ce
+  # qu'elles doivent refuser, et que les 32 fichiers de migration suffisent à
+  # rebâtir la base — ce que la réconciliation de P-01 a rendu vrai sur le
+  # papier sans jamais l'avoir rejoué.
+  base:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Le dépôt ne versionne pas de config.toml : on repart de la
+      # configuration par défaut du CLI, sans rien figer.
+      - name: Initialiser la configuration locale
+        run: supabase init || true
+
+      - name: Démarrer la base et rejouer les migrations
+        run: supabase db start
+
+      - name: Tests d'autorisation
+        run: supabase test db
+
   deploy:
     # Publication seulement après une vérification verte, et seulement sur main.
+    #
+    # `fonctions` et `base` ne conditionnent volontairement pas la publication
+    # tant qu'ils n'ont pas tourné vert une première fois : leur échec rend la
+    # CI rouge — le signal est là — sans immobiliser le site. Les ajouter ici
+    # (needs: [verify, fonctions, base]) est la marche suivante.
     needs: verify
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
