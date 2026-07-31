@@ -180,14 +180,20 @@ export class AuthService {
 
   /**
    * Termine l'intégration d'un compte créé par un admin : remplace le mot de
-   * passe temporaire, lève le blocage (RPC) et recharge le profil.
+   * passe temporaire, puis recharge le profil.
+   *
+   * Le blocage (profils.doit_changer_mdp) est levé côté serveur par le trigger
+   * on_auth_password_changed, déclenché par le changement lui-même. Il n'y a
+   * donc plus rien à confirmer depuis le client : l'ancienne RPC
+   * confirmer_changement_mdp levait le blocage sans vérifier quoi que ce soit,
+   * et pouvait être appelée seule pour garder le mot de passe temporaire.
+   * Le rechargement du profil récupère l'état déjà mis à jour par le trigger.
    */
   async definirNouveauMotDePasse(mdp: string): Promise<ResultatAuth> {
     const { error } = await this.supabase.auth.updateUser({ password: mdp });
     if (error) {
       return { ok: false, erreur: this.messageErreur(error) };
     }
-    await this.supabase.rpc('confirmer_changement_mdp');
     const session = this.sessionSig();
     if (session) {
       await this.chargerProfil(session.user.id);
@@ -224,11 +230,15 @@ export class AuthService {
     if (brut.includes('email not confirmed')) {
       return 'Confirme ton adresse e-mail avant de te connecter (vérifie ta boîte mail).';
     }
-    if (brut.includes('password should be')) {
-      return 'Le mot de passe doit contenir au moins 8 caractères.';
-    }
+    // Avant la règle de longueur : le message « New password should be
+    // different from the old password » contient « password should be » et
+    // serait sinon traduit par un reproche de longueur, incompréhensible pour
+    // qui vient de ressaisir son mot de passe temporaire.
     if (brut.includes('different from the old')) {
       return 'Le nouveau mot de passe doit être différent du mot de passe temporaire.';
+    }
+    if (brut.includes('password should be')) {
+      return 'Le mot de passe doit contenir au moins 8 caractères.';
     }
     if (brut.includes('rate limit') || brut.includes('too many')) {
       return 'Trop de tentatives. Réessaie dans quelques minutes.';
