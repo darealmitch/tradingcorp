@@ -85,16 +85,24 @@ jobs:
         with:
           deno-version: v2.x
 
+      # `--config` désigne le deno.json des fonctions. Sans lui, Deno remonte
+      # jusqu'au package.json d'Angular à la racine, bascule en résolution
+      # node_modules et échoue : « Could not find a matching package for
+      # npm:stripe@18 ». Les Edge Functions n'ont rien à voir avec les
+      # dépendances du front — ce fichier les en sépare, et le contrôle passe
+      # de plusieurs minutes à deux secondes.
       - name: Typage des Edge Functions
-        run: deno check supabase/functions/*/index.ts
+        run: deno check --config supabase/functions/deno.json supabase/functions/*/index.ts
 
   # Tests d'autorisation : une base éphémère est reconstruite à partir des
   # seules migrations du dépôt, puis interrogée sous chaque identité.
   #
   # Ce job vérifie deux choses d'un coup : que les policies refusent bien ce
-  # qu'elles doivent refuser, et que les 32 fichiers de migration suffisent à
-  # rebâtir la base — ce que la réconciliation de P-01 a rendu vrai sur le
-  # papier sans jamais l'avoir rejoué.
+  # qu'elles doivent refuser, et que les migrations du dépôt suffisent à
+  # rebâtir la base. Dès son premier passage, il a prouvé son utilité : les
+  # privilèges de table n'étaient nulle part dans le dépôt — Supabase les
+  # posait à la création du projet, et rien ne l'écrivait (voir la migration
+  # privileges_tables_versionnes).
   base:
     runs-on: ubuntu-latest
 
