@@ -1,8 +1,8 @@
 <header class="page-tete">
   <h1 class="page-titre">Paramètres</h1>
   <p class="page-sous">
-    Configuration générale de la plateforme. Lecture seule pour l'instant — l'édition sera branchée
-    quand ces réglages auront un effet réel.
+    Ce que la plateforme applique aujourd'hui, en lecture seule. Seuls les réglages dont
+    l'application connaît réellement l'état figurent ici.
   </p>
 </header>
 
@@ -19,17 +19,18 @@
       <dt>Devise des paiements</dt>
       <dd>EUR (€)</dd>
     </div>
-    <div class="parametres-ligne">
-      <dt>Inscriptions ouvertes</dt>
-      <dd><span class="badge-statut est-succes">Oui</span></dd>
-    </div>
-    <div class="parametres-ligne">
-      <dt>Confirmation d'e-mail</dt>
-      <dd><span class="badge-statut">Désactivée (dev)</span></dd>
-    </div>
+    <!-- Lu depuis la constante qui commande réellement l'affichage du bouton
+         Google sur les écrans de connexion et d'inscription : cette ligne
+         suivra donc son activation, au lieu d'annoncer un état figé. -->
     <div class="parametres-ligne">
       <dt>Connexion Google</dt>
-      <dd><span class="badge-statut">En attente de configuration GCP</span></dd>
+      <dd>
+        @if (googleActif) {
+          <span class="badge-statut est-succes">Active</span>
+        } @else {
+          <span class="badge-statut">Inactive</span>
+        }
+      </dd>
     </div>
   </dl>
 </div>

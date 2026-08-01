@@ -9,8 +9,11 @@
 -- Couvre les 8 modules COMPLETS (103 chapitres au total). Publie au passage la
 -- formation et les 8 sections pour rendre le parcours navigable.
 --
--- Placeholders : les vidéos pointent vers une URL de démonstration (à remplacer
--- par les vidéos Bunny), les articles et quiz reçoivent un contenu temporaire.
+-- Ce script pose la STRUCTURE, jamais de texte d'attente : les descriptions et
+-- le corps des articles restent vides tant que le contenu réel n'est pas
+-- rédigé, et les écrans savent l'annoncer eux-mêmes. Seule l'URL vidéo reçoit
+-- encore un lien de démonstration, faute de quoi le chapitre n'est pas
+-- navigable ; le back-office la signale comme « à remplacer ».
 -- IDEMPOTENT : ré-exécutable sans doublon (garde sur le titre du chapitre).
 -- =============================================================================
 
@@ -20,10 +23,8 @@ declare
   v_id_section   uuid;
   v_id_lecon     uuid;
   v_id_quiz      uuid;
-  v_id_question  uuid;
   m              jsonb;
   ch             record;
-  q              integer;
 
   c_video_url constant text :=
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
@@ -187,12 +188,14 @@ begin
         v_id_section,
         ch.titre,
         ch.type,
-        case when ch.type = 'article'
-             then 'Contenu de cet article à venir.'
-             else null end,
-        case when ch.type = 'video'
-             then 'Vidéo de démonstration — le contenu définitif sera publié prochainement.'
-             else null end,
+        -- Contenu et description laissés VIDES plutôt que remplis d'un texte
+        -- d'attente. Les écrans savent déjà dire « le contenu de cet article
+        -- sera publié prochainement » quand il n'y a rien : un texte posé en
+        -- base, lui, survit à l'arrivée du vrai contenu et finit par mentir —
+        -- 63 chapitres ont ainsi annoncé une « vidéo de démonstration » alors
+        -- que leur vidéo définitive était en ligne depuis des semaines.
+        null,
+        null,
         ch.position,
         case when ch.type = 'video' then 3600 else null end,
         'bunny',
@@ -202,24 +205,19 @@ begin
       )
       returning id_lecon into v_id_lecon;
 
-      -- Chapitre quiz : crée le quiz + questions de démonstration.
+      -- Chapitre quiz : crée le quiz VIDE. Ses questions viennent de
+      -- `seed_quiz_reels.sql`, source unique du contenu réel.
+      --
+      -- Ce script posait auparavant trois « questions de démonstration » avec
+      -- leurs « bonne / mauvaise réponse » : un quiz factice se franchit, donc
+      -- rien ne signalait qu'il n'avait jamais été rédigé. Un quiz sans
+      -- question, lui, s'annonce comme tel à l'écran et bloque l'étape — ce
+      -- qui est le comportement voulu tant que le contenu manque.
       if ch.type = 'quiz' then
         -- score_requis hérité du défaut de la colonne (80 %), règle unique.
         insert into quiz (id_formation, id_lecon, titre, position)
         values (v_id_formation, v_id_lecon, ch.titre, ch.position)
         returning id_quiz into v_id_quiz;
-
-        for q in 1 .. 3 loop
-          insert into questions (id_quiz, libelle, position, type)
-          values (v_id_quiz, format('Question de démonstration n°%s', q), q, 'choix_unique')
-          returning id_question into v_id_question;
-
-          insert into reponses (id_question, contenu, correcte) values
-            (v_id_question, 'Bonne réponse',      true),
-            (v_id_question, 'Mauvaise réponse A', false),
-            (v_id_question, 'Mauvaise réponse B', false),
-            (v_id_question, 'Mauvaise réponse C', false);
-        end loop;
       end if;
     end loop;
   end loop;

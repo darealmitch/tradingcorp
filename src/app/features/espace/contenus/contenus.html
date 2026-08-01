@@ -1,13 +1,30 @@
 <header class="page-tete">
   <h1 class="page-titre">Contenus</h1>
   <p class="page-sous">
-    Modules, étapes et médias de la formation. L'édition (création, upload vidéo/PDF, publication)
-    arrivera avec la gestion de contenu ; la structure ci-dessous reflète la base.
+    Modules, étapes et médias de la formation, tels qu'ils sont en base. La création de contenu et
+    l'envoi des vidéos et PDF se font encore hors de cet écran.
   </p>
 </header>
 
 @if (erreurReglage(); as erreur) {
   <p class="alerte est-erreur">{{ erreur }}</p>
+}
+
+@if (chargement()) {
+  <p class="cellule-discrete">Chargement…</p>
+} @else if (modules().length > 0) {
+  <!-- Code couleur de la colonne Médias, posé une fois pour tous les tableaux
+       de modules. Sa place est ici, dans le bandeau d'introduction aligné sur
+       le titre de page : glissée entre deux panneaux, elle flottait sans
+       attache et rompait leur enchaînement. -->
+  <p class="legende-media">
+    <span><i class="legende-puce" aria-hidden="true"></i> En ligne</span>
+    <span><i class="legende-puce est-inactive" aria-hidden="true"></i> Désactivée</span>
+    <span
+      ><i class="legende-puce est-incomplete" aria-hidden="true"></i> À remplacer ou fichier
+      attendu</span
+    >
+  </p>
 }
 
 <!-- Réglages par formation. Le certificat se décide formation par formation :
@@ -62,20 +79,6 @@
       </table>
     </div>
   </section>
-}
-
-@if (chargement()) {
-  <p class="cellule-discrete">Chargement…</p>
-} @else if (modules().length > 0) {
-  <!-- Code couleur de la colonne Médias, posé une fois pour tout le tableau. -->
-  <p class="legende-media">
-    <span><i class="legende-puce" aria-hidden="true"></i> En ligne</span>
-    <span><i class="legende-puce est-inactive" aria-hidden="true"></i> Désactivée</span>
-    <span
-      ><i class="legende-puce est-incomplete" aria-hidden="true"></i> À remplacer ou fichier
-      attendu</span
-    >
-  </p>
 }
 
 @if (modules().length === 0 && !chargement()) {
