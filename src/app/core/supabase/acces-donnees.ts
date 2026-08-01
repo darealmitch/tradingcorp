@@ -145,6 +145,35 @@ export class AccesDonnees {
   }
 
   /**
+   * Écriture dont on veut la preuve qu'elle a porté sur quelque chose.
+   *
+   * Un UPDATE ou un DELETE qu'une policy écarte ne lève AUCUNE erreur : il ne
+   * trouve aucune ligne à modifier et rend un succès. `ecrire` le prendrait
+   * donc pour une réussite, et l'écran afficherait un changement que la base
+   * n'a pas enregistré — le faux succès, symétrique du faux échec.
+   *
+   * L'appelant doit chaîner `.select()` sur sa requête : ce sont les lignes
+   * effectivement touchées que PostgREST renvoie alors, et c'est là-dessus
+   * qu'on tranche.
+   */
+  async modifier(
+    operation: string,
+    requete: PromiseLike<ReponseSupabase>,
+    echec = ECHEC_GENERIQUE,
+  ): Promise<string | null> {
+    const { data, error } = await this.executer(requete);
+    if (error) {
+      this.signaler(operation, error);
+      return error.code === CODE_EXCEPTION_METIER ? error.message : echec;
+    }
+    if (Array.isArray(data) && data.length > 0) {
+      return null;
+    }
+    this.signaler(operation, { message: 'aucune ligne modifiée', code: 'VIDE' });
+    return echec;
+  }
+
+  /**
    * Appel d'Edge Function. Nos fonctions rendent leurs refus sous la forme
    * `{ erreur: "…" }` avec un statut 4xx — que supabase-js présente comme une
    * `FunctionsHttpError` dont le corps doit être relu pour être exploitable.

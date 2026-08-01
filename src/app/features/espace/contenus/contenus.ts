@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { CommerceService } from '../../../core/commerce/commerce.service';
+import { FormationStaff } from '../../../core/commerce/formation.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import {
   LeconResume,
@@ -34,17 +36,59 @@ const TYPES_COURTS: Record<TypeRessource, string> = {
 })
 export class Contenus {
   private readonly contenu = inject(ContenuService);
+  private readonly commerce = inject(CommerceService);
 
   protected readonly chargement = signal(true);
   protected readonly modules = signal<Module[]>([]);
+  protected readonly formations = signal<FormationStaff[]>([]);
+
+  /** Formation dont le réglage part vers le serveur — la case est figée le temps de l'aller-retour. */
+  protected readonly enregistrement = signal<string | null>(null);
+  protected readonly erreurReglage = signal<string | null>(null);
 
   constructor() {
     void this.charger();
   }
 
   private async charger(): Promise<void> {
-    this.modules.set(await this.contenu.chargerStructure());
+    const [modules, formations] = await Promise.all([
+      this.contenu.chargerStructure(),
+      this.commerce.listerFormationsStaff(),
+    ]);
+    this.modules.set(modules);
+    this.formations.set(formations);
     this.chargement.set(false);
+  }
+
+  /**
+   * Bascule le droit au certificat d'une formation.
+   *
+   * L'affichage suit tout de suite, puis revient en arrière si l'écriture
+   * échoue : une case qui reste cochée alors que la base dit le contraire est
+   * pire que pas de case du tout — on croirait certifiante une formation qui
+   * ne délivrera rien.
+   */
+  protected async basculerCertificat(formation: FormationStaff): Promise<void> {
+    if (this.enregistrement()) {
+      return;
+    }
+    const avant = this.formations();
+    const voulu = !formation.delivre_certificat;
+
+    this.enregistrement.set(formation.id_formation);
+    this.erreurReglage.set(null);
+    this.formations.update((liste) =>
+      liste.map((f) =>
+        f.id_formation === formation.id_formation ? { ...f, delivre_certificat: voulu } : f,
+      ),
+    );
+
+    const erreur = await this.commerce.definirCertifiante(formation.id_formation, voulu);
+    if (erreur) {
+      this.formations.set(avant);
+      this.erreurReglage.set(erreur);
+    }
+    this.enregistrement.set(null);
   }
 
   /**
