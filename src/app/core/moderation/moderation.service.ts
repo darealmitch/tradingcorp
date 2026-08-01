@@ -46,20 +46,33 @@ export class ModerationService {
     );
   }
 
-  /** Approuve ou rejette un commentaire. Retourne un message d'erreur, ou null. */
+  /**
+   * Approuve ou rejette un commentaire. Retourne un message d'erreur, ou null.
+   *
+   * `modifier` et non `ecrire` : les policies de modération écartent les lignes
+   * plutôt que de refuser l'opération. Un formateur dont le rôle vient de
+   * changer, ou un avis déjà traité par quelqu'un d'autre entre-temps, ne
+   * produisent AUCUNE erreur — l'écriture ne touche simplement rien. La file se
+   * viderait à l'écran sans que la base bouge. C'est le `.select()` qui permet
+   * de trancher : ce sont les lignes réellement modifiées qui reviennent.
+   */
   async traiterCommentaire(id: string, statut: 'approuve' | 'rejete'): Promise<string | null> {
-    return this.acces.ecrire(
+    return this.acces.modifier(
       'modération d’un commentaire',
-      this.acces.table('commentaires').update({ statut }).eq('id_commentaire', id),
+      this.acces
+        .table('commentaires')
+        .update({ statut })
+        .eq('id_commentaire', id)
+        .select('id_commentaire'),
       'La modération a échoué. Réessaie.',
     );
   }
 
   /** Approuve ou rejette un avis. Retourne un message d'erreur, ou null. */
   async traiterAvis(id: string, statut: 'approuve' | 'rejete'): Promise<string | null> {
-    return this.acces.ecrire(
+    return this.acces.modifier(
       'modération d’un avis',
-      this.acces.table('avis').update({ statut }).eq('id_avis', id),
+      this.acces.table('avis').update({ statut }).eq('id_avis', id).select('id_avis'),
       'La modération a échoué. Réessaie.',
     );
   }

@@ -12,40 +12,55 @@
 
 <!-- Réglages par formation. Le certificat se décide formation par formation :
      il atteste d'un cursus, pas de la traversée d'un contenu quelconque. Une
-     formation ajoutée au catalogue n'est certifiante que si on l'a voulu. -->
+     formation ajoutée au catalogue n'est certifiante que si on l'a voulu.
+     Même gabarit de tableau que le reste du back-office. -->
 @if (formations().length > 0) {
   <section class="panneau">
     <div class="panneau-tete">
       <h2 class="panneau-titre">Formations</h2>
     </div>
-    @for (formation of formations(); track formation.id_formation) {
-      <div class="formation-reglage">
-        <span class="liste-corps">
-          <span class="liste-titre">{{ formation.titre }}</span>
-          <span class="liste-detail">
-            @if (formation.est_publiee) {
-              Publiée
-            } @else {
-              Brouillon
-            }
-            · {{ formation.slug }}
-          </span>
-        </span>
-        <label class="reglage-case">
-          <input
-            type="checkbox"
-            [checked]="formation.delivre_certificat"
-            [disabled]="enregistrement() !== null"
-            (change)="basculerCertificat(formation)"
-          />
-          <span>Délivre un certificat</span>
-        </label>
-      </div>
-    }
-    <p class="cellule-discrete">
-      Le certificat est délivré automatiquement à l’apprenant qui termine toutes les étapes publiées
-      de la formation. Les comptes de démonstration en sont exclus.
+    <p class="page-sous">
+      Le certificat part automatiquement quand toutes les étapes publiées sont terminées. Les
+      comptes de démonstration en sont exclus.
     </p>
+    <div class="tableau-defile">
+      <table class="tableau">
+        <thead>
+          <tr>
+            <th>Formation</th>
+            <th>Statut</th>
+            <th class="colonne-case">Certificat</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (formation of formations(); track formation.id_formation) {
+            <tr>
+              <td>
+                {{ formation.titre }}
+                <span class="cellule-discrete">/{{ formation.slug }}</span>
+              </td>
+              <td>
+                @if (formation.est_publiee) {
+                  <span class="badge-statut est-succes">Publiée</span>
+                } @else {
+                  <span class="badge-statut">Brouillon</span>
+                }
+              </td>
+              <td class="colonne-case">
+                <input
+                  type="checkbox"
+                  class="case-certificat"
+                  [checked]="formation.delivre_certificat"
+                  [disabled]="enregistrement() !== null"
+                  (change)="basculerCertificat(formation)"
+                  [attr.aria-label]="'Délivre un certificat : ' + formation.titre"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </section>
 }
 
