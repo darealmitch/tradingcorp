@@ -290,9 +290,13 @@ export class LeconPlayer {
   }
 
   /**
-   * Premier visionnage : empêche d'avancer au-delà du point réellement atteint
-   * (impossible de glisser jusqu'à la fin pour valider sans regarder). Le retour
-   * en arrière reste libre, comme l'avance une fois la leçon validée.
+   * Premier visionnage : empêche d'avancer au-delà du point réellement atteint.
+   * Le retour en arrière reste libre, comme l'avance une fois la leçon validée.
+   *
+   * Garde d'ERGONOMIE, pas de sécurité : il retire la tentation de glisser
+   * jusqu'à la fin, rien de plus. Le signal envoyé au serveur reste écrit par
+   * le client, et un appel direct à l'API contourne ce garde sans effort —
+   * c'est assumé (voir 20260718100000_validation_video).
    */
   protected surSeek(): void {
     const el = this.lecteur()?.nativeElement;

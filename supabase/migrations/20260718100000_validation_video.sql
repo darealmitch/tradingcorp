@@ -1,11 +1,40 @@
 -- =============================================================================
--- TradingCorp — Validation d'une leçon vidéo conditionnée au visionnage
+-- TradingCorp — Validation d'une leçon vidéo conditionnée au signal de fin
 --
 -- Durcissement de terminer_lecon (introduite par 20260717120000_chapitres_types) :
 -- un chapitre 'video' ne peut être validé que si sa vidéo a été signalée comme
--- terminée (video_terminee_le, posé en fin de lecture). Empêche la validation
--- directe d'une leçon vidéo sans l'avoir visionnée, en complément du garde
+-- terminée (video_terminee_le, posé en fin de lecture), en complément du garde
 -- côté lecteur (bouton actif seulement en fin de vidéo + anti-avance).
+--
+-- CE QUE CE CONTRÔLE FAIT, ET CE QU'IL NE FAIT PAS
+--
+-- L'en-tête d'origine annonçait qu'il « empêche la validation directe d'une
+-- leçon vidéo sans l'avoir visionnée ». C'était faux, et cette phrase
+-- contredisait 20260716100000_pedagogie_quiz, qui qualifie exactement la même
+-- colonne de « signal UX, non sécuritaire ».
+--
+-- La réalité : `video_terminee_le` fait partie des colonnes que le rôle
+-- `authenticated` a le droit d'écrire (avec `position_video_s`). Un apprenant
+-- peut donc la poser lui-même sans lire la vidéo, puis appeler cette fonction,
+-- qui l'acceptera. Le contrôle serveur existe bien, mais il vérifie une
+-- affirmation du client — ce n'est pas la même chose qu'une preuve.
+--
+-- C'est un choix assumé, pas un oubli : seul le navigateur sait où en est une
+-- lecture, et aucune mesure côté client ne peut établir qu'un humain a
+-- regardé une vidéo. Le visionnage est donc traité comme une intention
+-- pédagogique, pas comme un contrôle d'intégrité.
+--
+-- Le verrou qui, lui, tient : `terminee_le`, jamais accordée au client, écrite
+-- uniquement par cette fonction ou par l'Edge Function corriger-quiz. C'est
+-- elle qui gouverne `lecon_debloquee()`, donc l'accès en LECTURE au contenu
+-- des étapes suivantes. Un apprenant qui saute une vidéo s'ouvre la suite,
+-- mais il ne contourne aucune protection de données.
+--
+-- Rien à changer ici tant que le certificat n'est pas opposable à un tiers.
+-- Le jour où il le deviendra, il faudra que le serveur cesse de croire le
+-- client sur parole : jalons de lecture réguliers, temps écoulé confronté à
+-- `lecons.duree_s`, refus des sauts. Cela relèvera la barre sans jamais la
+-- fermer.
 --
 -- Les chapitres 'article' se valident librement (aucune vidéo). Les chapitres
 -- 'quiz' restent validés uniquement par corriger-quiz. Le staff est exempté.
