@@ -83,52 +83,28 @@
   background: color-mix(in srgb, var(--attention) 22%, transparent);
 }
 
-/* Réglages par formation : une ligne par formation, la case à droite. Même
-   gabarit que les lignes de module de « Ma formation », pour que le staff
-   retrouve la même grammaire visuelle d'un écran à l'autre. */
-.formation-reglage {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
+/* ===== Réglages par formation ===== */
+
+/* Colonne de case : elle ne prend que sa largeur, le titre garde le reste. */
+.colonne-case {
+  width: 1%;
+  white-space: nowrap;
+  text-align: center;
 }
 
-.formation-reglage .liste-corps {
-  flex: 1;
-  min-width: 0;
-}
-
-.reglage-case {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex: none;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.reglage-case input {
-  width: 17px;
-  height: 17px;
-  accent-color: var(--accent);
+/* Même case que celle des comptes de test dans Utilisateurs : deux réglages de
+   même nature — un interrupteur d'administration au bout d'une ligne — doivent
+   se ressembler d'un écran à l'autre. */
+.case-certificat {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--violet);
   cursor: pointer;
 }
 
 /* Le temps de l'aller-retour serveur, la case ne répond plus : elle doit le
    dire, sans quoi le clic sans effet passe pour un bug. */
-.reglage-case:has(input:disabled) {
-  opacity: 0.55;
+.case-certificat:disabled {
+  opacity: 0.5;
   cursor: progress;
-}
-
-.reglage-case:has(input:disabled) input {
-  cursor: progress;
-}
-
-@media (max-width: 560px) {
-  .formation-reglage {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
 }

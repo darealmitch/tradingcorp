@@ -17,7 +17,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(35);
+select plan(36);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Outils : exécuter sous une identité, sans jamais laisser le rôle simulé
@@ -425,6 +425,24 @@ select is(
   $q$),
   null::text,
   'formateur — approuve un avis en attente'
+);
+
+-- Le front compte les lignes revenues pour savoir si la modération a porté :
+-- un UPDATE écarté par une policy ne lève rien, il ne modifie simplement
+-- aucune ligne. Encore faut-il que la policy de LECTURE laisse repasser la
+-- ligne après coup — sans quoi une modération réussie serait rendue comme un
+-- échec, et le staff la referait indéfiniment.
+select is(
+  pg_temp.observer('22222222-2222-2222-2222-222222222222', $q$
+    with maj as (
+      update public.avis set statut = 'approuve'
+       where id_avis = '99999999-0000-0000-0000-000000000001'
+       returning id_avis
+    )
+    select count(*) from maj
+  $q$),
+  1::bigint,
+  'formateur — la ligne modérée lui revient, ce qui prouve que l''écriture a porté'
 );
 
 select is(
