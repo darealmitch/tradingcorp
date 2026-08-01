@@ -173,6 +173,22 @@ export interface ResultatQuiz {
   detail: DetailQuestionQuiz[];
 }
 
+/**
+ * Certificat obtenu à l'achèvement d'une formation.
+ *
+ * Délivré par le serveur seul (`delivrer_certificat`), dans la transaction qui
+ * valide la dernière étape. Le client ne peut ni en créer, ni en modifier :
+ * aucune policy d'écriture n'est ouverte sur la table.
+ */
+export interface Certificat {
+  id_certificat: string;
+  id_formation: string;
+  /** Numéro public, recopiable à la main pour vérification par un tiers. */
+  numero: string;
+  date_obtention: string;
+  formations: { titre: string } | null;
+}
+
 /** Progression agrégée : étapes terminées / total accessible. */
 export interface ProgressionResume {
   terminees: number;
