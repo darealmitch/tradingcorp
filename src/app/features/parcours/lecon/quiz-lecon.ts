@@ -149,9 +149,42 @@ export class QuizLecon {
     return this.detailParQuestion().get(idQuestion);
   }
 
-  /** Une option fait-elle partie des bonnes réponses (révélées après correction) ? */
+  /**
+   * Les bonnes réponses de cette question sont-elles connues ?
+   *
+   * Le serveur ne les envoie qu'en cas de réussite. Une question juste au sein
+   * d'un quiz raté fait exception : ce que l'apprenant a coché EST la bonne
+   * réponse, et le lui montrer ne lui apprend rien qu'il n'ait écrit lui-même.
+   */
+  protected reponsesRevelees(idQuestion: string): boolean {
+    const d = this.detailQuestion(idQuestion);
+    return d !== undefined && (d.bonnes_reponses !== undefined || d.correcte);
+  }
+
+  /** Une option fait-elle partie des bonnes réponses (quand elles sont connues) ? */
   protected estBonneReponse(idQuestion: string, idReponse: string): boolean {
-    return this.detailQuestion(idQuestion)?.bonnes_reponses.includes(idReponse) ?? false;
+    const d = this.detailQuestion(idQuestion);
+    if (!d) {
+      return false;
+    }
+    if (d.bonnes_reponses) {
+      return d.bonnes_reponses.includes(idReponse);
+    }
+    return d.correcte && d.reponses_donnees.includes(idReponse);
+  }
+
+  /**
+   * Marquer une option comme fausse suppose de savoir laquelle est juste.
+   * Sur une question manquée dont la correction n'est pas révélée, on sait
+   * seulement que l'ensemble est faux : désigner une option précise
+   * affirmerait plus que ce que le serveur a dit.
+   */
+  protected estMauvaiseReponse(idQuestion: string, idReponse: string): boolean {
+    return (
+      this.reponsesRevelees(idQuestion) &&
+      this.aEteCochee(idQuestion, idReponse) &&
+      !this.estBonneReponse(idQuestion, idReponse)
+    );
   }
 
   /** L'apprenant avait-il coché cette option ? */

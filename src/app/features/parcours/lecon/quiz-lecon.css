@@ -127,6 +127,16 @@
   gap: 14px;
 }
 
+/* Question manquée dont la correction n'est pas révélée : le ton reste celui
+   d'un conseil, pas d'une sanction — c'est le moment où l'apprenant décide
+   s'il retourne au chapitre ou s'il abandonne. */
+.quiz-a-revoir {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
 /* Échec de la correction — à ne pas confondre avec un quiz raté, qui est un
    résultat et s'affiche dans `.quiz-resultat`. Même teinte que les erreurs de
    formulaire (`.form-erreur`), pour que l'utilisateur reconnaisse la nature du
