@@ -6,6 +6,49 @@
   </p>
 </header>
 
+@if (erreurReglage(); as erreur) {
+  <p class="alerte est-erreur">{{ erreur }}</p>
+}
+
+<!-- Réglages par formation. Le certificat se décide formation par formation :
+     il atteste d'un cursus, pas de la traversée d'un contenu quelconque. Une
+     formation ajoutée au catalogue n'est certifiante que si on l'a voulu. -->
+@if (formations().length > 0) {
+  <section class="panneau">
+    <div class="panneau-tete">
+      <h2 class="panneau-titre">Formations</h2>
+    </div>
+    @for (formation of formations(); track formation.id_formation) {
+      <div class="formation-reglage">
+        <span class="liste-corps">
+          <span class="liste-titre">{{ formation.titre }}</span>
+          <span class="liste-detail">
+            @if (formation.est_publiee) {
+              Publiée
+            } @else {
+              Brouillon
+            }
+            · {{ formation.slug }}
+          </span>
+        </span>
+        <label class="reglage-case">
+          <input
+            type="checkbox"
+            [checked]="formation.delivre_certificat"
+            [disabled]="enregistrement() !== null"
+            (change)="basculerCertificat(formation)"
+          />
+          <span>Délivre un certificat</span>
+        </label>
+      </div>
+    }
+    <p class="cellule-discrete">
+      Le certificat est délivré automatiquement à l’apprenant qui termine toutes les étapes publiées
+      de la formation. Les comptes de démonstration en sont exclus.
+    </p>
+  </section>
+}
+
 @if (chargement()) {
   <p class="cellule-discrete">Chargement…</p>
 } @else if (modules().length > 0) {

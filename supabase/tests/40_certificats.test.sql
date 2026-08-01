@@ -11,7 +11,27 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(14);
+select plan(16);
+
+-- Exécute une écriture sous une identité et rend le nombre de lignes qu'elle a
+-- réellement touchées. Le compte importe plus que l'absence d'erreur : une
+-- policy qui écarte des lignes ne lève rien, elle n'en modifie aucune.
+create function pg_temp.lignes_modifiees(p_sub text, p_sql text) returns integer
+language plpgsql as $$
+declare n integer;
+begin
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub', p_sub, 'role', 'authenticated')::text,
+    true
+  );
+  execute 'set local role authenticated';
+  execute p_sql;
+  get diagnostics n = row_count;
+  execute 'reset role';
+  return n;
+end;
+$$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Jeu d'essai : une formation en deux modules, trois profils
@@ -212,6 +232,32 @@ select is(
       and cmd in ('INSERT', 'UPDATE', 'ALL')),
   0,
   'aucune policy n''autorise le client à écrire un certificat'
+);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Qui décide qu'une formation est certifiante
+-- ─────────────────────────────────────────────────────────────────────────────
+
+update public.profils set role = 'formateur'
+ where id_profil = 'd1111111-0000-0000-0000-000000000003';
+
+select is(
+  pg_temp.lignes_modifiees('d1111111-0000-0000-0000-000000000003',
+    $q$update public.formations set delivre_certificat = true
+        where id_formation = 'd2222222-0000-0000-0000-000000000002'$q$),
+  1,
+  'le staff règle le droit au certificat depuis le back-office'
+);
+
+-- Un apprenant qui tenterait l'écriture n'obtient PAS d'erreur : la policy
+-- écarte la ligne, et l'UPDATE n'en touche aucune. C'est bien un refus — mais
+-- silencieux, d'où le comptage plutôt qu'un test d'exception.
+select is(
+  pg_temp.lignes_modifiees('d1111111-0000-0000-0000-000000000001',
+    $q$update public.formations set delivre_certificat = true
+        where id_formation = 'd2222222-0000-0000-0000-000000000002'$q$),
+  0,
+  'un apprenant ne peut pas rendre une formation certifiante'
 );
 
 select * from finish();

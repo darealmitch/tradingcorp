@@ -161,6 +161,36 @@ describe('AccesDonnees', () => {
     });
   });
 
+  describe('écriture dont on exige la preuve', () => {
+    it('rend null quand des lignes ont bien été modifiées', async () => {
+      const acces = creerAcces();
+      expect(await acces.modifier('réglage', reponse({ data: [{ id: 'f-1' }] }))).toBeNull();
+    });
+
+    it('rend un échec quand aucune ligne n’a été touchée', async () => {
+      // Le piège que cette méthode existe pour éviter : une policy qui écarte
+      // les lignes ne lève AUCUNE erreur. L'écriture « réussit » sans rien
+      // écrire, et l'écran afficherait un changement que la base ignore.
+      const acces = creerAcces();
+
+      const erreur = await acces.modifier('réglage', reponse({ data: [] }), 'Refusé.');
+
+      expect(erreur).toBe('Refusé.');
+      expect(acces.dernierIncident()?.code).toBe('VIDE');
+    });
+
+    it('remonte quand même le message métier du serveur', async () => {
+      const acces = creerAcces();
+
+      const erreur = await acces.modifier(
+        'réglage',
+        reponse({ error: { message: 'Réservé aux administrateurs', code: 'P0001' } }),
+      );
+
+      expect(erreur).toBe('Réservé aux administrateurs');
+    });
+  });
+
   describe('Edge Functions', () => {
     it('rend les données quand la fonction répond', async () => {
       const acces = creerAcces({
