@@ -1,0 +1,4 @@
+{
+  "_comment": "Racine du projet Deno pour les Edge Functions. Sans ce fichier, Deno remonte jusqu'au package.json d'Angular à la racine du dépôt, croit devoir résoudre les imports npm: depuis node_modules, et n'y trouve ni stripe ni supabase-js — qui sont des dépendances du serveur, pas du front. « none » rétablit la résolution native, celle qui a cours dans le runtime Edge en production.",
+  "nodeModulesDir": "none"
+}
