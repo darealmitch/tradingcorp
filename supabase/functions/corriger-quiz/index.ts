@@ -1,6 +1,7 @@
 // Types des API intégrées au runtime Edge de Supabase (Deno.serve, Deno.env).
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { echecsConsecutifs, messageAttente, secondesAAttendre } from './attente.ts';
 
 // Correction de quiz — seule voie pour valider une étape. Le client envoie ses
 // réponses, jamais les bonnes réponses (reponses.correcte n'est lue qu'ici, en
@@ -8,6 +9,19 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 // progression_lecons.terminee_le : le client n'a plus le privilège colonne
 // pour le faire directement (cf. migration pedagogie_quiz), donc valider une
 // étape sans réussir son quiz est structurellement impossible.
+//
+// Deux règles empêchent le quiz de n'être qu'une formalité :
+//
+//   • les bonnes réponses ne sont renvoyées QU'EN CAS DE RÉUSSITE. Elles
+//     l'étaient à chaque correction — il suffisait donc de soumettre n'importe
+//     quoi, de lire la réponse et de resoumettre. L'explication d'échec, elle,
+//     est toujours renvoyée : c'est elle qui fait apprendre, pas la solution ;
+//   • une tentative qui échoue impose un délai avant la suivante, croissant
+//     avec le nombre d'échecs enchaînés. Personne n'est bloqué définitivement,
+//     mais réviser redevient plus rapide que deviner.
+//
+// Staff et comptes de démonstration sont exemptés du délai : la recette d'un
+// quiz suppose de le rejouer.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -77,6 +91,38 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Exemptés du délai : le staff et les comptes de démonstration, qui
+    // rejouent les quiz pour les vérifier, pas pour les réussir.
+    const { data: profil } = await admin
+      .from('profils')
+      .select('role, est_test')
+      .eq('id_profil', user.id)
+      .maybeSingle();
+    const exempte =
+      profil?.est_test === true || profil?.role === 'formateur' || profil?.role === 'admin';
+
+    if (!exempte) {
+      // Les dernières tentatives suffisent : au-delà, on est de toute façon au
+      // palier maximal.
+      const { data: precedentes } = await admin
+        .from('tentatives_quiz')
+        .select('reussi, date_passage')
+        .eq('id_profil', user.id)
+        .eq('id_quiz', id_quiz)
+        .order('date_passage', { ascending: false })
+        .limit(10);
+
+      const historique = (precedentes ?? []) as { reussi: boolean; date_passage: string }[];
+      const attente = secondesAAttendre(
+        echecsConsecutifs(historique),
+        historique[0]?.date_passage ?? null,
+        Date.now(),
+      );
+      if (attente > 0) {
+        return json({ erreur: messageAttente(attente), secondes_restantes: attente }, 429);
+      }
+    }
+
     const { data: questions } = await admin
       .from('questions')
       .select(
@@ -87,20 +133,20 @@ Deno.serve(async (req) => {
       return json({ erreur: 'Ce quiz ne contient aucune question.' }, 422);
     }
 
-    // Détail pédagogique par question : renvoyé APRÈS correction (les bonnes
-    // réponses ne sont donc jamais exposées avant la soumission). Chaque entrée
-    // porte la ou les bonnes réponses, la saisie de l'apprenant, le verdict et
-    // l'explication adaptée (réussite si juste, échec sinon).
+    // Détail pédagogique par question : le verdict, la saisie de l'apprenant et
+    // l'explication adaptée. `bonnes_reponses` n'est joint qu'en cas de
+    // réussite — un échec dit ce qui est faux et pourquoi, jamais la solution.
     interface DetailQuestion {
       id_question: string;
       correcte: boolean;
-      bonnes_reponses: string[];
+      bonnes_reponses?: string[];
       reponses_donnees: string[];
       explication: string | null;
     }
 
     let bonnes = 0;
-    const detail: DetailQuestion[] = [];
+    /** Correction complète — filtrée avant l'envoi selon l'issue du quiz. */
+    const correction: (DetailQuestion & { bonnes_reponses: string[] })[] = [];
     for (const question of questions) {
       const correctes = new Set(
         (question.reponses as { id_reponse: string; correcte: boolean }[])
@@ -114,7 +160,7 @@ Deno.serve(async (req) => {
       if (identiques) {
         bonnes += 1;
       }
-      detail.push({
+      correction.push({
         id_question: question.id_question,
         correcte: identiques,
         bonnes_reponses: [...correctes],
@@ -127,6 +173,21 @@ Deno.serve(async (req) => {
 
     const score = Math.round((bonnes / questions.length) * 100);
     const reussi = score >= quiz.score_requis;
+
+    // Le filtrage se fait ici, une fois le verdict connu, et non pendant la
+    // boucle : c'est le score global qui décide, pas la justesse d'une
+    // question isolée. Retirer la clé — plutôt que la vider — évite qu'un
+    // tableau vide passe pour « aucune bonne réponse ».
+    const detail: DetailQuestion[] = reussi
+      ? correction
+      : correction.map((d) => ({
+          // Énuméré plutôt que soustrait : ce qui part vers le client se lit
+          // ici en entier, et un champ ajouté demain ne fuitera pas par défaut.
+          id_question: d.id_question,
+          correcte: d.correcte,
+          reponses_donnees: d.reponses_donnees,
+          explication: d.explication,
+        }));
 
     await admin.from('tentatives_quiz').insert({
       id_profil: user.id,

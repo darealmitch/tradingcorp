@@ -10,9 +10,11 @@
       }
     </div>
 
-    <!-- Correction détaillée : bonnes réponses, choix de l'apprenant, explication -->
+    <!-- Correction détaillée. Les bonnes réponses ne sont montrées que lorsque
+         le serveur les a envoyées, c'est-à-dire une fois le quiz réussi. -->
     @for (q of questions(); track q.id_question) {
       @let d = detailQuestion(q.id_question);
+      @let revelee = reponsesRevelees(q.id_question);
       <fieldset
         class="quiz-question est-corrigee"
         [class.est-juste]="d?.correcte"
@@ -31,10 +33,7 @@
           <div
             class="quiz-option quiz-option-corrigee"
             [class.est-bonne]="estBonneReponse(q.id_question, opt.id_reponse)"
-            [class.est-mauvaise]="
-              aEteCochee(q.id_question, opt.id_reponse) &&
-              !estBonneReponse(q.id_question, opt.id_reponse)
-            "
+            [class.est-mauvaise]="estMauvaiseReponse(q.id_question, opt.id_reponse)"
           >
             <span class="quiz-marque">
               @if (estBonneReponse(q.id_question, opt.id_reponse)) {
@@ -42,7 +41,9 @@
                 <span class="lecteur-ecran">Bonne réponse :</span>
               } @else if (aEteCochee(q.id_question, opt.id_reponse)) {
                 <app-icone nom="croix" [taille]="16" />
-                <span class="lecteur-ecran">Votre réponse, incorrecte :</span>
+                <span class="lecteur-ecran">
+                  {{ revelee ? 'Votre réponse, incorrecte :' : 'Votre réponse :' }}
+                </span>
               }
             </span>
             <span>{{ opt.contenu }}</span>
@@ -50,6 +51,12 @@
         }
         @if (d?.explication; as explication) {
           <p class="quiz-explication">{{ explication }}</p>
+        }
+        @if (!revelee) {
+          <p class="quiz-a-revoir">
+            La bonne réponse s’affichera une fois le quiz réussi. Reprends le chapitre : tout ce
+            qu’il faut y est.
+          </p>
         }
       </fieldset>
     }

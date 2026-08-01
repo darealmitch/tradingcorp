@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { QuestionQuiz, ResultatQuiz } from '../../../core/contenu/apprentissage.model';
+import {
+  DetailQuestionQuiz,
+  QuestionQuiz,
+  ResultatQuiz,
+} from '../../../core/contenu/apprentissage.model';
 import { QuizService } from '../../../core/contenu/quiz.service';
 import { QuizLecon } from './quiz-lecon';
 
@@ -14,7 +18,11 @@ interface Interne {
   toutesRepondues(): boolean;
   soumettre(): Promise<void>;
   reessayer(): void;
+  erreur: () => string | null;
+  detailQuestion(idQuestion: string): DetailQuestionQuiz | undefined;
+  reponsesRevelees(idQuestion: string): boolean;
   estBonneReponse(idQuestion: string, idReponse: string): boolean;
+  estMauvaiseReponse(idQuestion: string, idReponse: string): boolean;
   aEteCochee(idQuestion: string, idReponse: string): boolean;
 }
 
@@ -216,6 +224,91 @@ describe('QuizLecon', () => {
     it('ne révèle rien pour une question absente de la correction', () => {
       expect(interne.estBonneReponse('q2', 'r3')).toBe(false);
       expect(interne.aEteCochee('q2', 'r3')).toBe(false);
+    });
+  });
+
+  describe('correction sans révélation (quiz échoué)', () => {
+    /**
+     * Depuis la correction de P-05, le serveur n'envoie plus `bonnes_reponses`
+     * tant que le quiz n'est pas réussi : sinon il suffisait de soumettre au
+     * hasard, de lire la solution dans la réponse HTTP et de resoumettre.
+     *
+     * L'écran doit rester honnête dans cet état : montrer ce que l'apprenant a
+     * coché et l'explication, sans désigner de bonne réponse — ni en inventer.
+     */
+    beforeEach(async () => {
+      interne.repondreUnique('q1', 'r2');
+      interne.basculerMultiple('q2', 'r3');
+      resultatServeur = {
+        reussi: false,
+        score: 50,
+        score_requis: 80,
+        detail: [
+          {
+            id_question: 'q1',
+            correcte: false,
+            reponses_donnees: ['r2'],
+            explication: 'Relis la section sur les actifs.',
+          },
+          {
+            // Question juste au sein d'un quiz raté : le serveur n'envoie pas
+            // les bonnes réponses, mais elles se déduisent de la saisie.
+            id_question: 'q2',
+            correcte: true,
+            reponses_donnees: ['r3'],
+            explication: 'Bien vu.',
+          },
+        ],
+      };
+      await interne.soumettre();
+    });
+
+    it('ne désigne aucune bonne réponse sur une question manquée', () => {
+      expect(interne.estBonneReponse('q1', 'r1')).toBe(false);
+      expect(interne.estBonneReponse('q1', 'r2')).toBe(false);
+      expect(interne.reponsesRevelees('q1')).toBe(false);
+    });
+
+    it('ne marque aucune option comme fausse faute de savoir laquelle est juste', () => {
+      // Marquer l'option cochée « incorrecte » serait affirmer plus que ce que
+      // le serveur a dit — sur un choix multiple, elle pouvait être partiellement bonne.
+      expect(interne.estMauvaiseReponse('q1', 'r2')).toBe(false);
+      expect(interne.aEteCochee('q1', 'r2')).toBe(true);
+    });
+
+    it('conserve l’explication, qui reste le retour pédagogique', () => {
+      expect(interne.detailQuestion('q1')?.explication).toBe('Relis la section sur les actifs.');
+    });
+
+    it('confirme en revanche les réponses d’une question réussie', () => {
+      expect(interne.reponsesRevelees('q2')).toBe(true);
+      expect(interne.estBonneReponse('q2', 'r3')).toBe(true);
+      expect(interne.estBonneReponse('q2', 'r4')).toBe(false);
+    });
+  });
+
+  describe('délai entre deux tentatives', () => {
+    it('affiche le message d’attente renvoyé par le serveur', async () => {
+      // Le serveur répond 429 avec son propre texte ; le composant n'a ni à le
+      // recalculer ni à le reformuler.
+      interne.repondreUnique('q1', 'r1');
+      interne.basculerMultiple('q2', 'r3');
+      erreurServeur = 'Attends encore 25 secondes avant de retenter ce quiz.';
+
+      await interne.soumettre();
+
+      expect(interne.erreur()).toBe('Attends encore 25 secondes avant de retenter ce quiz.');
+      expect(interne.resultat()).toBeNull();
+    });
+
+    it('conserve les réponses saisies pour que l’attente ne coûte pas la saisie', async () => {
+      interne.repondreUnique('q1', 'r1');
+      interne.basculerMultiple('q2', 'r3');
+      erreurServeur = 'Attends encore 2 minutes avant de retenter ce quiz.';
+
+      await interne.soumettre();
+
+      expect(interne.reponses()).toEqual({ q1: 'r1', q2: ['r3'] });
     });
   });
 

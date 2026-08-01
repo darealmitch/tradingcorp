@@ -152,8 +152,13 @@ export interface QuestionQuiz {
 export interface DetailQuestionQuiz {
   id_question: string;
   correcte: boolean;
-  /** ids des réponses correctes (révélées seulement après soumission). */
-  bonnes_reponses: string[];
+  /**
+   * ids des réponses correctes — **présent uniquement quand le quiz est
+   * réussi**. En cas d'échec, le serveur ne les envoie pas : les renvoyer à
+   * chaque correction revenait à donner la solution à qui soumettait n'importe
+   * quoi. L'explication d'échec, elle, est toujours là.
+   */
+  bonnes_reponses?: string[];
   /** ids des réponses effectivement cochées par l'apprenant. */
   reponses_donnees: string[];
   explication: string | null;
