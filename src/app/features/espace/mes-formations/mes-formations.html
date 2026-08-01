@@ -7,6 +7,28 @@
   <p class="alerte est-erreur">{{ erreur }}</p>
 }
 
+<!-- En tête de page : c'est l'aboutissement du parcours, pas une ligne de plus
+     dans une liste. Le numéro est mis en avant parce que c'est lui qui circule
+     — un tiers le recopie pour vérifier le certificat. -->
+@for (certificat of certificats(); track certificat.id_certificat) {
+  <div class="panneau certificat-panneau">
+    <div class="certificat-tete">
+      <app-icone nom="diplome" [taille]="26" />
+      <div>
+        <h2 class="panneau-titre">Formation terminée</h2>
+        <p class="page-sous">
+          {{ certificat.formations?.titre ?? 'Formation' }} — obtenu le
+          {{ dateObtention(certificat) }}.
+        </p>
+      </div>
+    </div>
+    <p class="certificat-numero">
+      <span>Numéro de certificat</span>
+      <strong>{{ certificat.numero }}</strong>
+    </p>
+  </div>
+}
+
 <div class="panneau">
   @if (chargement()) {
     <p class="cellule-discrete">Chargement…</p>

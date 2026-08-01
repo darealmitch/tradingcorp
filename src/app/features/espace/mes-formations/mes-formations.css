@@ -66,3 +66,51 @@
   font-size: 0.85rem;
   color: var(--muted);
 }
+
+/* Certificat obtenu. Teinte de réussite, comme les autres marqueurs
+   d'aboutissement du parcours — un certificat n'est pas une information de
+   plus, c'est la conclusion. */
+.certificat-panneau {
+  border-color: color-mix(in srgb, var(--up-etat) 45%, var(--line));
+  background: color-mix(in srgb, var(--up-etat) 6%, var(--surface));
+}
+
+.certificat-tete {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.certificat-tete app-icone {
+  margin-top: 2px;
+  color: var(--up-etat);
+  flex: none;
+}
+
+.certificat-tete .page-sous {
+  margin: 4px 0 0;
+}
+
+/* Le numéro se recopie à la main : chasse fixe, espacement lisible, et une
+   sélection qui prend le numéro entier d'un seul geste. */
+.certificat-numero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.certificat-numero span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.certificat-numero strong {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  user-select: all;
+}

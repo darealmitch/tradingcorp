@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
 import {
+  Certificat,
   LeconEtape,
   LeconJouable,
   LeconResume,
@@ -224,6 +225,24 @@ export class ContenuService {
       ),
     ]);
     return { terminees, total };
+  }
+
+  /**
+   * Certificats obtenus par l'apprenant connecté (RLS : les siens seulement).
+   *
+   * Délivrés côté serveur à l'achèvement d'une formation. Les lire ici est la
+   * seule façon pour l'apprenant d'apprendre qu'il en a un : sans cet appel,
+   * le certificat existerait sans que son titulaire le sache.
+   */
+  async mesCertificats(): Promise<Certificat[]> {
+    return this.acces.lire<Certificat[]>(
+      'lecture des certificats',
+      this.acces
+        .table('certificats')
+        .select('id_certificat, id_formation, numero, date_obtention, formations(titre)')
+        .order('date_obtention', { ascending: false }),
+      [],
+    );
   }
 
   /** Prochaines leçons non terminées, dans l'ordre du programme. */

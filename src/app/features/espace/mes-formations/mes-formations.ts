@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { Router } from '@angular/router';
 import { CommerceService } from '../../../core/commerce/commerce.service';
 import { Formation } from '../../../core/commerce/formation.model';
-import { ModuleParcours } from '../../../core/contenu/apprentissage.model';
+import { Certificat, ModuleParcours } from '../../../core/contenu/apprentissage.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { Icone } from '../../../shared/ui/icone';
 import { Verrou } from '../../../shared/ui/verrou';
@@ -28,20 +28,34 @@ export class MesFormations {
   /** Modules du parcours (états serveur) — accès direct aux chapitres. */
   protected readonly modules = signal<ModuleParcours[]>([]);
 
+  /** Certificats obtenus — l'aboutissement du parcours, mis en tête de page. */
+  protected readonly certificats = signal<Certificat[]>([]);
+
   constructor() {
     void this.charger();
   }
 
   private async charger(): Promise<void> {
-    const [formations, inscriptions, parcours] = await Promise.all([
+    const [formations, inscriptions, parcours, certificats] = await Promise.all([
       this.commerce.chargerFormations(),
       this.commerce.chargerInscriptions(),
       this.contenu.chargerParcours(),
+      this.contenu.mesCertificats(),
     ]);
     this.formations.set(formations);
     this.inscrites.set(new Set(inscriptions.map((i) => i.id_formation)));
     this.modules.set(parcours?.inscrit ? parcours.modules : []);
+    this.certificats.set(certificats);
     this.chargement.set(false);
+  }
+
+  /** Date d'obtention en toutes lettres — un certificat se date, pas s'horodate. */
+  protected dateObtention(certificat: Certificat): string {
+    return new Date(certificat.date_obtention).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   }
 
   protected async acheter(formation: Formation): Promise<void> {

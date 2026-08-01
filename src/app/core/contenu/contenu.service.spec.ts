@@ -247,6 +247,40 @@ describe('ContenuService', () => {
     });
   });
 
+  describe('mesCertificats', () => {
+    it('retourne les certificats obtenus avec leur formation', async () => {
+      const { service } = creerService({
+        tables: {
+          certificats: {
+            data: [
+              {
+                id_certificat: 'c-1',
+                id_formation: 'f-1',
+                numero: 'TC-2026-ABCD2345',
+                date_obtention: '2026-08-01T10:00:00Z',
+                formations: { titre: 'Trader Pro' },
+              },
+            ],
+          },
+        },
+      });
+
+      const certificats = await service.mesCertificats();
+
+      expect(certificats.length).toBe(1);
+      expect(certificats[0].numero).toBe('TC-2026-ABCD2345');
+      expect(certificats[0].formations?.titre).toBe('Trader Pro');
+    });
+
+    it('retourne une liste vide quand aucun n’a été délivré', async () => {
+      // Cas de très loin le plus fréquent : la page ne doit pas s'attendre à en
+      // trouver un, et l'absence n'est pas un échec.
+      const { service } = creerService({ tables: { certificats: { data: [] } } });
+
+      expect(await service.mesCertificats()).toEqual([]);
+    });
+  });
+
   describe('lectures en échec', () => {
     it('rend une liste vide sans la faire passer pour un programme vide', async () => {
       const { service } = creerService({
