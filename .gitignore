@@ -60,7 +60,14 @@ Thumbs.db
 # Supabase CLI (état local du lien projet, jamais partagé)
 supabase/.temp/
 
+# Outillage IA local : skills installées poste par poste, jamais versionnées
+# (ui-ux-pro-max s'installe via `npx ui-ux-pro-max-cli init --ai claude`)
+.claude/
+
 # Notes internes (personnel, pas destiné au dépôt)
 AUDIT-ARCHITECTURE.md
 VIDEOS-BUNNY.md
+
+# Maquette de refonte : support de décision, le rendu final vit dans src/
+maquette-refonte.html
 
