@@ -2,6 +2,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { echecsConsecutifs, messageAttente, secondesAAttendre } from './attente.ts';
+import { enTetesCors, reponsePreflight } from '../_partages/cors.ts';
 
 // Correction de quiz — seule voie pour valider une étape. Le client envoie ses
 // réponses, jamais les bonnes réponses (reponses.correcte n'est lue qu'ici, en
@@ -23,15 +24,10 @@ import { echecsConsecutifs, messageAttente, secondesAAttendre } from './attente.
 // Staff et comptes de démonstration sont exemptés du délai : la recette d'un
 // quiz suppose de le rejouer.
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-function json(corps: unknown, statut: number): Response {
+function json(req: Request, corps: unknown, statut: number): Response {
   return new Response(JSON.stringify(corps), {
     status: statut,
-    headers: { ...CORS, 'Content-Type': 'application/json' },
+    headers: { ...enTetesCors(req), 'Content-Type': 'application/json' },
   });
 }
 
@@ -43,7 +39,7 @@ interface CorpsRequete {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS });
+    return reponsePreflight(req, 'POST, OPTIONS');
   }
 
   try {
@@ -56,12 +52,12 @@ Deno.serve(async (req) => {
       data: { user },
     } = await porteur.auth.getUser();
     if (!user) {
-      return json({ erreur: 'Connexion requise.' }, 401);
+      return json(req, { erreur: 'Connexion requise.' }, 401);
     }
 
     const { id_quiz, reponses } = (await req.json().catch(() => ({}))) as CorpsRequete;
     if (!id_quiz || !reponses) {
-      return json({ erreur: 'Requête invalide.' }, 400);
+      return json(req, { erreur: 'Requête invalide.' }, 400);
     }
 
     const admin = createClient(
@@ -75,7 +71,7 @@ Deno.serve(async (req) => {
       .eq('id_quiz', id_quiz)
       .maybeSingle();
     if (!quiz) {
-      return json({ erreur: 'Quiz introuvable.' }, 404);
+      return json(req, { erreur: 'Quiz introuvable.' }, 404);
     }
 
     // Défense en profondeur : un quiz est un CHAPITRE à part entière — il ne
@@ -87,7 +83,11 @@ Deno.serve(async (req) => {
         p_id_lecon: quiz.id_lecon,
       });
       if (!debloquee) {
-        return json({ erreur: 'Termine les chapitres précédents avant de passer ce quiz.' }, 403);
+        return json(
+          req,
+          { erreur: 'Termine les chapitres précédents avant de passer ce quiz.' },
+          403,
+        );
       }
     }
 
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
         Date.now(),
       );
       if (attente > 0) {
-        return json({ erreur: messageAttente(attente), secondes_restantes: attente }, 429);
+        return json(req, { erreur: messageAttente(attente), secondes_restantes: attente }, 429);
       }
     }
 
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
       )
       .eq('id_quiz', id_quiz);
     if (!questions || questions.length === 0) {
-      return json({ erreur: 'Ce quiz ne contient aucune question.' }, 422);
+      return json(req, { erreur: 'Ce quiz ne contient aucune question.' }, 422);
     }
 
     // Détail pédagogique par question : le verdict, la saisie de l'apprenant et
@@ -206,9 +206,9 @@ Deno.serve(async (req) => {
         );
     }
 
-    return json({ reussi, score, score_requis: quiz.score_requis, detail }, 200);
+    return json(req, { reussi, score, score_requis: quiz.score_requis, detail }, 200);
   } catch (erreur) {
     console.error('[corriger-quiz]', erreur);
-    return json({ erreur: 'La correction du quiz a échoué.' }, 500);
+    return json(req, { erreur: 'La correction du quiz a échoué.' }, 500);
   }
 });

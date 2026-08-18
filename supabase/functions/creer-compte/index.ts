@@ -1,20 +1,16 @@
 // Types des API intégrées au runtime Edge de Supabase (Deno.serve, Deno.env).
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { enTetesCors, reponsePreflight } from '../_partages/cors.ts';
 
 // Création manuelle de comptes par un administrateur (formateur, apprenant
 // privilégié, migration d'un ancien client) : mot de passe temporaire généré
 // ici, changement forcé à la première connexion via profils.doit_changer_mdp.
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-function json(corps: unknown, statut: number): Response {
+function json(req: Request, corps: unknown, statut: number): Response {
   return new Response(JSON.stringify(corps), {
     status: statut,
-    headers: { ...CORS, 'Content-Type': 'application/json' },
+    headers: { ...enTetesCors(req), 'Content-Type': 'application/json' },
   });
 }
 
@@ -28,7 +24,7 @@ function genererMotDePasse(): string {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS });
+    return reponsePreflight(req, 'POST, OPTIONS');
   }
 
   try {
@@ -41,7 +37,7 @@ Deno.serve(async (req) => {
       data: { user: appelant },
     } = await porteur.auth.getUser();
     if (!appelant) {
-      return json({ erreur: 'Connexion requise.' }, 401);
+      return json(req, { erreur: 'Connexion requise.' }, 401);
     }
 
     const admin = createClient(
@@ -55,7 +51,7 @@ Deno.serve(async (req) => {
       .eq('id_profil', appelant.id)
       .maybeSingle();
     if (profilAppelant?.role !== 'admin') {
-      return json({ erreur: 'Réservé aux administrateurs.' }, 403);
+      return json(req, { erreur: 'Réservé aux administrateurs.' }, 403);
     }
 
     const corps = (await req.json().catch(() => ({}))) as {
@@ -68,10 +64,10 @@ Deno.serve(async (req) => {
     const email = corps.email?.trim().toLowerCase();
     const role = corps.role;
     if (!email || !email.includes('@')) {
-      return json({ erreur: 'Adresse e-mail invalide.' }, 400);
+      return json(req, { erreur: 'Adresse e-mail invalide.' }, 400);
     }
     if (role !== 'apprenant' && role !== 'formateur') {
-      return json({ erreur: 'Rôle invalide : apprenant ou formateur.' }, 400);
+      return json(req, { erreur: 'Rôle invalide : apprenant ou formateur.' }, 400);
     }
 
     // Accès offert à une formation (compte privilégié, ancien client migré).
@@ -83,7 +79,7 @@ Deno.serve(async (req) => {
         .eq('id_formation', corps.id_formation)
         .maybeSingle();
       if (!data) {
-        return json({ erreur: 'Formation introuvable.' }, 400);
+        return json(req, { erreur: 'Formation introuvable.' }, 400);
       }
       formation = data;
     }
@@ -104,6 +100,7 @@ Deno.serve(async (req) => {
     if (erreurCreation || !cree.user) {
       const existe = erreurCreation?.message.toLowerCase().includes('already');
       return json(
+        req,
         { erreur: existe ? 'Un compte existe déjà avec cet e-mail.' : 'La création a échoué.' },
         existe ? 409 : 500,
       );
@@ -116,7 +113,11 @@ Deno.serve(async (req) => {
       .update({ role, doit_changer_mdp: true })
       .eq('id_profil', cree.user.id);
     if (erreurProfil) {
-      return json({ erreur: 'Compte créé mais profil incomplet — vérifie la table profils.' }, 500);
+      return json(
+        req,
+        { erreur: 'Compte créé mais profil incomplet — vérifie la table profils.' },
+        500,
+      );
     }
 
     if (formation && role === 'apprenant') {
@@ -136,9 +137,9 @@ Deno.serve(async (req) => {
     });
 
     // Le mot de passe n'est renvoyé qu'une fois, à l'admin qui l'a demandé.
-    return json({ mot_de_passe: motDePasse }, 200);
+    return json(req, { mot_de_passe: motDePasse }, 200);
   } catch (erreur) {
     console.error('[creer-compte]', erreur);
-    return json({ erreur: 'La création du compte a échoué.' }, 500);
+    return json(req, { erreur: 'La création du compte a échoué.' }, 500);
   }
 });

@@ -2,28 +2,23 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@18';
+import { enTetesCors, reponsePreflight } from '../_partages/cors.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
   // Client HTTP basé sur fetch : l'edge runtime n'a pas le module http de Node.
   httpClient: Stripe.createFetchHttpClient(),
 });
 
-// La fonction est appelée depuis le navigateur : préflight CORS obligatoire.
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-function json(corps: unknown, statut: number): Response {
+function json(req: Request, corps: unknown, statut: number): Response {
   return new Response(JSON.stringify(corps), {
     status: statut,
-    headers: { ...CORS, 'Content-Type': 'application/json' },
+    headers: { ...enTetesCors(req), 'Content-Type': 'application/json' },
   });
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS });
+    return reponsePreflight(req, 'POST, OPTIONS');
   }
 
   try {
@@ -38,12 +33,12 @@ Deno.serve(async (req) => {
       data: { user },
     } = await porteur.auth.getUser();
     if (!user) {
-      return json({ erreur: 'Connexion requise.' }, 401);
+      return json(req, { erreur: 'Connexion requise.' }, 401);
     }
 
     const { id_formation } = (await req.json().catch(() => ({}))) as { id_formation?: string };
     if (!id_formation) {
-      return json({ erreur: 'Formation manquante.' }, 400);
+      return json(req, { erreur: 'Formation manquante.' }, 400);
     }
 
     const admin = createClient(
@@ -59,7 +54,11 @@ Deno.serve(async (req) => {
       .eq('id_profil', user.id)
       .maybeSingle();
     if (profil?.role !== 'apprenant') {
-      return json({ erreur: 'Les comptes formateur et admin ne passent pas par l’achat.' }, 403);
+      return json(
+        req,
+        { erreur: 'Les comptes formateur et admin ne passent pas par l’achat.' },
+        403,
+      );
     }
 
     const { data: formation } = await admin
@@ -68,10 +67,10 @@ Deno.serve(async (req) => {
       .eq('id_formation', id_formation)
       .maybeSingle();
     if (!formation?.est_publiee) {
-      return json({ erreur: 'Formation introuvable.' }, 404);
+      return json(req, { erreur: 'Formation introuvable.' }, 404);
     }
     if (formation.prix_centimes <= 0) {
-      return json({ erreur: "Cette formation n'est pas en vente." }, 400);
+      return json(req, { erreur: "Cette formation n'est pas en vente." }, 400);
     }
 
     const { data: existante } = await admin
@@ -82,7 +81,7 @@ Deno.serve(async (req) => {
       .eq('statut', 'active')
       .maybeSingle();
     if (existante) {
-      return json({ erreur: 'Tu es déjà inscrit à cette formation.' }, 409);
+      return json(req, { erreur: 'Tu es déjà inscrit à cette formation.' }, 409);
     }
 
     // Origine de l'appel : ramène vers l'app qui a initié l'achat (dev ou prod).
@@ -109,9 +108,9 @@ Deno.serve(async (req) => {
       cancel_url: `${origine}/espace?achat=annule`,
     });
 
-    return json({ url: session.url }, 200);
+    return json(req, { url: session.url }, 200);
   } catch (erreur) {
     console.error('[checkout]', erreur);
-    return json({ erreur: 'Le paiement est indisponible pour le moment.' }, 500);
+    return json(req, { erreur: 'Le paiement est indisponible pour le moment.' }, 500);
   }
 });
