@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { FunctionsHttpError } from '@supabase/supabase-js';
+import { environment } from '../../../environments/environment';
 import { SUPABASE } from './supabase.client';
 
 /**
@@ -228,7 +229,18 @@ export class AccesDonnees {
     };
     // Console volontaire : sans collecteur distant (P-14), c'est la seule
     // trace exploitable dont dispose aujourd'hui qui diagnostique un incident.
-    console.error(`[TradingCorp] ${operation} — ${error.message}`);
+    //
+    // En production, le message brut n'est PAS écrit : celui de Postgres cite
+    // volontiers un nom de colonne, de contrainte ou de policy, et la console
+    // d'un navigateur se lit par-dessus l'épaule comme se copie dans une
+    // capture d'écran. Le code d'erreur suffit à orienter le diagnostic sans
+    // décrire le schéma. En développement, le message complet est conservé —
+    // c'est là qu'il sert.
+    console.error(
+      environment.production
+        ? `[TradingCorp] ${operation} — échec${error.code ? ` (${error.code})` : ''}`
+        : `[TradingCorp] ${operation} — ${error.message}`,
+    );
     this.incidentsSig.update((liste) => [...liste, incident]);
   }
 }
