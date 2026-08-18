@@ -1,6 +1,7 @@
 // Types des API intégrées au runtime Edge de Supabase (Deno.serve, Deno.env).
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { enTetesCors, reponsePreflight } from '../_partages/cors.ts';
 
 // Suppression d'un compte par un administrateur. Symétrique de creer-compte :
 // auth.users n'est pas accessible au client, seule la clé service_role peut
@@ -8,21 +9,16 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 // (profils, inscriptions, progression, notifications…). Les paiements sont
 // conservés (id_profil passe à NULL) : ce sont des pièces comptables.
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-function json(corps: unknown, statut: number): Response {
+function json(req: Request, corps: unknown, statut: number): Response {
   return new Response(JSON.stringify(corps), {
     status: statut,
-    headers: { ...CORS, 'Content-Type': 'application/json' },
+    headers: { ...enTetesCors(req), 'Content-Type': 'application/json' },
   });
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS });
+    return reponsePreflight(req, 'POST, OPTIONS');
   }
 
   try {
@@ -35,7 +31,7 @@ Deno.serve(async (req) => {
       data: { user: appelant },
     } = await porteur.auth.getUser();
     if (!appelant) {
-      return json({ erreur: 'Connexion requise.' }, 401);
+      return json(req, { erreur: 'Connexion requise.' }, 401);
     }
 
     const admin = createClient(
@@ -49,18 +45,18 @@ Deno.serve(async (req) => {
       .eq('id_profil', appelant.id)
       .maybeSingle();
     if (profilAppelant?.role !== 'admin') {
-      return json({ erreur: 'Réservé aux administrateurs.' }, 403);
+      return json(req, { erreur: 'Réservé aux administrateurs.' }, 403);
     }
 
     const corps = (await req.json().catch(() => ({}))) as { id_profil?: string };
     const idCible = corps.id_profil?.trim();
     if (!idCible) {
-      return json({ erreur: 'Profil à supprimer non précisé.' }, 400);
+      return json(req, { erreur: 'Profil à supprimer non précisé.' }, 400);
     }
     // Même garde-fou anti-verrouillage que changer_role : on ne se retire pas
     // soi-même l'accès au back-office par mégarde.
     if (idCible === appelant.id) {
-      return json({ erreur: 'Tu ne peux pas supprimer ton propre compte.' }, 400);
+      return json(req, { erreur: 'Tu ne peux pas supprimer ton propre compte.' }, 400);
     }
 
     const { data: cible } = await admin
@@ -69,7 +65,7 @@ Deno.serve(async (req) => {
       .eq('id_profil', idCible)
       .maybeSingle();
     if (!cible) {
-      return json({ erreur: 'Profil introuvable.' }, 404);
+      return json(req, { erreur: 'Profil introuvable.' }, 404);
     }
 
     // Supprimer un pair est réservé au compte propriétaire (profils.est_proprietaire).
@@ -79,6 +75,7 @@ Deno.serve(async (req) => {
     if (cible.role === 'admin') {
       if (!profilAppelant.est_proprietaire) {
         return json(
+          req,
           { erreur: 'Seul le propriétaire de la plateforme peut supprimer un administrateur.' },
           403,
         );
@@ -90,7 +87,7 @@ Deno.serve(async (req) => {
         .select('id_profil', { count: 'exact', head: true })
         .eq('role', 'admin');
       if ((count ?? 0) <= 1) {
-        return json({ erreur: 'Impossible de supprimer le dernier administrateur.' }, 400);
+        return json(req, { erreur: 'Impossible de supprimer le dernier administrateur.' }, 400);
       }
     }
 
@@ -106,7 +103,7 @@ Deno.serve(async (req) => {
     const { error: erreurSuppression } = await admin.auth.admin.deleteUser(idCible);
     if (erreurSuppression) {
       console.error('[supprimer-compte]', erreurSuppression);
-      return json({ erreur: 'La suppression du compte a échoué.' }, 500);
+      return json(req, { erreur: 'La suppression du compte a échoué.' }, 500);
     }
 
     // Le compte est parti : l'échec de journalisation ne peut plus l'annuler.
@@ -126,9 +123,9 @@ Deno.serve(async (req) => {
       console.error('[supprimer-compte] journalisation manquée', erreurJournal);
     }
 
-    return json({ supprime: true }, 200);
+    return json(req, { supprime: true }, 200);
   } catch (erreur) {
     console.error('[supprimer-compte]', erreur);
-    return json({ erreur: 'La suppression du compte a échoué.' }, 500);
+    return json(req, { erreur: 'La suppression du compte a échoué.' }, 500);
   }
 });
