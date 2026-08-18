@@ -121,7 +121,7 @@ declare
       { "t": "Quiz - Days of week",                   "ty": "quiz" },
       { "t": "5.11 Les liquidités - Partie 1",        "ty": "video", "v": "86ada143-a5bd-4533-95ef-331e3bda64a8", "d": 1894 },
       { "t": "5.11 Les liquidités - Partie 2",        "ty": "video", "v": "8296d809-ce34-40fa-b2b8-f151a38d909b", "d": 2202 },
-      { "t": "5.11 Les liquidités - Partie 3",        "ty": "video" },
+      { "t": "5.11 Les liquidités - Partie 3",        "ty": "video", "v": "06b39366-0b6f-4eb2-95f9-8cdf221aaf17", "d": 1533 },
       { "t": "Quiz - Liquidités",                     "ty": "quiz" },
       { "t": "5.12 Mes stratégies",                   "ty": "video", "v": "92ec0ca4-ab38-471c-9829-22341fa10f09", "d": 3298 },
       { "t": "Quiz - Mes stratégies",                 "ty": "quiz" },
@@ -222,8 +222,8 @@ begin
         '{}'::jsonb,
         -- Un chapitre vidéo n'est publié que si sa vidéo existe. Le publier sans
         -- elle ferait s'ouvrir un lecteur vide chez un apprenant qui a payé.
-        -- Un seul chapitre est dans ce cas aujourd'hui : « 5.11 Partie 3 »,
-        -- jamais tournée (voir VIDEOS-BUNNY.md).
+        -- Les 64 chapitres ont aujourd'hui la leur ; la règle vaut pour les
+        -- chapitres à venir, ajoutés avant leur tournage.
         ch.type <> 'video' or ch.video is not null
       )
       returning id_lecon into v_id_lecon;
