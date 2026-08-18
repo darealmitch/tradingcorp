@@ -1,0 +1,98 @@
+name: Sauvegarde de la base
+
+# Le plan Supabase gratuit ne fournit NI sauvegarde quotidienne NI restauration
+# à un instant donné (PITR). Constaté au pire moment : après une migration qui
+# avait vidé des colonnes, il n'existait aucun point de retour — les données
+# n'ont été reconstituées que parce qu'elles étaient, par chance, redéduisibles.
+#
+# Ce workflow produit une vraie sauvegarde : un dump du CONTENU, pas seulement
+# du schéma (les migrations du dépôt suffiraient pour le schéma, jamais pour les
+# données). Chaque dump est ensuite RESTAURÉ dans un Postgres jetable et
+# recompté : une sauvegarde qu'on n'a jamais relue n'est pas une sauvegarde.
+
+on:
+  schedule:
+    # 03h17 UTC — heure creuse, et décalée d'un rond pour éviter la minute
+    # exacte où des milliers de workflows démarrent chez GitHub.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  sauvegarder:
+    runs-on: ubuntu-latest
+
+    services:
+      # Base jetable qui servira à vérifier que le dump se restaure.
+      verification:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: verification
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # pg_dump doit avoir la version du serveur : celui d'Ubuntu est plus
+      # ancien et refuse de dumper une base Postgres 17.
+      - name: Installer les outils PostgreSQL 17
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+          sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Dump du contenu
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          test -n "$SUPABASE_DB_URL" || { echo "::error::secret SUPABASE_DB_URL absent"; exit 1; }
+          # --format=custom : restauration sélective possible (une seule table
+          # si besoin) et compression intégrée.
+          # Les schémas internes de Supabase (auth, storage…) sont exclus : ils
+          # sont recréés par la plateforme et leur restauration croisée échoue.
+          # auth.users est la seule exception qui compterait — mais il n'est pas
+          # dumpable sans privilèges superutilisateur ; voir la note ci-dessous.
+          pg_dump "$SUPABASE_DB_URL" \
+            --format=custom \
+            --schema=public \
+            --no-owner --no-privileges \
+            --file=sauvegarde.dump
+          ls -lh sauvegarde.dump
+
+      - name: Restauration de contrôle
+        env:
+          PGPASSWORD: verification
+        run: |
+          createdb -h localhost -U postgres controle
+          # La restauration se fait sans les propriétaires ni les droits : le
+          # Postgres jetable ne connaît pas les rôles Supabase (anon,
+          # authenticated…). On vérifie ici que les DONNÉES reviennent.
+          pg_restore -h localhost -U postgres -d controle --no-owner --no-privileges sauvegarde.dump 2>&1 \
+            | grep -v 'does not exist' || true
+
+          echo "### Lignes restaurées ###"
+          for t in profils formations sections lecons quiz questions reponses inscriptions paiements progression_lecons; do
+            n=$(psql -h localhost -U postgres -d controle -tAc "select count(*) from public.$t" 2>/dev/null || echo "ABSENTE")
+            echo "$t = $n"
+            if [ "$n" = "ABSENTE" ]; then echo "::error::table $t absente de la sauvegarde restaurée"; exit 1; fi
+          done
+
+          # Une base restaurée mais vide de contenu pédagogique signalerait un
+          # dump tronqué : le cas doit faire échouer le workflow, pas produire
+          # une archive rassurante.
+          lecons=$(psql -h localhost -U postgres -d controle -tAc "select count(*) from public.lecons")
+          if [ "$lecons" -lt 1 ]; then echo "::error::aucune leçon restaurée — dump suspect"; exit 1; fi
+
+      - name: Conserver la sauvegarde
+        uses: actions/upload-artifact@v4
+        with:
+          name: sauvegarde-bdd-${{ github.run_id }}
+          path: sauvegarde.dump
+          # 30 jours : au-delà, l'archive n'a plus grand sens face à une base
+          # vivante, et elle contient des données personnelles.
+          retention-days: 30
