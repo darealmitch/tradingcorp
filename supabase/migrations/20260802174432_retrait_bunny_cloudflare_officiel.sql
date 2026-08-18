@@ -16,6 +16,16 @@
 -- abandonné et Bunny.net redevient le fournisseur du projet. Ce fichier est
 -- conservé parce que la migration a réellement été appliquée en base — le
 -- retirer laisserait un trou dans l'historique.
+--
+-- RECTIFICATION — « 64 chapitres vidéo (63 réels + 1 déjà en attente) »
+-- ci-dessus est FAUX, et ce commentaire a coûté cher : il a fait croire, au
+-- moment d'annuler cette migration, que 63 vidéos tournées venaient d'être
+-- détruites, et failli déclencher une restauration de sauvegarde inutile.
+-- La mesure en base disait l'inverse : 63 chapitres portaient le placeholder
+-- de seed_chapitres.sql et UN SEUL avait une vraie vidéo Bunny (« 1.1 Le
+-- processus »). L'affirmation avait été écrite sans être vérifiée.
+-- Un commentaire de migration se lit comme un constat : n'y écrire que ce
+-- qu'une requête a montré.
 -- =============================================================================
 
 alter table public.lecons drop constraint lecons_video_provider_check;
