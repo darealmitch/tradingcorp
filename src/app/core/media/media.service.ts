@@ -18,7 +18,24 @@ interface SignatureUpload {
   timestamp: number;
   signature: string;
   folder: string;
+  allowedFormats: string;
+  maxOctets: number;
 }
+
+/** Catégories téléversables — doivent correspondre à `cloudinary-signature`. */
+export type CategorieMedia = 'image' | 'document' | 'audio';
+
+/**
+ * Types MIME acceptés par catégorie. Ce contrôle est un CONFORT : il évite un
+ * aller-retour inutile et donne un message clair. La contrainte opposable est
+ * `allowed_formats`, signée par l'Edge Function et appliquée par Cloudinary —
+ * un fichier renommé passe ici mais sera rejeté là-bas.
+ */
+const MIME_ATTENDUS: Record<CategorieMedia, RegExp> = {
+  image: /^image\/(jpeg|png|webp|avif)$/,
+  document: /^application\/pdf$/,
+  audio: /^audio\/(mpeg|mp4|x-m4a|wav|wave|x-wav)$/,
+};
 
 /**
  * Service officiel de gestion des médias du projet (captures, illustrations,
@@ -66,14 +83,34 @@ export class MediaService {
    * trace, faute de quoi un téléversement raté ne dit pas où il a buté.
    *
    * @param dossier sous-dossier Cloudinary (ex. 'formations', 'ressources').
+   * @param categorie détermine les formats acceptés et la taille maximale.
    */
-  async televerser(fichier: File, dossier = 'tradingcorp'): Promise<MediaTeleverse | null> {
+  async televerser(
+    fichier: File,
+    dossier = 'tradingcorp',
+    categorie: CategorieMedia = 'image',
+  ): Promise<MediaTeleverse | null> {
+    if (!MIME_ATTENDUS[categorie].test(fichier.type)) {
+      console.error(`[TradingCorp] téléversement refusé — type de fichier non autorisé`);
+      return null;
+    }
+
     const { donnees: sig } = await this.acces.invoquer<SignatureUpload>(
       'signature de téléversement',
       'cloudinary-signature',
-      { folder: dossier },
+      { folder: dossier, categorie },
     );
     if (!sig) {
+      return null;
+    }
+
+    // Contrôle de taille fait APRÈS la signature : la borne vient du serveur,
+    // pas d'une constante du bundle qu'il suffirait de recompiler.
+    if (fichier.size > sig.maxOctets) {
+      console.error(
+        `[TradingCorp] téléversement refusé — fichier trop volumineux ` +
+          `(${Math.round(fichier.size / 1024 / 1024)} Mo, maximum ${Math.round(sig.maxOctets / 1024 / 1024)} Mo)`,
+      );
       return null;
     }
 
@@ -82,6 +119,9 @@ export class MediaService {
     form.append('api_key', sig.apiKey);
     form.append('timestamp', String(sig.timestamp));
     form.append('folder', sig.folder);
+    // Doit être renvoyé à l'identique : la signature couvre ce paramètre, donc
+    // l'omettre ou le modifier fait rejeter l'upload par Cloudinary.
+    form.append('allowed_formats', sig.allowedFormats);
     form.append('signature', sig.signature);
 
     const reponse = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/auto/upload`, {
