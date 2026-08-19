@@ -90,6 +90,18 @@ Deno.serve(async (req) => {
     // Le prix vient de la table formations (source de vérité) — pas de Price
     // Stripe à synchroniser. Le webhook rattachera le paiement au compte via
     // les métadonnées : cf. AUDIT-ARCHITECTURE, option A.
+    //
+    // `payment_method_types` n'est volontairement PAS fixé ici : sans lui,
+    // Stripe applique les moyens de paiement cochés dans le Dashboard et les
+    // filtre selon le pays et le montant du client. C'est ainsi que Klarna
+    // (paiement en 3 fois) s'active — par un réglage, sans redéploiement. Les
+    // figer dans le code reviendrait à devoir republier la fonction pour
+    // ajouter un moyen de paiement, et masquerait Klarna aux clients éligibles.
+    //
+    // Klarna paie le marchand en une fois : le montant encaissé est identique,
+    // c'est Klarna qui porte l'échelonnement et le risque d'impayé. Rien à
+    // changer côté inscriptions. Attention en revanche au plafond — le
+    // paiement en 3 fois est limité à 3 000 € en France.
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [

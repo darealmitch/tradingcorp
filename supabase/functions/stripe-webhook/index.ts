@@ -31,13 +31,33 @@ Deno.serve(async (req) => {
     return new Response('Signature invalide', { status: 400 });
   }
 
-  if (evenement.type !== 'checkout.session.completed') {
+  // DEUX événements ouvrent l'accès, et non un seul.
+  //
+  // Une carte confirme immédiatement : `checkout.session.completed` arrive avec
+  // payment_status = 'paid'. Les moyens de paiement à notification DIFFÉRÉE —
+  // Klarna en paiement 3 fois, virements — terminent la session avant que les
+  // fonds soient acquis : la session est alors 'unpaid', et le paiement se
+  // dénoue plus tard par `checkout.session.async_payment_succeeded`.
+  //
+  // N'écouter que le premier événement en n'acceptant que 'paid' laissait donc
+  // un client Klarna payer sans jamais recevoir son accès — l'événement qui
+  // portait la bonne nouvelle n'était même pas écouté.
+  const ATTENDUS = ['checkout.session.completed', 'checkout.session.async_payment_succeeded'];
+  if (!ATTENDUS.includes(evenement.type)) {
     return new Response('Événement ignoré', { status: 200 });
   }
 
   const session = evenement.data.object as Stripe.Checkout.Session;
   const { id_profil, id_formation } = session.metadata ?? {};
-  if (session.payment_status !== 'paid' || !id_profil || !id_formation) {
+
+  // Critère de livraison recommandé par Stripe : tout sauf 'unpaid'. Une
+  // session 'unpaid' n'est pas un échec — c'est un paiement différé en cours,
+  // qui reviendra par async_payment_succeeded. On la laisse passer sans rien
+  // écrire, plutôt que d'enregistrer un paiement qui n'est pas encore acquis.
+  if (session.payment_status === 'unpaid') {
+    return new Response('Paiement différé en cours — accès à la confirmation', { status: 200 });
+  }
+  if (!id_profil || !id_formation) {
     return new Response('Session sans paiement rattachable — ignorée', { status: 200 });
   }
 
