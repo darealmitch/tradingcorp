@@ -4,11 +4,19 @@ import { SUPABASE } from '../supabase/supabase.client';
 import { Profil } from './profil.model';
 
 /**
- * Provider Google non configuré côté dashboard Supabase (OAuth client GCP en
- * attente). Passer à true une fois le provider activé (Authentication →
- * Providers → Google) pour réafficher le bouton sur connexion/inscription.
+ * Affiche le bouton « Continuer avec Google » sur connexion et inscription.
+ *
+ * Ce drapeau ne fait qu'afficher le bouton : la connexion elle-même dépend du
+ * provider Google activé dans Supabase (Authentication → Providers → Google,
+ * avec l'identifiant et le secret d'un client OAuth Google Cloud). Tant que ce
+ * réglage n'est pas fait, le bouton mène à une erreur — le remettre à false
+ * est alors préférable à un bouton qui échoue.
+ *
+ * L'URL de retour à autoriser des deux côtés (Google Cloud et Supabase) est
+ * celle que construit `connexionGoogle()` : le chemin du site suivi de
+ * `auth/callback`, pas l'origine seule.
  */
-export const GOOGLE_OAUTH_ACTIF = false;
+export const GOOGLE_OAUTH_ACTIF = true;
 
 /** Résultat homogène des opérations d'authentification. */
 export interface ResultatAuth {
@@ -165,11 +173,22 @@ export class AuthService {
     return { ok: true };
   }
 
-  /** Redirige vers Google puis revient sur /auth/callback (flux PKCE). */
+  /**
+   * Redirige vers Google puis revient sur /auth/callback (flux PKCE).
+   *
+   * L'URL de retour se construit sur `document.baseURI`, pas sur
+   * `location.origin` : en production le site est publié SOUS un chemin
+   * (`/tradingcorp/` sur GitHub Pages). `location.origin` produisait
+   * `https://darealmitch.github.io/auth/callback` — vérifié, cette adresse
+   * renvoie la page 404 de GitHub et non l'application, le repli SPA ne valant
+   * que sous le chemin du site. `baseURI` porte déjà ce chemin (il vient de la
+   * balise <base href> posée au build), et vaut l'origine seule en
+   * développement, où l'application est servie à la racine.
+   */
   async connexionGoogle(): Promise<ResultatAuth> {
     const { error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${location.origin}/auth/callback` },
+      options: { redirectTo: `${document.baseURI}auth/callback` },
     });
     return error ? { ok: false, erreur: this.messageErreur(error) } : { ok: true };
   }
@@ -201,6 +220,29 @@ export class AuthService {
     return { ok: true };
   }
 
+  /**
+   * Renseigne la date de naissance absente d'un profil, une seule fois.
+   *
+   * Sert les comptes nés d'une connexion Google : Google ne transmet ni date de
+   * naissance ni âge, le profil arrive donc sans elle et le contrôle des 18 ans
+   * — qui ne se déclenche que « si la date est connue » — ne s'appliquait pas.
+   *
+   * L'écriture passe par la RPC `definir_date_naissance` : le client n'a aucun
+   * privilège UPDATE sur `profils`, et c'est le serveur qui vérifie la majorité,
+   * l'appartenance du profil et le caractère non modifiable de la valeur.
+   */
+  async definirDateNaissance(date: string): Promise<ResultatAuth> {
+    const { error } = await this.supabase.rpc('definir_date_naissance', { p_date: date });
+    if (error) {
+      return { ok: false, erreur: this.messageErreurRpc(error.message) };
+    }
+    const session = this.sessionSig();
+    if (session) {
+      await this.chargerProfil(session.user.id);
+    }
+    return { ok: true };
+  }
+
   // ===== 2FA (préparation — intégration ultérieure) =====
   // La MFA TOTP est gérée nativement par Supabase Auth. L'enrôlement se fera
   // via supabase.auth.mfa.enroll({ factorType: 'totp' }) puis challenge/verify ;
@@ -218,6 +260,20 @@ export class AuthService {
   }
 
   // ===== Erreurs =====
+
+  /**
+   * Messages des RPC. Le serveur les rédige déjà en français et à destination
+   * de l'apprenant : on les reprend tels quels quand ils sont reconnus, plutôt
+   * que de les traduire une seconde fois — deux formulations d'une même règle
+   * finissent toujours par diverger. Tout le reste devient générique, pour ne
+   * pas exposer un message technique de Postgres.
+   */
+  private messageErreurRpc(message: string): string {
+    const connus = ['18 ans', 'déjà renseignée', 'obligatoire', 'invalide'];
+    return connus.some((extrait) => message.includes(extrait))
+      ? message
+      : 'Une erreur est survenue. Réessaie.';
+  }
 
   private messageErreur(error: AuthError): string {
     const brut = error.message.toLowerCase();

@@ -14,6 +14,8 @@ import { routes } from '../../app.routes';
 import {
   authGuard,
   changementMdpRequisGuard,
+  dateNaissanceGuard,
+  dateNaissanceRequiseGuard,
   inviteGuard,
   motDePasseGuard,
   roleGuard,
@@ -149,6 +151,70 @@ describe('Gardes de route', () => {
         authDouble({ connecte: true, profil: null }),
       );
       expect(resultat).toBe(true);
+    });
+  });
+
+  describe('dateNaissanceGuard', () => {
+    // Ce garde existe pour une raison précise : Google ne transmet pas la date
+    // de naissance, donc un compte créé par ce biais échappait au contrôle de
+    // majorité. Les cas ci-dessous décrivent ce contournement et sa fermeture.
+    it('détourne un compte sans date de naissance vers la page de saisie', async () => {
+      const resultat = await executer(
+        dateNaissanceGuard,
+        authDouble({ connecte: true, profil: unProfil({ date_naissance: null }) }),
+      );
+      expect(cible(resultat)).toBe('/date-de-naissance');
+    });
+
+    it('laisse passer un compte dont la date est connue', async () => {
+      const resultat = await executer(
+        dateNaissanceGuard,
+        authDouble({ connecte: true, profil: unProfil({ date_naissance: '1990-05-04' }) }),
+      );
+      expect(resultat).toBe(true);
+    });
+
+    it('cède le passage au changement de mot de passe, prioritaire', async () => {
+      // Un compte créé par un admin n'a ni mot de passe définitif ni date de
+      // naissance : les deux gardes s'appliquent. Sans cette priorité, les deux
+      // redirections se renverraient l'une à l'autre.
+      const resultat = await executer(
+        dateNaissanceGuard,
+        authDouble({
+          connecte: true,
+          profil: unProfil({ date_naissance: null, doit_changer_mdp: true }),
+        }),
+      );
+      expect(resultat).toBe(true);
+    });
+  });
+
+  describe('dateNaissanceRequiseGuard', () => {
+    it('ouvre la page quand la date manque', async () => {
+      const resultat = await executer(
+        dateNaissanceRequiseGuard,
+        authDouble({ connecte: true, profil: unProfil({ date_naissance: null }) }),
+        '/date-de-naissance',
+      );
+      expect(resultat).toBe(true);
+    });
+
+    it("renvoie vers l'espace quand la date est déjà renseignée", async () => {
+      const resultat = await executer(
+        dateNaissanceRequiseGuard,
+        authDouble({ connecte: true, profil: unProfil({ date_naissance: '1990-05-04' }) }),
+        '/date-de-naissance',
+      );
+      expect(cible(resultat)).toBe('/espace');
+    });
+
+    it('renvoie un visiteur vers la connexion', async () => {
+      const resultat = await executer(
+        dateNaissanceRequiseGuard,
+        authDouble({ connecte: false, profil: null }),
+        '/date-de-naissance',
+      );
+      expect(cible(resultat)).toBe('/connexion');
     });
   });
 
