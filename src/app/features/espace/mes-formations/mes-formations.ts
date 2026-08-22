@@ -6,12 +6,13 @@ import { Certificat, ModuleParcours } from '../../../core/contenu/apprentissage.
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { Icone } from '../../../shared/ui/icone';
 import { Verrou } from '../../../shared/ui/verrou';
+import { AvisFormation } from './avis-formation';
 
 @Component({
   selector: 'app-mes-formations',
   templateUrl: './mes-formations.html',
   styleUrls: ['../espace-pages.css', './mes-formations.css'],
-  imports: [Icone, Verrou],
+  imports: [Icone, Verrou, AvisFormation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MesFormations {

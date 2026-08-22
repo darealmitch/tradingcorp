@@ -1,0 +1,75 @@
+<div class="panneau avis-panneau">
+  <h2 class="panneau-titre">Ton avis sur la formation</h2>
+
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else {
+    @if (erreur(); as message) {
+      <p class="alerte est-erreur">{{ message }}</p>
+    }
+    @if (succes(); as message) {
+      <p class="alerte est-succes">{{ message }}</p>
+    }
+
+    @if (avis(); as depose) {
+      <p class="page-sous avis-etat">
+        @switch (depose.statut) {
+          @case ('en_attente') {
+            Ton avis est en attente de relecture. Tu peux encore le modifier.
+          }
+          @case ('approuve') {
+            Ton avis est publié. Merci !
+          }
+          @case ('rejete') {
+            Cet avis n'a pas été retenu par l'équipe.
+          }
+        }
+      </p>
+    }
+
+    <!-- La note se saisit à l'étoile : cinq boutons, un état pressé, et un
+         intitulé lisible pour qui n'en voit pas la forme. -->
+    <div class="avis-note" role="group" aria-label="Note sur cinq">
+      @for (valeur of etoiles; track valeur) {
+        <button
+          type="button"
+          class="avis-etoile"
+          [class.est-pleine]="valeur <= note()"
+          [attr.aria-pressed]="valeur <= note()"
+          [attr.aria-label]="valeur + ' sur 5'"
+          [disabled]="!modifiable()"
+          (click)="note.set(valeur)"
+        >
+          <app-icone nom="etoile" [taille]="24" />
+        </button>
+      }
+    </div>
+
+    <label class="visuellement-cache" for="avis-texte">Ton commentaire</label>
+    <textarea
+      id="avis-texte"
+      rows="4"
+      [maxlength]="maxLongueur"
+      [ngModel]="texte()"
+      (ngModelChange)="texte.set($event)"
+      [disabled]="!modifiable()"
+      placeholder="Ce que la formation t'a apporté, ce que tu en retiens…"
+    ></textarea>
+
+    @if (modifiable()) {
+      <div class="avis-actions">
+        <p class="cellule-discrete">
+          Les avis sont relus avant publication. La note est obligatoire.
+        </p>
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="note() < 1 || envoi()"
+          (click)="soumettre()"
+        >
+          {{ envoi() ? 'Envoi…' : avis() ? 'Modifier mon avis' : 'Publier mon avis' }}
+        </button>
+      </div>
+    }
+  }
+</div>
