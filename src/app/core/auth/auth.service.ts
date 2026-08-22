@@ -188,7 +188,14 @@ export class AuthService {
   async connexionGoogle(): Promise<ResultatAuth> {
     const { error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${document.baseURI}auth/callback` },
+      options: {
+        redirectTo: `${document.baseURI}auth/callback`,
+        // `select_account` force l'écran de choix du compte Google. Sans lui,
+        // Google reconnecte silencieusement au compte de la session en cours :
+        // impossible d'en utiliser un autre, et un poste partagé rattache tout
+        // le monde au premier compte connecté.
+        queryParams: { prompt: 'select_account' },
+      },
     });
     return error ? { ok: false, erreur: this.messageErreur(error) } : { ok: true };
   }
