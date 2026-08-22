@@ -114,3 +114,11 @@
   letter-spacing: 0.08em;
   user-select: all;
 }
+
+/* Lien de vérification d'un certificat : discret, sous le numéro. Il sert au
+   titulaire à transmettre une preuve vérifiable, pas à naviguer. */
+.certificat-verif {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}

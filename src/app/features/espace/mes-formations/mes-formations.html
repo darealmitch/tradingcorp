@@ -26,6 +26,11 @@
       <span>Numéro de certificat</span>
       <strong>{{ certificat.numero }}</strong>
     </p>
+    <!-- Le lien de vérification appartient au titulaire : c'est lui qui le
+         transmet à un employeur, avec le numéro déjà rempli. -->
+    <a class="certificat-verif" [routerLink]="['/verification', certificat.numero]">
+      Page de vérification à transmettre
+    </a>
   </div>
 }
 
