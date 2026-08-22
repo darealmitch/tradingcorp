@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommerceService } from '../../../core/commerce/commerce.service';
 import { Formation } from '../../../core/commerce/formation.model';
 import { Certificat, ModuleParcours } from '../../../core/contenu/apprentissage.model';
@@ -12,7 +12,7 @@ import { AvisFormation } from './avis-formation';
   selector: 'app-mes-formations',
   templateUrl: './mes-formations.html',
   styleUrls: ['../espace-pages.css', './mes-formations.css'],
-  imports: [Icone, Verrou, AvisFormation],
+  imports: [Icone, Verrou, AvisFormation, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MesFormations {

@@ -130,6 +130,51 @@ describe('ContenuService', () => {
     });
   });
 
+  describe('verifierCertificat', () => {
+    // Un numéro se recopie à la main, depuis un papier : la casse et les
+    // espaces de saisie ne doivent jamais faire échouer une vérification
+    // légitime. La normalisation appartient au service, pas à l'écran — sinon
+    // un second point d'entrée (lien direct, QR code) l'oublierait.
+    it('normalise le numéro saisi avant de chercher', async () => {
+      const { service, double } = creerService({ rpc: { verifier_certificat: { data: [] } } });
+
+      await service.verifierCertificat('  tc-2026-abcdefgh  ');
+
+      const appel = double.appels.find((a) => a.rpc === 'verifier_certificat');
+      expect(appel?.params).toEqual({ p_numero: 'TC-2026-ABCDEFGH' });
+    });
+
+    it('rend le certificat quand le numéro correspond', async () => {
+      const { service } = creerService({
+        rpc: {
+          verifier_certificat: {
+            data: [
+              {
+                numero: 'TC-2026-ABCDEFGH',
+                titre_formation: 'Formation Trader Pro',
+                prenom: 'Ada',
+                nom: 'Lovelace',
+                date_obtention: '2026-08-01T10:00:00Z',
+              },
+            ],
+          },
+        },
+      });
+
+      const certificat = await service.verifierCertificat('TC-2026-ABCDEFGH');
+
+      expect(certificat?.titre_formation).toBe('Formation Trader Pro');
+    });
+
+    it('rend null sur un numéro inconnu, sans distinguer les causes', async () => {
+      // Inventé, mal recopié ou révoqué : même réponse. Distinguer ferait de la
+      // page un outil pour tester des numéros au hasard.
+      const { service } = creerService({ rpc: { verifier_certificat: { data: [] } } });
+
+      expect(await service.verifierCertificat('TC-2026-INCONNU1')).toBeNull();
+    });
+  });
+
   describe('maProgression', () => {
     it('agrège les compteurs de leçons et de leçons terminées', async () => {
       const { service } = creerService({

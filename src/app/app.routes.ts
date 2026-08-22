@@ -56,6 +56,22 @@ export const routes: Routes = [
     canActivate: [authGuard, dateNaissanceRequiseGuard],
     title: 'TradingCorp — Date de naissance',
   },
+  // Vérification publique d'un certificat : AUCUNE garde, volontairement.
+  // Ni authGuard (le vérificateur est un tiers sans compte), ni inviteGuard
+  // (qui renverrait un utilisateur connecté vers son espace alors qu'il a le
+  // droit de vérifier une attestation comme n'importe qui). La variante avec
+  // numéro permet un lien direct, imprimable ou encodé en QR code.
+  {
+    path: 'verification',
+    loadComponent: () => import('./features/verification/verification').then((m) => m.Verification),
+    title: 'TradingCorp — Vérifier un certificat',
+  },
+  {
+    path: 'verification/:numero',
+    loadComponent: () => import('./features/verification/verification').then((m) => m.Verification),
+    title: 'TradingCorp — Vérifier un certificat',
+  },
+
   // Parcours pédagogique : page ENTIÈRE, hors du gabarit espace (pas de
   // sidebar). Accessible depuis le header. Mêmes gardes que l'espace.
   {

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
 import {
   Certificat,
+  CertificatVerifie,
   LeconEtape,
   LeconJouable,
   LeconResume,
@@ -243,6 +244,26 @@ export class ContenuService {
         .order('date_obtention', { ascending: false }),
       [],
     );
+  }
+
+  /**
+   * Vérifie un certificat par son numéro — SANS session.
+   *
+   * Seule méthode publique de ce service : un employeur qui contrôle une
+   * attestation n'a pas de compte, et n'a pas à en créer un.
+   *
+   * La recherche se fait par NUMÉRO, jamais par liste. Une vue publique
+   * `certificats_verification` avait existé : elle laissait énumérer tous les
+   * diplômés, noms et formations compris (retirée par 20260711120000). Le
+   * numéro est long et tiré au hasard : on ne le devine pas, on le détient.
+   */
+  async verifierCertificat(numero: string): Promise<CertificatVerifie | null> {
+    const lignes = await this.acces.lire<CertificatVerifie[]>(
+      'vérification d’un certificat',
+      this.acces.appel('verifier_certificat', { p_numero: numero.trim().toUpperCase() }),
+      [],
+    );
+    return lignes[0] ?? null;
   }
 
   /** Prochaines leçons non terminées, dans l'ordre du programme. */

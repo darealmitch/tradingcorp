@@ -1,0 +1,153 @@
+/* Vérification publique d'un certificat.
+   Page autonome, hors du gabarit espace : elle s'adresse à un tiers qui
+   n'a pas de compte et n'a rien à explorer d'autre. */
+
+.verif-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 48px 20px;
+  background: var(--bg);
+}
+
+.verif-carte {
+  width: 100%;
+  max-width: 520px;
+  padding: 36px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.verif-logo {
+  display: block;
+  margin-bottom: 24px;
+}
+
+.verif-titre {
+  margin: 0 0 8px;
+  font-family: var(--font-title);
+  font-size: 2rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.verif-sous {
+  margin: 0 0 28px;
+  color: var(--muted);
+}
+
+.champ {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.champ label {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.champ input {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: inherit;
+  /* Le numéro se lit caractère par caractère quand on le recopie : une chasse
+     fixe évite de confondre les groupes. */
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.champ input:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.verif-submit {
+  width: 100%;
+  margin-top: 18px;
+}
+
+/* ===== Verdict ===== */
+
+.verif-resultat {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.verif-resultat.est-valide {
+  border-color: var(--up);
+}
+
+.verif-resultat.est-inconnu {
+  border-color: var(--attention);
+}
+
+.verif-verdict {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.est-valide .verif-verdict {
+  color: var(--up);
+}
+
+.est-inconnu .verif-verdict {
+  color: var(--attention);
+}
+
+.verif-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+.verif-details div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  justify-content: space-between;
+}
+
+.verif-details dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.verif-details dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.verif-numero {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  letter-spacing: 0.05em;
+}
+
+.verif-aide {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.verif-retour {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+}

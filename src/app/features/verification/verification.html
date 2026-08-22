@@ -1,0 +1,75 @@
+<div class="verif-page">
+  <div class="verif-carte">
+    <app-logo class="verif-logo" [taille]="26" />
+    <h1 class="verif-titre">Vérifier un certificat</h1>
+    <p class="verif-sous">
+      Saisis le numéro figurant sur l'attestation pour confirmer son authenticité. Aucun compte
+      n'est nécessaire.
+    </p>
+
+    <form (ngSubmit)="verifier()" novalidate>
+      <div class="champ">
+        <label for="numero">Numéro de certificat</label>
+        <input
+          id="numero"
+          type="text"
+          name="numero"
+          [ngModel]="numero()"
+          (ngModelChange)="numero.set($event)"
+          placeholder="TC-2026-XXXXXXXX"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <button
+        class="btn btn-primary verif-submit"
+        type="submit"
+        [disabled]="!numero().trim() || recherche()"
+      >
+        {{ recherche() ? 'Vérification…' : 'Vérifier' }}
+      </button>
+    </form>
+
+    @if (resultat(); as certificat) {
+      <div class="verif-resultat est-valide" role="status">
+        <div class="verif-verdict">
+          <app-icone nom="coche" [taille]="22" />
+          <strong>Certificat authentique</strong>
+        </div>
+        <dl class="verif-details">
+          <div>
+            <dt>Titulaire</dt>
+            <dd>{{ titulaire(certificat) }}</dd>
+          </div>
+          <div>
+            <dt>Formation</dt>
+            <dd>{{ certificat.titre_formation }}</dd>
+          </div>
+          <div>
+            <dt>Obtenu le</dt>
+            <dd>{{ obtenuLe(certificat) }}</dd>
+          </div>
+          <div>
+            <dt>Numéro</dt>
+            <dd class="verif-numero">{{ certificat.numero }}</dd>
+          </div>
+        </dl>
+      </div>
+    } @else if (introuvable()) {
+      <div class="verif-resultat est-inconnu" role="status">
+        <div class="verif-verdict">
+          <app-icone nom="cadenas" [taille]="22" />
+          <strong>Aucun certificat ne correspond à ce numéro</strong>
+        </div>
+        <p class="verif-aide">
+          Vérifie la saisie : le numéro se présente sous la forme
+          <span class="verif-numero">TC-2026-XXXXXXXX</span> et ne contient ni la lettre O ni le
+          chiffre 0, ni I ni 1.
+        </p>
+      </div>
+    }
+
+    <p class="verif-retour"><a routerLink="/">Retour à l'accueil</a></p>
+  </div>
+</div>

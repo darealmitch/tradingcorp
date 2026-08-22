@@ -189,6 +189,20 @@ export interface Certificat {
   formations: { titre: string } | null;
 }
 
+/**
+ * Certificat tel qu'un TIERS le voit, via la vérification publique.
+ *
+ * Volontairement réduit à ce qui atteste : qui, quelle formation, quand. Ni
+ * identifiant interne ni e-mail — c'est une attestation, pas une fiche.
+ */
+export interface CertificatVerifie {
+  numero: string;
+  titre_formation: string;
+  prenom: string;
+  nom: string;
+  date_obtention: string;
+}
+
 /** Progression agrégée : étapes terminées / total accessible. */
 export interface ProgressionResume {
   terminees: number;
