@@ -26,11 +26,28 @@
       <span>Numéro de certificat</span>
       <strong>{{ certificat.numero }}</strong>
     </p>
-    <!-- Le lien de vérification appartient au titulaire : c'est lui qui le
-         transmet à un employeur, avec le numéro déjà rempli. -->
-    <a class="certificat-verif" [routerLink]="['/verification', certificat.numero]">
-      Page de vérification à transmettre
-    </a>
+    <div class="certificat-actions">
+      <button
+        class="btn btn-primary btn-compact"
+        type="button"
+        [disabled]="certificatEnCours() !== null"
+        (click)="ouvrirCertificat(certificat)"
+      >
+        @if (certificatEnCours() === certificat.id_certificat) {
+          Préparation…
+        } @else {
+          Télécharger mon diplôme (PDF)
+        }
+      </button>
+      <!-- Le lien de vérification appartient au titulaire : c'est lui qui le
+           transmet à un employeur, avec le numéro déjà rempli. -->
+      <a class="certificat-verif" [routerLink]="['/verification', certificat.numero]">
+        Page de vérification à transmettre
+      </a>
+    </div>
+    @if (erreurCertificat(); as message) {
+      <p class="alerte est-erreur">{{ message }}</p>
+    }
   </div>
 }
 

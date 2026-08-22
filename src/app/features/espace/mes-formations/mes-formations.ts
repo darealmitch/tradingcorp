@@ -50,6 +50,31 @@ export class MesFormations {
     this.chargement.set(false);
   }
 
+  /** Certificat en cours de préparation — le PDF se compose côté serveur. */
+  protected readonly certificatEnCours = signal<string | null>(null);
+  protected readonly erreurCertificat = signal<string | null>(null);
+
+  /**
+   * Ouvre le diplôme PDF du titulaire dans un nouvel onglet.
+   *
+   * L'ouverture se fait sur une URL signée que le serveur vient de produire ;
+   * elle expire, donc on ne la mémorise pas — chaque consultation en redemande
+   * une, et le PDF lui-même n'est composé qu'une fois.
+   */
+  protected async ouvrirCertificat(certificat: Certificat): Promise<void> {
+    this.erreurCertificat.set(null);
+    this.certificatEnCours.set(certificat.id_certificat);
+
+    const { url, erreur } = await this.contenu.lienCertificat(certificat.id_formation);
+
+    this.certificatEnCours.set(null);
+    if (erreur || !url) {
+      this.erreurCertificat.set(erreur ?? 'Le certificat est indisponible.');
+      return;
+    }
+    window.open(url, '_blank', 'noopener');
+  }
+
   /** Date d'obtention en toutes lettres — un certificat se date, pas s'horodate. */
   protected dateObtention(certificat: Certificat): string {
     return new Date(certificat.date_obtention).toLocaleDateString('fr-FR', {
