@@ -68,6 +68,15 @@
       }
     </div>
   }
+
+  <!-- L'avis ne se demande qu'à qui suit réellement la formation : la policy
+       d'insertion exige une inscription active, un formulaire proposé à un
+       visiteur non inscrit ne mènerait qu'à un refus. -->
+  @for (formation of formations(); track formation.id_formation) {
+    @if (inscrites().has(formation.id_formation)) {
+      <app-avis-formation [idFormation]="formation.id_formation" />
+    }
+  }
 </div>
 
 <!-- Modules du programme : accès direct aux chapitres (états serveur) -->

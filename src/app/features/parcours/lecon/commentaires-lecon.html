@@ -1,0 +1,108 @@
+<section class="commentaires">
+  <h2 class="lecon-sous-titre">Échanges sur ce chapitre</h2>
+
+  @if (erreur(); as message) {
+    <p class="commentaire-erreur" role="alert">{{ message }}</p>
+  }
+
+  <form class="commentaire-saisie" (ngSubmit)="publier()">
+    <label class="visuellement-cache" for="nouveau-commentaire">Ton message</label>
+    <textarea
+      id="nouveau-commentaire"
+      rows="3"
+      [maxlength]="maxLongueur"
+      [ngModel]="texte()"
+      (ngModelChange)="texte.set($event)"
+      name="commentaire"
+      placeholder="Une question, un retour sur ce chapitre…"
+    ></textarea>
+    <div class="commentaire-actions">
+      <p class="discret">Les messages sont relus par l'équipe avant publication.</p>
+      <button class="btn btn-primary" type="submit" [disabled]="!texte().trim() || envoi()">
+        {{ envoi() ? 'Envoi…' : 'Publier' }}
+      </button>
+    </div>
+  </form>
+
+  @if (chargement()) {
+    <p class="discret">Chargement des échanges…</p>
+  } @else if (fils().length === 0) {
+    <p class="discret">Aucun message pour l'instant — ouvre la discussion.</p>
+  } @else {
+    <ul class="commentaire-liste">
+      @for (fil of fils(); track fil.message.id_commentaire) {
+        <li class="commentaire">
+          <div class="commentaire-tete">
+            <span class="commentaire-auteur">{{ auteur(fil.message) }}</span>
+            <span class="discret">{{ quand(fil.message.date_creation) }}</span>
+            @if (enAttente(fil.message)) {
+              <span class="commentaire-etat">en attente de validation</span>
+            }
+          </div>
+          <p class="commentaire-texte">{{ fil.message.contenu }}</p>
+
+          <div class="commentaire-boutons">
+            <button type="button" (click)="basculerReponse(fil.message.id_commentaire)">
+              <app-icone nom="chevrons" [taille]="14" />
+              Répondre
+            </button>
+            @if (estMoi(fil.message)) {
+              <button type="button" (click)="supprimer(fil.message)">Supprimer</button>
+            }
+          </div>
+
+          @if (repondA() === fil.message.id_commentaire) {
+            <form
+              class="commentaire-saisie est-reponse"
+              (ngSubmit)="publierReponse(fil.message.id_commentaire)"
+            >
+              <label class="visuellement-cache" [for]="'reponse-' + fil.message.id_commentaire">
+                Ta réponse
+              </label>
+              <textarea
+                [id]="'reponse-' + fil.message.id_commentaire"
+                rows="2"
+                [maxlength]="maxLongueur"
+                [ngModel]="texteReponse()"
+                (ngModelChange)="texteReponse.set($event)"
+                name="reponse"
+                placeholder="Ta réponse…"
+              ></textarea>
+              <div class="commentaire-actions">
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                  [disabled]="!texteReponse().trim() || envoi()"
+                >
+                  {{ envoi() ? 'Envoi…' : 'Répondre' }}
+                </button>
+              </div>
+            </form>
+          }
+
+          @if (fil.reponses.length > 0) {
+            <ul class="commentaire-reponses">
+              @for (reponse of fil.reponses; track reponse.id_commentaire) {
+                <li class="commentaire">
+                  <div class="commentaire-tete">
+                    <span class="commentaire-auteur">{{ auteur(reponse) }}</span>
+                    <span class="discret">{{ quand(reponse.date_creation) }}</span>
+                    @if (enAttente(reponse)) {
+                      <span class="commentaire-etat">en attente de validation</span>
+                    }
+                  </div>
+                  <p class="commentaire-texte">{{ reponse.contenu }}</p>
+                  @if (estMoi(reponse)) {
+                    <div class="commentaire-boutons">
+                      <button type="button" (click)="supprimer(reponse)">Supprimer</button>
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

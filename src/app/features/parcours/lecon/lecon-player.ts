@@ -16,6 +16,7 @@ import { ContenuService } from '../../../core/contenu/contenu.service';
 import { MediaService } from '../../../core/media/media.service';
 import { Icone } from '../../../shared/ui/icone';
 import { QuizLecon } from './quiz-lecon';
+import { CommentairesLecon } from './commentaires-lecon';
 import { RessourcesLecon } from './ressources-lecon';
 
 /**
@@ -35,7 +36,7 @@ const POSTER_PAR_DEFAUT = 'tradingCorp.png';
   selector: 'app-lecon-player',
   templateUrl: './lecon-player.html',
   styleUrl: './lecon-player.css',
-  imports: [RouterLink, Icone, QuizLecon, RessourcesLecon],
+  imports: [RouterLink, Icone, QuizLecon, RessourcesLecon, CommentairesLecon],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeconPlayer {

@@ -1,0 +1,143 @@
+/* Échanges d'un chapitre.
+   Reprend les jetons globaux : aucune couleur en dur, thèmes suivis. */
+
+:host {
+  display: block;
+}
+
+.commentaires {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+/* Étiquette réservée aux lecteurs d'écran : chaque zone de saisie doit porter
+   un intitulé, même quand le contexte visuel le rend évident. */
+.visuellement-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.commentaire-erreur {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--down);
+  border-radius: 10px;
+  color: var(--down);
+  font-size: 0.9rem;
+}
+
+/* ===== Saisie ===== */
+
+.commentaire-saisie {
+  margin-bottom: 28px;
+}
+
+.commentaire-saisie.est-reponse {
+  margin: 12px 0 4px;
+}
+
+.commentaire-saisie textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+
+.commentaire-saisie textarea:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.commentaire-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.commentaire-actions .discret {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* ===== Liste ===== */
+
+.commentaire-liste,
+.commentaire-reponses {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Les réponses sont décalées et reliées par un filet : le lien avec le message
+   parent doit se voir sans avoir à relire l'auteur. */
+.commentaire-reponses {
+  margin: 14px 0 0 18px;
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+
+.commentaire-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.commentaire-auteur {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+/* Statut visible par le seul auteur : sans lui, un message en modération
+   passerait pour publié, ou pour perdu. */
+.commentaire-etat {
+  padding: 2px 8px;
+  border: 1px solid var(--attention);
+  border-radius: 999px;
+  color: var(--attention);
+  font-size: 0.75rem;
+}
+
+.commentaire-texte {
+  margin: 8px 0 0;
+  white-space: pre-wrap;
+}
+
+.commentaire-boutons {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.commentaire-boutons button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.commentaire-boutons button:hover {
+  color: inherit;
+}

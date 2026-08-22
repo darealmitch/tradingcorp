@@ -1,0 +1,93 @@
+/* Avis d'un apprenant sur sa formation.
+   Reprend les jetons globaux : aucune couleur en dur, thèmes suivis. */
+
+:host {
+  display: block;
+}
+
+.avis-panneau {
+  margin-top: 24px;
+}
+
+.avis-etat {
+  margin-bottom: 16px;
+}
+
+/* Étiquette réservée aux lecteurs d'écran : la zone de saisie doit porter un
+   intitulé même quand le contexte visuel le rend évident. */
+.visuellement-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ===== Note ===== */
+
+.avis-note {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.avis-etoile {
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  line-height: 0;
+  cursor: pointer;
+  transition: color 0.15s var(--ease-out);
+}
+
+.avis-etoile.est-pleine {
+  color: var(--attention);
+}
+
+.avis-etoile:disabled {
+  cursor: default;
+}
+
+.avis-etoile:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ===== Saisie ===== */
+
+.avis-panneau textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+
+.avis-panneau textarea:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.avis-panneau textarea:disabled {
+  opacity: 0.7;
+}
+
+.avis-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.avis-actions .cellule-discrete {
+  margin: 0;
+}
