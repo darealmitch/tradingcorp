@@ -1,0 +1,43 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <app-logo class="auth-logo" [taille]="26" />
+    <h1 class="auth-title">Ta date de naissance</h1>
+    <p class="auth-sub">
+      La connexion Google ne nous transmet pas cette information, et la formation est réservée aux
+      personnes majeures. Renseigne-la pour accéder à ton espace.
+    </p>
+
+    @if (erreur(); as message) {
+      <p class="form-erreur" role="alert">{{ message }}</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
+      <div class="champ">
+        <label for="date"
+          >Date de naissance<span class="champ-requis" aria-hidden="true">*</span></label
+        >
+        <input
+          id="date"
+          type="date"
+          formControlName="date"
+          required
+          [max]="maximum"
+          [attr.aria-invalid]="invalide() || null"
+          autocomplete="bday"
+        />
+        @if (invalide()) {
+          <p class="champ-erreur" role="alert">Date de naissance requise.</p>
+        }
+      </div>
+
+      <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
+        {{ chargement() ? 'Enregistrement…' : 'Enregistrer et continuer' }}
+      </button>
+    </form>
+
+    <p class="auth-alt">
+      Tu préfères ne pas répondre ?
+      <a href="#" (click)="quitter(); $event.preventDefault()">Se déconnecter</a>
+    </p>
+  </div>
+</div>

@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import {
   authGuard,
   changementMdpRequisGuard,
+  dateNaissanceGuard,
+  dateNaissanceRequiseGuard,
   inviteGuard,
   motDePasseGuard,
   roleGuard,
@@ -45,12 +47,21 @@ export const routes: Routes = [
     canActivate: [changementMdpRequisGuard],
     title: 'TradingCorp — Nouveau mot de passe',
   },
+  // Comptes issus de la connexion Google : Google ne transmet pas la date de
+  // naissance, sans laquelle le contrôle de majorité ne s'applique pas.
+  {
+    path: 'date-de-naissance',
+    loadComponent: () =>
+      import('./features/auth/date-naissance/date-naissance').then((m) => m.DateNaissance),
+    canActivate: [authGuard, dateNaissanceRequiseGuard],
+    title: 'TradingCorp — Date de naissance',
+  },
   // Parcours pédagogique : page ENTIÈRE, hors du gabarit espace (pas de
   // sidebar). Accessible depuis le header. Mêmes gardes que l'espace.
   {
     path: 'parcours',
     canActivate: [authGuard],
-    canActivateChild: [motDePasseGuard],
+    canActivateChild: [motDePasseGuard, dateNaissanceGuard],
     children: [
       {
         path: '',
@@ -75,7 +86,7 @@ export const routes: Routes = [
     path: 'espace',
     loadComponent: () => import('./features/espace/espace-layout').then((m) => m.EspaceLayout),
     canActivate: [authGuard],
-    canActivateChild: [motDePasseGuard],
+    canActivateChild: [motDePasseGuard, dateNaissanceGuard],
     children: [
       {
         path: '',
