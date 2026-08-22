@@ -122,3 +122,13 @@
   margin-top: 10px;
   font-size: 0.9rem;
 }
+
+/* Actions d'un certificat : le téléchargement du diplôme, et le lien de
+   vérification à transmettre. Alignés, le premier portant l'action. */
+.certificat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+}

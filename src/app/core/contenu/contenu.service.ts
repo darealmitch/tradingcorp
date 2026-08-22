@@ -247,6 +247,26 @@ export class ContenuService {
   }
 
   /**
+   * Produit (au premier appel) puis ouvre le diplôme PDF du titulaire.
+   *
+   * Tout se décide côté serveur : l'Edge Function appelle delivrer_certificat,
+   * qui vérifie que le parcours est réellement achevé. Le front ne fait
+   * qu'afficher un bouton — cliquer sans y avoir droit ne produit qu'un refus.
+   *
+   * Le lien rendu est une URL SIGNÉE de courte durée : le fichier n'est pas
+   * public, et l'adresse ne se partage pas durablement.
+   */
+  async lienCertificat(idFormation: string): Promise<{ url?: string; erreur?: string }> {
+    const { donnees, erreur } = await this.acces.invoquer<{ url: string }>(
+      'génération du certificat',
+      'generer-certificat',
+      { id_formation: idFormation },
+      'Le certificat n’a pas pu être préparé. Réessaie.',
+    );
+    return { url: donnees?.url, erreur };
+  }
+
+  /**
    * Vérifie un certificat par son numéro — SANS session.
    *
    * Seule méthode publique de ce service : un employeur qui contrôle une
