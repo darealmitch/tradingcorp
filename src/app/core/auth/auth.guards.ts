@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateChildFn, CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
-import { Role } from './profil.model';
+import { Profil, Role } from './profil.model';
 
 /** Routes réservées aux utilisateurs connectés (ex. /espace). */
 export const authGuard: CanActivateFn = async (_route, state) => {
@@ -45,28 +45,41 @@ export const changementMdpRequisGuard: CanActivateFn = async () => {
 };
 
 /**
- * Date de naissance absente : tout l'espace et le parcours redirigent vers la
- * page qui la réclame.
+ * Vrai quand ce profil doit encore déclarer sa date de naissance.
+ *
+ * APPRENANTS SEULEMENT : la condition de majorité porte sur qui suit la
+ * formation, pas sur qui l'administre. Interroger un formateur ou un admin sur
+ * son âge n'apporte rien et bloquerait l'accès au back-office pour une règle
+ * qui ne les concerne pas.
  *
  * Ne concerne en pratique que les comptes créés par connexion Google, que le
  * formulaire d'inscription n'a jamais traversés — Google ne fournit pas cette
  * information. Sans ce détour, la condition de majorité serait contournable en
  * choisissant simplement « Continuer avec Google ».
+ */
+function dateNaissanceAttendue(profil: Profil | null): boolean {
+  return !!profil && profil.role === 'apprenant' && !profil.date_naissance;
+}
+
+/**
+ * Date de naissance absente : l'espace et le parcours redirigent vers la page
+ * qui la réclame.
  *
- * Placé APRÈS motDePasseGuard dans la liste des gardes : un compte créé par un
- * admin doit d'abord remplacer son mot de passe temporaire.
+ * Le changement de mot de passe reste PRIORITAIRE : un compte créé par un admin
+ * n'a ni mot de passe définitif ni date de naissance, et sans cette priorité les
+ * deux redirections se renverraient l'une à l'autre.
  */
 export const dateNaissanceGuard: CanActivateChildFn = async () => {
   const auth = inject(AuthService);
   const router = inject(Router);
   const profil = await auth.assurerProfil();
-  if (profil && !profil.doit_changer_mdp && !profil.date_naissance) {
-    return router.createUrlTree(['/date-de-naissance']);
+  if (profil?.doit_changer_mdp) {
+    return true;
   }
-  return true;
+  return dateNaissanceAttendue(profil) ? router.createUrlTree(['/date-de-naissance']) : true;
 };
 
-/** Page de saisie : sans date manquante, elle n'a pas lieu d'être. */
+/** Page de saisie : sans date attendue, elle n'a pas lieu d'être. */
 export const dateNaissanceRequiseGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -74,7 +87,7 @@ export const dateNaissanceRequiseGuard: CanActivateFn = async () => {
   if (!profil) {
     return router.createUrlTree(['/connexion']);
   }
-  return profil.date_naissance ? router.createUrlTree(['/espace']) : true;
+  return dateNaissanceAttendue(profil) ? true : router.createUrlTree(['/espace']);
 };
 
 /**

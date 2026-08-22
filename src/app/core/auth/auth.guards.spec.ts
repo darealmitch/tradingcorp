@@ -174,6 +174,19 @@ describe('Gardes de route', () => {
       expect(resultat).toBe(true);
     });
 
+    it("n'interroge pas le staff, que la condition d'âge ne concerne pas", async () => {
+      // La majorité porte sur qui SUIT la formation, pas sur qui l'administre.
+      // Sans cette distinction, un formateur ou un admin sans date de naissance
+      // se retrouvait détourné avant d'atteindre le back-office.
+      for (const role of ['formateur', 'admin'] as const) {
+        const resultat = await executer(
+          dateNaissanceGuard,
+          authDouble({ connecte: true, profil: unProfil({ role, date_naissance: null }) }),
+        );
+        expect(resultat).toBe(true);
+      }
+    });
+
     it('cède le passage au changement de mot de passe, prioritaire', async () => {
       // Un compte créé par un admin n'a ni mot de passe définitif ni date de
       // naissance : les deux gardes s'appliquent. Sans cette priorité, les deux
@@ -203,6 +216,15 @@ describe('Gardes de route', () => {
       const resultat = await executer(
         dateNaissanceRequiseGuard,
         authDouble({ connecte: true, profil: unProfil({ date_naissance: '1990-05-04' }) }),
+        '/date-de-naissance',
+      );
+      expect(cible(resultat)).toBe('/espace');
+    });
+
+    it("renvoie le staff vers l'espace, la page ne le concernant pas", async () => {
+      const resultat = await executer(
+        dateNaissanceRequiseGuard,
+        authDouble({ connecte: true, profil: unProfil({ role: 'admin', date_naissance: null }) }),
         '/date-de-naissance',
       );
       expect(cible(resultat)).toBe('/espace');
