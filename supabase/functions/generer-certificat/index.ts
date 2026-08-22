@@ -15,35 +15,10 @@ import { Titulaire, composer } from './diplome.ts';
 // Le fichier est produit une fois puis conservé : `chemin_storage` sert de
 // mémoire. Régénérer à chaque consultation produirait un document légèrement
 // différent à chaque fois — un diplôme doit être stable.
-
-/**
- * Emplacement du gabarit — le visuel FOURNI, débarrassé de ses trois données
- * d'exemple. Chargé à l'exécution plutôt qu'embarqué dans le code : retoucher
- * le diplôme devient un téléversement, sans redéploiement ni nouvelle version
- * de la fonction. GABARIT_CERTIFICAT_URL permet d'en changer sans toucher au
- * code ; à défaut, le chemin Cloudinary du projet est utilisé.
- */
-const GABARIT_URL =
-  Deno.env.get('GABARIT_CERTIFICAT_URL') ??
-  'https://res.cloudinary.com/xzqyu82g/image/upload/tradingcorp/certificats/gabarit.jpg';
-
-/**
- * Le gabarit ne change qu'au rythme du design : le garder d'un appel à l'autre
- * évite de le retélécharger à chaque diplôme produit.
- */
-let gabaritEnCache: Uint8Array | null = null;
-
-async function chargerGabarit(): Promise<Uint8Array> {
-  if (gabaritEnCache) {
-    return gabaritEnCache;
-  }
-  const reponse = await fetch(GABARIT_URL);
-  if (!reponse.ok) {
-    throw new Error(`gabarit indisponible (HTTP ${reponse.status})`);
-  }
-  gabaritEnCache = new Uint8Array(await reponse.arrayBuffer());
-  return gabaritEnCache;
-}
+//
+// La mise en page vit dans diplome.ts, composée nativement en PDF : ni image
+// de fond, ni document antérieur recouvert. Elle est lançable hors du serveur,
+// ce qui permet d'en contrôler le rendu à l'œil avant tout déploiement.
 
 function json(req: Request, corps: unknown, statut: number): Response {
   return new Response(JSON.stringify(corps), {
@@ -121,7 +96,6 @@ Deno.serve(async (req) => {
       }
 
       const pdf = await composer(
-        await chargerGabarit(),
         profil as Titulaire,
         formation?.titre ?? 'Formation',
         certificat.date_obtention as string,
