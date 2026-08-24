@@ -43,11 +43,13 @@ with donnees(module, lecon, nom, type, description, cloudinary_public_id, url,
              langage, contenu, est_active, position, type_mime) as (
   values
   -- ===== Module 2 — Éducation financière ====================================
+  -- Livre audio hébergé sur YouTube : la ressource s'ouvre dans un nouvel
+  -- onglet, l'URL de la page convient donc telle quelle.
   (2, '2.2 Les bases de la monnaie',
    'Les bases de la monnaie — livre audio', 'audio',
    'Version audio à écouter en complément de la vidéo.',
-   'tradingcorp/ressources/module-2/bases-de-la-monnaie-livre-audio', null,
-   null, null, false, 1, 'audio/mpeg'),
+   null, 'https://www.youtube.com/watch?v=ONrCHaGLKIg',
+   null, null, true, 1, null),
 
   (2, '2.4 Profil d''investisseur',
    'Questionnaire profil d''investisseur', 'pdf',
