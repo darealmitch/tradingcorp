@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { ApprenantSuivi, InscriptionRecente } from './pilotage.model';
+import { ApprenantSuivi, CertificatEmis, InscriptionRecente } from './pilotage.model';
 
 /**
  * Lectures d'ensemble réservées au staff : combien d'apprenants, où en sont-ils,
@@ -108,6 +108,26 @@ export class PilotageService {
       terminees: terminees.get(profil.id_profil) ?? 0,
       total,
     }));
+  }
+
+  /**
+   * Certificats délivrés, du plus récent au plus ancien.
+   *
+   * Même source que `compterCertificats` : la RLS
+   * (`certificats_select_self_ou_staff`) ouvre déjà la table entière au staff,
+   * il n'y a donc aucun filtre à poser ici — le poser laisserait croire que
+   * c'est l'écran qui protège la donnée.
+   */
+  async certificatsEmis(limite: number): Promise<CertificatEmis[]> {
+    return this.acces.lire<CertificatEmis[]>(
+      'lecture des certificats émis',
+      this.acces
+        .table('certificats')
+        .select('id_certificat, numero, date_obtention, profils(prenom, nom), formations(titre)')
+        .order('date_obtention', { ascending: false })
+        .limit(limite),
+      [],
+    );
   }
 
   /** Dernières inscriptions à une formation, pour le fil d'activité. */

@@ -16,7 +16,11 @@ import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
 import { LeconResume, ProgressionResume } from '../../../core/contenu/apprentissage.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
-import { InscriptionRecente } from '../../../core/pilotage/pilotage.model';
+import {
+  ApprenantSuivi,
+  CertificatEmis,
+  InscriptionRecente,
+} from '../../../core/pilotage/pilotage.model';
 import { PilotageService } from '../../../core/pilotage/pilotage.service';
 import {
   CommentaireEnAttente,
@@ -77,6 +81,17 @@ export class Accueil {
   protected readonly apprenant = signal<StatsApprenant | null>(null);
   protected readonly formateur = signal<StatsFormateur | null>(null);
   protected readonly admin = signal<StatsAdmin | null>(null);
+
+  /**
+   * Aperçu déplié sous les indicateurs, ou aucun.
+   *
+   * Un seul à la fois : deux panneaux ouverts repousseraient le reste du
+   * tableau de bord hors de l'écran, et l'aperçu cesserait d'être un aperçu.
+   */
+  protected readonly apercu = signal<'apprenants' | 'certificats' | null>(null);
+  protected readonly apprenantsSuivis = signal<ApprenantSuivi[] | null>(null);
+  protected readonly certificatsEmis = signal<CertificatEmis[] | null>(null);
+  protected readonly apercuEnCours = signal(false);
 
   protected readonly possedeFormation = computed(() => this.inscrites().size > 0);
 
@@ -177,6 +192,41 @@ export class Accueil {
   }
 
   // ===== Aides d'affichage =====
+
+  /**
+   * Ouvre ou referme un aperçu, en ne chargeant ses données qu'au premier
+   * dépliement : la plupart des visites du tableau de bord n'en ouvriront
+   * aucun, et ces lectures n'ont pas à peser sur le temps d'affichage.
+   */
+  protected async basculerApercu(lequel: 'apprenants' | 'certificats'): Promise<void> {
+    if (this.apercu() === lequel) {
+      this.apercu.set(null);
+      return;
+    }
+    this.apercu.set(lequel);
+
+    const dejaCharge =
+      lequel === 'apprenants' ? this.apprenantsSuivis() !== null : this.certificatsEmis() !== null;
+    if (dejaCharge) {
+      return;
+    }
+
+    this.apercuEnCours.set(true);
+    if (lequel === 'apprenants') {
+      // Exactement la lecture de la page Apprenants : même service, même
+      // modèle. L'aperçu montre le début de ce que la page détaille.
+      this.apprenantsSuivis.set(await this.pilotage.suivreApprenants());
+    } else {
+      this.certificatsEmis.set(await this.pilotage.certificatsEmis(5));
+    }
+    this.apercuEnCours.set(false);
+  }
+
+  /** Titulaire d'un certificat, ou la mention du compte disparu. */
+  protected titulaire(certificat: CertificatEmis): string {
+    const p = certificat.profils;
+    return p ? `${p.prenom} ${p.nom}`.trim() : 'Compte supprimé';
+  }
 
   protected euros(centimes: number): string {
     return new Intl.NumberFormat('fr-FR', {

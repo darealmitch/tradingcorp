@@ -51,3 +51,9 @@
   font-weight: 600;
   color: var(--text);
 }
+
+/* Aperçu déplié sous les indicateurs : détaché de la rangée pour qu'on voie
+   qu'il en dépend, sans le coller à la carte qui l'a ouvert. */
+.apercu-panneau {
+  margin-top: 16px;
+}

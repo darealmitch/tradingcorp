@@ -27,3 +27,19 @@ export interface InscriptionRecente {
   profils: { prenom: string; nom: string } | null;
   formations: { titre: string } | null;
 }
+
+/**
+ * Certificat délivré, vu par le staff.
+ *
+ * La table `certificats` ne porte que des identifiants : le titulaire et la
+ * formation viennent des jointures, comme partout ailleurs dans ce domaine —
+ * on ne recopie pas un nom dans une table qui n'a pas à le porter.
+ */
+export interface CertificatEmis {
+  id_certificat: string;
+  numero: string;
+  date_obtention: string;
+  /** Nul si le compte du titulaire a été supprimé depuis la délivrance. */
+  profils: { prenom: string; nom: string } | null;
+  formations: { titre: string } | null;
+}

@@ -128,9 +128,93 @@
   <div class="grille-stats">
     <app-stat-card icone="paiements" libelle="Chiffre d'affaires du mois" [valeur]="stats.caMois" />
     <app-stat-card icone="stats" libelle="Chiffre d'affaires total" [valeur]="stats.caTotal" />
-    <app-stat-card icone="apprenants" libelle="Apprenants" [valeur]="'' + stats.apprenants" />
-    <app-stat-card icone="diplome" libelle="Certificats émis" [valeur]="'' + stats.certificats" />
+    <app-stat-card
+      icone="apprenants"
+      libelle="Apprenants"
+      [valeur]="'' + stats.apprenants"
+      [cliquable]="true"
+      [ouvert]="apercu() === 'apprenants'"
+      (activer)="basculerApercu('apprenants')"
+    />
+    <app-stat-card
+      icone="diplome"
+      libelle="Certificats émis"
+      [valeur]="'' + stats.certificats"
+      [cliquable]="true"
+      [ouvert]="apercu() === 'certificats'"
+      (activer)="basculerApercu('certificats')"
+    />
   </div>
+
+  <!-- Aperçus dépliés sous les indicateurs. Ils ne dupliquent aucune donnée :
+       les apprenants viennent du même service que la page Apprenants, les
+       certificats de la table que le compteur ci-dessus interroge déjà. -->
+  @if (apercu() === 'apprenants') {
+    <section class="panneau apercu-panneau">
+      <div class="panneau-tete">
+        <h2 class="panneau-titre">Apprenants</h2>
+      </div>
+      @if (apercuEnCours()) {
+        <p class="cellule-discrete">Chargement…</p>
+      } @else if (apprenantsSuivis(); as apprenants) {
+        @if (apprenants.length === 0) {
+          <p class="cellule-discrete">Aucun apprenant pour l'instant.</p>
+        }
+        @for (apprenant of apprenants.slice(0, 5); track apprenant.id_profil) {
+          <div class="ligne-liste">
+            <span class="liste-icone"><app-icone nom="profil" [taille]="16" /></span>
+            <div class="liste-corps">
+              <p class="liste-titre">
+                {{ apprenant.prenom }} {{ apprenant.nom }}
+                @if (apprenant.est_test) {
+                  <span class="badge-statut">Démo</span>
+                }
+                @if (!apprenant.inscrit) {
+                  <span class="badge-statut">Sans accès</span>
+                }
+              </p>
+              <p class="liste-detail">
+                {{ apprenant.terminees }} / {{ apprenant.total }} leçons terminées
+              </p>
+            </div>
+            <span class="liste-date">{{ dateCourte(apprenant.date_creation) }}</span>
+          </div>
+        }
+        <a class="panneau-lien" routerLink="/espace/apprenants">Voir les apprenants</a>
+      }
+    </section>
+  }
+
+  @if (apercu() === 'certificats') {
+    <section class="panneau apercu-panneau">
+      <div class="panneau-tete">
+        <h2 class="panneau-titre">Certificats émis</h2>
+      </div>
+      @if (apercuEnCours()) {
+        <p class="cellule-discrete">Chargement…</p>
+      } @else if (certificatsEmis(); as certificats) {
+        @if (certificats.length === 0) {
+          <p class="cellule-discrete">
+            Aucun certificat délivré pour l'instant — il s'en créera un dès qu'un apprenant aura
+            terminé la formation.
+          </p>
+        }
+        @for (certificat of certificats; track certificat.id_certificat) {
+          <div class="ligne-liste">
+            <span class="liste-icone"><app-icone nom="diplome" [taille]="16" /></span>
+            <div class="liste-corps">
+              <p class="liste-titre">{{ titulaire(certificat) }}</p>
+              <p class="liste-detail">
+                {{ certificat.formations?.titre ?? 'Formation' }} —
+                <a [routerLink]="['/verification', certificat.numero]">{{ certificat.numero }}</a>
+              </p>
+            </div>
+            <span class="liste-date">{{ dateCourte(certificat.date_obtention) }}</span>
+          </div>
+        }
+      }
+    </section>
+  }
 
   <div class="grille-deux">
     <section class="panneau">
