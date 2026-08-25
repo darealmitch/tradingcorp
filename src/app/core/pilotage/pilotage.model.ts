@@ -21,6 +21,19 @@ export interface ApprenantSuivi {
   total: number;
 }
 
+/**
+ * Décompte des apprenants, comptes de démonstration inclus mais identifiés.
+ *
+ * Deux nombres plutôt qu'un : masquer les comptes de test donnait un total faux,
+ * les confondre avec des clients donnerait un total trompeur.
+ */
+export interface DecompteApprenants {
+  /** Tous les comptes de rôle apprenant, comptes de démonstration compris. */
+  total: number;
+  /** Part du total qui n'est pas un apprenant réel. */
+  test: number;
+}
+
 /** Inscription récente, telle qu'affichée dans le fil d'activité du tableau de bord. */
 export interface InscriptionRecente {
   date_inscription: string;

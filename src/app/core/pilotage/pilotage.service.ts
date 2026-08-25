@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { ApprenantSuivi, CertificatEmis, InscriptionRecente } from './pilotage.model';
+import {
+  ApprenantSuivi,
+  CertificatEmis,
+  DecompteApprenants,
+  InscriptionRecente,
+} from './pilotage.model';
 
 /**
  * Lectures d'ensemble réservées au staff : combien d'apprenants, où en sont-ils,
@@ -24,16 +29,40 @@ import { ApprenantSuivi, CertificatEmis, InscriptionRecente } from './pilotage.m
 export class PilotageService {
   private readonly acces = inject(AccesDonnees);
 
-  /** Nombre de comptes apprenants réels — les comptes test sont exclus. */
-  async compterApprenants(): Promise<number> {
-    return this.acces.compter(
-      'comptage des apprenants',
-      this.acces
-        .table('profils')
-        .select('id_profil', { count: 'exact', head: true })
-        .eq('role', 'apprenant')
-        .eq('est_test', false),
-    );
+  /**
+   * Décompte des apprenants : le total, et la part tenue par des comptes de
+   * démonstration.
+   *
+   * Les comptes de test étaient purement et simplement exclus du comptage
+   * (`.eq('est_test', false)`), si bien qu'une plateforme n'hébergeant qu'un
+   * compte de recette affichait « 0 apprenant » — un chiffre faux, et
+   * inquiétant, alors que la base contenait bien un compte.
+   *
+   * Ils sont désormais comptés ET dénombrés à part : le tableau de bord peut
+   * ainsi annoncer le total sans laisser croire qu'il s'agit de clients réels.
+   * Les comptes de test restent en revanche exclus du chiffre d'affaires
+   * (`compteDansCa`) et de la délivrance des certificats — ils n'achètent pas
+   * et ne sont pas diplômés, seule leur PRÉSENCE est réelle.
+   */
+  async compterApprenants(): Promise<DecompteApprenants> {
+    const [total, test] = await Promise.all([
+      this.acces.compter(
+        'comptage des apprenants',
+        this.acces
+          .table('profils')
+          .select('id_profil', { count: 'exact', head: true })
+          .eq('role', 'apprenant'),
+      ),
+      this.acces.compter(
+        'comptage des comptes de démonstration',
+        this.acces
+          .table('profils')
+          .select('id_profil', { count: 'exact', head: true })
+          .eq('role', 'apprenant')
+          .eq('est_test', true),
+      ),
+    ]);
+    return { total, test };
   }
 
   /** Nombre total de leçons du programme. */
