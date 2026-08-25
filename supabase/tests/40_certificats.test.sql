@@ -142,11 +142,21 @@ select is(
   'revalider la dernière étape ne délivre pas un second certificat'
 );
 
+-- Idempotence, au sens plein : rappeler la fonction ne crée pas un second
+-- document, et ne doit pas non plus faire disparaître le premier.
+--
+-- Ce test affirmait l'inverse — « ne rend rien » — et figeait ainsi un défaut :
+-- l'ancienne rédaction terminait par `on conflict do nothing returning`, qui ne
+-- renvoie aucune ligne quand le certificat existe déjà. Tous les appelants
+-- lisent ce null comme « pas de droit au certificat », si bien qu'un diplômé se
+-- voyait refuser son propre diplôme dès le second appel. Défaut découvert en
+-- recette de bout en bout, corrigé par 20260824222711.
 select is(
   public.delivrer_certificat(
     'd1111111-0000-0000-0000-000000000001', 'd2222222-0000-0000-0000-000000000001'),
-  null,
-  'un appel direct sur un certificat déjà délivré ne rend rien'
+  (select id_certificat from public.certificats
+    where id_profil = 'd1111111-0000-0000-0000-000000000001'),
+  'un appel répété rend le certificat déjà délivré'
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
