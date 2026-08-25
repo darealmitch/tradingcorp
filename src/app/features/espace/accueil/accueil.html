@@ -64,7 +64,12 @@
 
 @if (formateur(); as stats) {
   <div class="grille-stats">
-    <app-stat-card icone="apprenants" libelle="Apprenants" [valeur]="'' + stats.apprenants" />
+    <app-stat-card
+      icone="apprenants"
+      libelle="Apprenants"
+      [valeur]="'' + stats.apprenants"
+      [detail]="mentionTest(stats.apprenantsTest)"
+    />
     <app-stat-card icone="contenus" libelle="Leçons au programme" [valeur]="'' + stats.lecons" />
     <app-stat-card
       icone="moderation"
@@ -132,6 +137,7 @@
       icone="apprenants"
       libelle="Apprenants"
       [valeur]="'' + stats.apprenants"
+      [detail]="mentionTest(stats.apprenantsTest)"
       [cliquable]="true"
       [ouvert]="apercu() === 'apprenants'"
       (activer)="basculerApercu('apprenants')"
@@ -167,7 +173,7 @@
               <p class="liste-titre">
                 {{ apprenant.prenom }} {{ apprenant.nom }}
                 @if (apprenant.est_test) {
-                  <span class="badge-statut">Démo</span>
+                  <span class="badge-statut">Test</span>
                 }
                 @if (!apprenant.inscrit) {
                   <span class="badge-statut">Sans accès</span>

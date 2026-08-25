@@ -37,6 +37,7 @@ interface StatsApprenant {
 
 interface StatsFormateur {
   apprenants: number;
+  apprenantsTest: number;
   lecons: number;
   commentairesEnAttente: number;
   noteMoyenne: string | null;
@@ -48,6 +49,7 @@ interface StatsAdmin {
   caMois: string;
   caTotal: string;
   apprenants: number;
+  apprenantsTest: number;
   certificats: number;
   paiements: PaiementLigne[];
   nouveauxComptes: ProfilAdmin[];
@@ -153,7 +155,8 @@ export class Accueil {
         this.pilotage.inscriptionsRecentes(4),
       ]);
     this.formateur.set({
-      apprenants,
+      apprenants: apprenants.total,
+      apprenantsTest: apprenants.test,
       lecons,
       commentairesEnAttente,
       noteMoyenne,
@@ -181,7 +184,8 @@ export class Accueil {
     this.admin.set({
       caMois: this.euros(caMois),
       caTotal: this.euros(caTotal),
-      apprenants: profils.filter((p) => p.role === 'apprenant' && !p.est_test).length,
+      apprenants: profils.filter((p) => p.role === 'apprenant').length,
+      apprenantsTest: profils.filter((p) => p.role === 'apprenant' && p.est_test).length,
       certificats,
       paiements: paiements.slice(0, 4),
       nouveauxComptes: profils
@@ -189,6 +193,21 @@ export class Accueil {
         .sort((a, b) => b.date_creation.localeCompare(a.date_creation))
         .slice(0, 4),
     });
+  }
+
+  /**
+   * Mention discrète sous le nombre d'apprenants, ou rien s'il n'y a aucun
+   * compte de démonstration.
+   *
+   * Le `detail` de la carte existe déjà et sert exactement à cela : préciser
+   * un chiffre sans lui ajouter d'ornement. Un badge ou une couleur sur une
+   * tuile de statistique attirerait l'œil plus que le chiffre lui-même.
+   */
+  protected mentionTest(nombre: number): string | null {
+    if (nombre === 0) {
+      return null;
+    }
+    return nombre === 1 ? 'dont 1 compte de test' : `dont ${nombre} comptes de test`;
   }
 
   // ===== Aides d'affichage =====
