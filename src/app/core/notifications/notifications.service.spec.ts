@@ -35,7 +35,11 @@ const LIGNES = [
 function accesDouble(erreurEcriture: string | null = null) {
   return {
     table: () => ({
-      select: () => ({ order: () => Promise.resolve({ data: LIGNES, error: null }) }),
+      // `order()` rend un builder et non une promesse : la lecture chaîne
+      // désormais `.limit()` derrière lui pour borner l'historique rapatrié.
+      select: () => ({
+        order: () => ({ limit: () => Promise.resolve({ data: LIGNES, error: null }) }),
+      }),
       update: () => ({
         eq: () => ({ is: () => Promise.resolve({ data: null, error: null }) }),
         is: () => Promise.resolve({ data: null, error: null }),

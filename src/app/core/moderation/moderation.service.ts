@@ -97,7 +97,10 @@ export class ModerationService {
       this.acces.appel('note_moyenne_avis'),
       null,
     );
-    if (brut === null) {
+    // `typeof` plutôt qu'une comparaison à `null` : `Number([])` vaut 0, si
+    // bien qu'une valeur inattendue produirait une note de « 0 / 5 » — une
+    // moyenne inexistante déguisée en pire note possible.
+    if (typeof brut !== 'number' && typeof brut !== 'string') {
       return null;
     }
     // `numeric` peut arriver en nombre ou en chaîne selon la sérialisation :

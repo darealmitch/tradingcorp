@@ -49,7 +49,11 @@ function creerService() {
   const acces = {
     table: () => builder(),
     appel: () => builder(),
-    lire: () => Promise.resolve([]),
+    // `lire` rend le REPLI que l'appelant lui passe — c'est son contrat réel.
+    // Le rendre en dur (`[]`) faisait recevoir un tableau vide là où le service
+    // attend `null`, et `Number([])` valant 0, une moyenne inexistante serait
+    // devenue « 0 / 5 ».
+    lire: (_operation: string, _requete: unknown, repli: unknown) => Promise.resolve(repli),
     compter: () => Promise.resolve(0),
     ecrire: (operation: string) => enregistrer('ecrire', operation),
     modifier: (operation: string) => enregistrer('modifier', operation),

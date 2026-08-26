@@ -113,7 +113,11 @@ Deno.serve(async (req) => {
       // quelqu'un qui s'en va de lui-même — l'opposer à sa propre demande
       // reviendrait à retenir une personne sur la plateforme, ce que le droit à
       // l'effacement interdit.
-      if (!autoSuppression && !profilAppelant.est_proprietaire) {
+      // `?.` et non `.` : le contrôle « réservé aux administrateurs » plus haut
+      // est désormais conditionné à `!autoSuppression`, donc il ne garantit
+      // plus que `profilAppelant` soit non nul ici. Un profil introuvable —
+      // cas anormal — doit refuser, et c'est ce que fait `!undefined`.
+      if (!autoSuppression && !profilAppelant?.est_proprietaire) {
         return json(
           req,
           { erreur: 'Seul le propriétaire de la plateforme peut supprimer un administrateur.' },
