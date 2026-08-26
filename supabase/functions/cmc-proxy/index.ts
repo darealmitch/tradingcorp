@@ -14,6 +14,54 @@ const CMC_BASE = 'https://pro-api.coinmarketcap.com';
 
 const ENDPOINTS_AUTORISES = ['/v3/cryptocurrency/quotes/latest', '/v1/cryptocurrency/map'];
 
+// Le quota CoinMarketCap est la ressource à protéger : la fonction est publique
+// (le ticker s'affiche aux visiteurs anonymes), donc n'importe qui pouvait la
+// faire tourner en boucle et épuiser le crédit mensuel — après quoi le ticker
+// s'éteint pour tout le monde (P-16). Deux garde-fous, dans cet ordre :
+//
+//   1. UN CACHE, qui est la vraie réponse au problème. Des cours de crypto
+//      rafraîchis toutes les 60 s suffisent largement à un bandeau d'accueil.
+//      Cent visiteurs simultanés ne coûtent plus qu'un appel par minute au lieu
+//      de cent. Le cache vit dans l'isolat : Supabase en démarre plusieurs et
+//      les recycle, donc il n'est pas partagé ni garanti — c'est un
+//      amortisseur, pas une promesse. Le `Cache-Control` renvoyé au client
+//      complète la protection en amont, côté navigateur et CDN.
+//
+//   2. UNE LIMITATION PAR IP, filet de sécurité pour le cas que le cache ne
+//      couvre pas : un appelant qui ferait varier la chaîne de paramètres pour
+//      forcer un appel réseau à chaque requête.
+const TTL_CACHE_MS = 60_000;
+const FENETRE_MS = 60_000;
+const MAX_APPELS_PAR_FENETRE = 60;
+
+const cache = new Map<string, { expire: number; corps: string; statut: number }>();
+const compteurs = new Map<string, { debut: number; appels: number }>();
+
+/** Vrai si l'appelant a dépassé son quota sur la fenêtre courante. */
+function debitDepasse(req: Request): boolean {
+  // `x-forwarded-for` peut lister plusieurs adresses : la première est le
+  // client d'origine. En dernier recours on regroupe tout le trafic anonyme
+  // sous une même clé, ce qui reste préférable à ne rien compter.
+  const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'inconnue';
+  const maintenant = Date.now();
+  const compteur = compteurs.get(ip);
+
+  if (!compteur || maintenant - compteur.debut > FENETRE_MS) {
+    compteurs.set(ip, { debut: maintenant, appels: 1 });
+    // Purge opportuniste : sans elle, la table des compteurs grandirait aussi
+    // longtemps que vit l'isolat.
+    if (compteurs.size > 5_000) {
+      for (const [cle, valeur] of compteurs) {
+        if (maintenant - valeur.debut > FENETRE_MS) compteurs.delete(cle);
+      }
+    }
+    return false;
+  }
+
+  compteur.appels += 1;
+  return compteur.appels > MAX_APPELS_PAR_FENETRE;
+}
+
 function json(req: Request, corps: unknown, statut: number): Response {
   return new Response(JSON.stringify(corps), {
     status: statut,
@@ -36,6 +84,24 @@ Deno.serve(async (req) => {
     return json(req, { erreur: 'Endpoint non autorisé.' }, 403);
   }
 
+  if (debitDepasse(req)) {
+    return json(req, { erreur: 'Trop de requêtes — réessaie dans une minute.' }, 429);
+  }
+
+  const cleCache = `${chemin}${url.search}`;
+  const enCache = cache.get(cleCache);
+  if (enCache && enCache.expire > Date.now()) {
+    return new Response(enCache.corps, {
+      status: enCache.statut,
+      headers: {
+        ...enTetesCors(req),
+        'Content-Type': 'application/json',
+        'Cache-Control': `public, max-age=${TTL_CACHE_MS / 1000}`,
+        'X-Cache': 'HIT',
+      },
+    });
+  }
+
   const cle = Deno.env.get('CMC_API_KEY');
   if (!cle) {
     return json(req, { erreur: 'Clé CoinMarketCap non configurée (secret manquant).' }, 500);
@@ -46,9 +112,26 @@ Deno.serve(async (req) => {
       headers: { 'X-CMC_PRO_API_KEY': cle, Accept: 'application/json' },
     });
     const corps = await reponse.text();
+
+    // Seules les réponses utiles sont mises en cache : garder une erreur
+    // pendant une minute la ferait servir à tous les visiteurs suivants.
+    if (reponse.ok) {
+      cache.set(cleCache, { expire: Date.now() + TTL_CACHE_MS, corps, statut: reponse.status });
+      if (cache.size > 100) {
+        for (const [k, v] of cache) {
+          if (v.expire <= Date.now()) cache.delete(k);
+        }
+      }
+    }
+
     return new Response(corps, {
       status: reponse.status,
-      headers: { ...enTetesCors(req), 'Content-Type': 'application/json' },
+      headers: {
+        ...enTetesCors(req),
+        'Content-Type': 'application/json',
+        'Cache-Control': reponse.ok ? `public, max-age=${TTL_CACHE_MS / 1000}` : 'no-store',
+        'X-Cache': 'MISS',
+      },
     });
   } catch (erreur) {
     console.error('[cmc-proxy]', erreur);

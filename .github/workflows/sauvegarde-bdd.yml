@@ -110,11 +110,91 @@ jobs:
           lecons=$(psql -h localhost -U postgres -d controle -tAc "select count(*) from public.lecons")
           if [ "$lecons" -lt 1 ]; then echo "::error::aucune leçon restaurée — dump suspect"; exit 1; fi
 
-      - name: Conserver la sauvegarde
-        uses: actions/upload-artifact@v4
-        with:
-          name: sauvegarde-bdd-${{ github.run_id }}
-          path: sauvegarde.dump
-          # 30 jours : au-delà, l'archive n'a plus grand sens face à une base
-          # vivante, et elle contient des données personnelles.
-          retention-days: 30
+      # ─────────────────────────────────────────────────────────────────────
+      # DÉPÔT DE LA SAUVEGARDE
+      #
+      # Ce dump était publié en artefact GitHub Actions. Le dépôt étant PUBLIC,
+      # cela le rendait téléchargeable par n'importe qui pendant 30 jours —
+      # identités, e-mails, dates de naissance et paiements compris. La
+      # documentation GitHub le confirme : sur un dépôt public, « accès en
+      # lecture » veut dire tout le monde, et l'API REST répond même sans
+      # authentification.
+      #
+      # La sauvegarde va donc là où vivent déjà les données : le Storage
+      # Supabase, à Paris, dans un bucket privé et sans policy, où seul le rôle
+      # de service accède. Aucun tiers de plus, aucun transfert hors UE.
+      #
+      # Elle est en outre CHIFFRÉE avant de partir : même si le bucket venait à
+      # être mal configuré un jour, le dump resterait illisible sans la clé.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Chiffrer la sauvegarde
+        env:
+          CLE: ${{ secrets.SAUVEGARDE_CHIFFREMENT }}
+        run: |
+          if [ -z "$CLE" ]; then
+            echo "::error::secret SAUVEGARDE_CHIFFREMENT absent — refus de déposer un dump en clair"
+            exit 1
+          fi
+          # AES-256, dérivation PBKDF2. Pour relire :
+          #   openssl enc -d -aes-256-cbc -pbkdf2 -in <fichier> -out sauvegarde.dump
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in sauvegarde.dump -out sauvegarde.dump.enc -pass env:CLE
+          ls -lh sauvegarde.dump.enc
+
+      - name: Déposer dans le Storage Supabase
+        env:
+          URL: ${{ secrets.SUPABASE_URL }}
+          CLE_SERVICE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$CLE_SERVICE" ]; then
+            echo "::error::secrets SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY absents"
+            exit 1
+          fi
+          NOM="sauvegarde-$(date -u +%Y-%m-%d)-${GITHUB_RUN_ID}.dump.enc"
+
+          CODE=$(curl -s -o reponse.txt -w '%{http_code}' \
+            -X POST "$URL/storage/v1/object/sauvegardes/$NOM" \
+            -H "Authorization: Bearer $CLE_SERVICE" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @sauvegarde.dump.enc)
+
+          if [ "$CODE" != "200" ] && [ "$CODE" != "201" ]; then
+            echo "::error::dépôt de la sauvegarde refusé (HTTP $CODE)"
+            cat reponse.txt
+            exit 1
+          fi
+          echo "Sauvegarde déposée : $NOM"
+
+      # Rétention de 30 jours — la même qu'auparavant, mais appliquée par nos
+      # soins puisque le Storage n'expire rien tout seul. La durée est celle
+      # déclarée dans `politique_conservation` : elles doivent rester alignées.
+      - name: Purger les sauvegardes de plus de 30 jours
+        env:
+          URL: ${{ secrets.SUPABASE_URL }}
+          CLE_SERVICE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # Le Storage n'expire rien de lui-même : la rétention de 30 jours,
+          # déclarée dans `politique_conservation`, est appliquée ici. Les deux
+          # doivent rester alignées — une durée annoncée mais jamais appliquée
+          # vaut moins que pas de durée du tout.
+          export LIMITE=$(date -u -d '30 days ago' +%Y-%m-%d)
+          echo "Suppression des sauvegardes antérieures au $LIMITE"
+
+          curl -s -X POST "$URL/storage/v1/object/list/sauvegardes" \
+            -H "Authorization: Bearer $CLE_SERVICE" \
+            -H "Content-Type: application/json" \
+            -d '{"prefix":"","limit":1000,"sortBy":{"column":"created_at","order":"asc"}}' \
+            > liste.json
+
+          python3 -c "import json,os,sys;o=json.load(open('liste.json'));l=os.environ['LIMITE'];print(json.dumps([x['name'] for x in o if isinstance(x,dict) and x.get('created_at','')[:10] < l] if isinstance(o,list) else []))" > a_purger.json
+
+          NOMBRE=$(python3 -c "import json;print(len(json.load(open('a_purger.json'))))")
+          if [ "$NOMBRE" -gt 0 ]; then
+            curl -s -X DELETE "$URL/storage/v1/object/sauvegardes" \
+              -H "Authorization: Bearer $CLE_SERVICE" \
+              -H "Content-Type: application/json" \
+              -d "{\"prefixes\": $(cat a_purger.json)}" > /dev/null
+            echo "$NOMBRE sauvegarde(s) purgée(s)."
+          else
+            echo "Aucune sauvegarde à purger."
+          fi

@@ -1,0 +1,121 @@
+/*
+ * Style commun aux pages légales (politique de confidentialité, mentions
+ * légales, CGV).
+ *
+ * Ces pages sont longues et se lisent, elles ne se parcourent pas : colonne
+ * étroite, interlignage généreux, hiérarchie nette. Tout passe par les
+ * variables de thème du projet — elles suivent donc le mode clair et le mode
+ * sombre sans traitement particulier.
+ */
+
+.legal {
+  max-width: 62ch;
+  margin: 0 auto;
+  padding: 48px 20px 96px;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.legal-tete {
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.legal-tete h1 {
+  font-family: var(--font-title);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  margin-bottom: 8px;
+}
+
+.legal-maj {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.legal-intro {
+  font-size: 1.05rem;
+  margin-bottom: 40px;
+}
+
+.legal section {
+  margin-bottom: 40px;
+}
+
+.legal h2 {
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+
+.legal h3 {
+  font-size: 1.05rem;
+  margin: 24px 0 12px;
+}
+
+.legal p {
+  margin-bottom: 14px;
+}
+
+.legal ul {
+  margin: 0 0 16px 20px;
+}
+
+.legal li {
+  margin-bottom: 8px;
+}
+
+.legal a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/*
+ * Les tableaux portent l'essentiel de l'information (durées, sous-traitants,
+ * bases légales). Ils débordent sur mobile : on les fait défiler dans leur
+ * propre conteneur plutôt que d'imposer un défilement horizontal à la page.
+ */
+.legal-table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 0.92rem;
+}
+
+.legal-table th,
+.legal-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.legal-table th {
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/*
+ * Ce qui reste à compléter est signalé VISUELLEMENT, et volontairement : un
+ * placeholder discret finirait en ligne sans qu'on s'en aperçoive. Il doit se
+ * voir tant qu'il est là.
+ */
+.legal-todo {
+  padding: 14px 16px;
+  margin: 16px 0;
+  border-left: 3px solid var(--attention);
+  background: var(--bg-soft);
+  border-radius: 0 8px 8px 0;
+  color: var(--attention-text);
+  font-size: 0.94rem;
+}
+
+.legal-todo-liste {
+  margin-left: 20px;
+  color: var(--attention-text);
+  font-size: 0.94rem;
+}

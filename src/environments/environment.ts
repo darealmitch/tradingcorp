@@ -24,4 +24,8 @@ export const environment = {
   // peut pas alimenter une balise <video>. Le lecteur Bunny sert du HLS.
   bunnyPresentationVideoUrl:
     'https://iframe.mediadelivery.net/embed/708929/ac46adc6-1c4c-4e1e-9681-1808d07461fd',
+  // Collecteur d'erreurs distant (P-14). Vide = rien n'est transmis, et
+  // l'application se comporte exactement comme avant. Renseigner l'URL d'un
+  // collecteur acceptant du JSON en POST suffit à ouvrir la supervision.
+  supervisionUrl: '',
 };

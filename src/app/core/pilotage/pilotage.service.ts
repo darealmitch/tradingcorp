@@ -18,8 +18,13 @@ import {
  * rien savoir, et dont l'évolution le forçait à recompiler. La séparation rend
  * la surface d'API de chaque domaine lisible et referme ce couplage.
  *
- * Aucune vérification de rôle ici : la RLS est l'autorité — un apprenant qui
- * appellerait ces méthodes obtiendrait des ensembles vides, pas une fuite.
+ * Aucune vérification de rôle ici : l'autorité est côté serveur. La plupart de
+ * ces méthodes s'en remettent à la RLS — un apprenant qui les appellerait
+ * obtiendrait des ensembles vides, pas une fuite. `suivreApprenants()` fait
+ * exception depuis qu'elle passe par une RPC SECURITY DEFINER : celle-ci ne
+ * peut pas s'appuyer sur la RLS de l'appelant, elle REFUSE donc explicitement
+ * (« Réservé au staff »). L'écran, lui, voit la même chose dans les deux cas —
+ * une liste vide — mais l'incident, lui, est signalé.
  *
  * C'est précisément l'écran où un zéro trompe le plus : « aucun apprenant » et
  * « la lecture a échoué » se ressemblent trait pour trait. Tous les appels
@@ -93,50 +98,17 @@ export class PilotageService {
    * une jointure SQL équivalente exigerait une vue dédiée, et le volume
    * (quelques centaines de lignes) ne le justifie pas.
    */
-  async suivreApprenants(): Promise<ApprenantSuivi[]> {
-    const [lignes, inscriptions, progression, total] = await Promise.all([
-      this.acces.lire<
-        {
-          id_profil: string;
-          prenom: string;
-          nom: string;
-          date_creation: string;
-          est_test: boolean;
-        }[]
-      >(
-        'lecture des apprenants',
-        this.acces
-          .table('profils')
-          .select('id_profil, prenom, nom, date_creation, est_test')
-          .eq('role', 'apprenant')
-          .order('date_creation'),
-        [],
-      ),
-      this.acces.lire<{ id_profil: string }[]>(
-        'lecture des inscriptions actives',
-        this.acces.table('inscriptions').select('id_profil').eq('statut', 'active'),
-        [],
-      ),
-      this.acces.lire<{ id_profil: string }[]>(
-        'lecture de la progression des apprenants',
-        this.acces.table('progression_lecons').select('id_profil').not('terminee_le', 'is', null),
-        [],
-      ),
-      this.compterLecons(),
-    ]);
-
-    const inscrits = new Set(inscriptions.map((i) => i.id_profil));
-    const terminees = new Map<string, number>();
-    for (const ligne of progression) {
-      terminees.set(ligne.id_profil, (terminees.get(ligne.id_profil) ?? 0) + 1);
-    }
-
-    return lignes.map((profil) => ({
-      ...profil,
-      inscrit: inscrits.has(profil.id_profil),
-      terminees: terminees.get(profil.id_profil) ?? 0,
-      total,
-    }));
+  async suivreApprenants(limite = 50, decalage = 0): Promise<ApprenantSuivi[]> {
+    // Le recoupement se fait en SQL. Cette méthode chargeait `profils`,
+    // `inscriptions` et `progression_lecons` EN ENTIER pour les croiser en
+    // mémoire, sur un écran qui n'en montre qu'une page : le coût suivait le
+    // produit des trois tables (audit P-10). `suivi_apprenants` rend une page
+    // déjà recoupée, et refuse elle-même l'appel qui ne vient pas du staff.
+    return this.acces.lire<ApprenantSuivi[]>(
+      'lecture des apprenants',
+      this.acces.appel('suivi_apprenants', { p_limite: limite, p_decalage: decalage }),
+      [],
+    );
   }
 
   /**

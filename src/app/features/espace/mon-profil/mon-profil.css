@@ -53,3 +53,73 @@
 .profil-ligne dd {
   font-weight: 500;
 }
+
+/* ===== Exercice des droits RGPD ===== */
+/*
+ * Ces blocs servent la rectification, l'export et la suppression de compte
+ * (audit RGPD §3.3). Ils réutilisent les variables de thème du projet : rien
+ * n'est codé en dur, l'affichage suit donc le mode clair comme le sombre.
+ */
+
+.profil-edition {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.profil-edition .champ {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profil-edition .champ label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.profil-edition .champ input {
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font: inherit;
+}
+
+.profil-edition .champ input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.profil-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/*
+ * Le message d'erreur emprunte la couleur d'alerte du thème plutôt qu'un rouge
+ * fixe : sur fond sombre, un rouge saturé devient illisible.
+ */
+.message-erreur {
+  margin-top: 12px;
+  color: var(--down-text);
+  font-size: 0.92rem;
+}
+
+/*
+ * La zone de suppression est signalée par une bordure, pas par un aplat de
+ * couleur : elle doit se distinguer sans crier — c'est une action légitime de
+ * l'utilisateur, pas un danger à fuir.
+ */
+.panneau-danger {
+  border-color: var(--down);
+}
+
+.panneau-danger .panneau-titre {
+  color: var(--down-text);
+}

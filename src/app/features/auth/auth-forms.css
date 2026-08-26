@@ -212,3 +212,54 @@
     gap: 0;
   }
 }
+
+/* ===== Information et acceptation à l'inscription (RGPD art. 13) ===== */
+
+.champ-consentement {
+  margin-top: 4px;
+}
+
+.case-consentement {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/*
+ * La case garde sa taille native : la réduire pour l'esthétique dégraderait la
+ * cible de clic, et c'est la case qui porte l'acceptation contractuelle.
+ */
+.case-consentement input[type='checkbox'] {
+  flex: none;
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.case-consentement a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/*
+ * La mention d'information est volontairement discrète mais LISIBLE : elle doit
+ * pouvoir être lue, pas seulement être présente. On reste au-dessus de 0.85rem
+ * et sur la couleur de texte secondaire, jamais sur un gris de fond.
+ */
+.mention-rgpd {
+  margin-top: -4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.mention-rgpd a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

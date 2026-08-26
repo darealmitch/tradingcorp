@@ -120,6 +120,34 @@
           }
         </div>
 
+        <!--
+          Information au moment de la collecte — RGPD art. 13. L'information
+          doit être délivrée LÀ OÙ les données sont saisies, pas seulement
+          accessible quelque part sur le site.
+        -->
+        <div class="champ champ-consentement">
+          <label class="case-consentement">
+            <input type="checkbox" formControlName="conditions" required />
+            <span>
+              J'accepte les
+              <a routerLink="/cgv" target="_blank">conditions générales de vente</a> et je certifie
+              avoir 18 ans révolus.
+            </span>
+          </label>
+          @if (invalide('conditions')) {
+            <p class="champ-erreur" role="alert">
+              L'acceptation des conditions générales est nécessaire pour créer un compte.
+            </p>
+          }
+        </div>
+
+        <p class="mention-rgpd">
+          Tes données servent à créer ton compte, te donner accès à la formation et suivre ta
+          progression. Elles sont hébergées en France et ne sont jamais revendues. Tu peux à tout
+          moment y accéder, les corriger, les exporter ou supprimer ton compte depuis ton profil.
+          <a routerLink="/confidentialite" target="_blank">En savoir plus</a>.
+        </p>
+
         <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
           {{ chargement() ? 'Création…' : 'Créer mon compte' }}
         </button>

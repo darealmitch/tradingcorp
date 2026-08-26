@@ -72,6 +72,31 @@ export const routes: Routes = [
     title: 'TradingCorp — Vérifier un certificat',
   },
 
+  // Pages légales : publiques et SANS AUCUN GARDE, volontairement.
+  //
+  // Ni `authGuard` — une politique de confidentialité qu'il faut un compte pour
+  // lire ne remplit pas son office : l'information doit être accessible AVANT
+  // la collecte, donc avant l'inscription (RGPD art. 13). Ni `inviteGuard`, qui
+  // renverrait un utilisateur connecté vers son espace alors qu'il a le droit de
+  // relire ces pages à tout moment.
+  {
+    path: 'confidentialite',
+    loadComponent: () =>
+      import('./features/legal/confidentialite/confidentialite').then((m) => m.Confidentialite),
+    title: 'TradingCorp — Politique de confidentialité',
+  },
+  {
+    path: 'mentions-legales',
+    loadComponent: () =>
+      import('./features/legal/mentions-legales/mentions-legales').then((m) => m.MentionsLegales),
+    title: 'TradingCorp — Mentions légales',
+  },
+  {
+    path: 'cgv',
+    loadComponent: () => import('./features/legal/cgv/cgv').then((m) => m.Cgv),
+    title: 'TradingCorp — Conditions générales de vente',
+  },
+
   // Parcours pédagogique : page ENTIÈRE, hors du gabarit espace (pas de
   // sidebar). Accessible depuis le header. Mêmes gardes que l'espace.
   {
