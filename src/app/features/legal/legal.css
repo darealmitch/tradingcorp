@@ -119,3 +119,26 @@
   color: var(--attention-text);
   font-size: 0.94rem;
 }
+
+/*
+ * Formulaire type de rétractation. Le Code de la consommation impose de le
+ * fournir (art. R221-1) : il doit se distinguer du texte courant pour être
+ * reconnaissable comme un document à recopier, sans pour autant ressembler à
+ * un champ de saisie — la page est informative, on ne saisit rien ici.
+ */
+.legal-formulaire {
+  margin: 16px 0 24px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--line-strong);
+  background: var(--bg-soft);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.94rem;
+}
+
+.legal-formulaire p {
+  margin-bottom: 10px;
+}
+
+.legal-formulaire p:last-child {
+  margin-bottom: 0;
+}
