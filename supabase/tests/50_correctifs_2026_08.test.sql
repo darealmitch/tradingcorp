@@ -138,7 +138,7 @@ select is(
 
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"c0000000-0000-0000-0000-0000000000a1","role":"authenticated"}';
-select public.definir_compte_test('c0000000-0000-0000-0000-0000000000a2', true);
+do $$ begin perform public.definir_compte_test('c0000000-0000-0000-0000-0000000000a2', true); end $$;
 reset role;
 
 select is(
@@ -149,7 +149,7 @@ select is(
 
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"c0000000-0000-0000-0000-0000000000a1","role":"authenticated"}';
-select public.definir_compte_test('c0000000-0000-0000-0000-0000000000a2', false);
+do $$ begin perform public.definir_compte_test('c0000000-0000-0000-0000-0000000000a2', false); end $$;
 reset role;
 
 select is(
@@ -162,7 +162,7 @@ select is(
 -- de décisions, pas comme une trace d'appels.
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"c0000000-0000-0000-0000-0000000000a1","role":"authenticated"}';
-select public.definir_compte_test('c0000000-0000-0000-0000-0000000000a2', false);
+do $$ begin perform public.definir_compte_test('c0000000-0000-0000-0000-0000000000a2', false); end $$;
 reset role;
 
 select is(

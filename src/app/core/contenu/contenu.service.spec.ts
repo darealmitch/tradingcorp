@@ -25,8 +25,10 @@ interface Reponse {
 function clientDouble(reponses: {
   tables?: Record<string, Reponse>;
   rpc?: Record<string, Reponse>;
+  /** Réponses des Edge Functions, par nom — `{ data }` comme supabase-js. */
+  fonctions?: Record<string, Reponse>;
 }) {
-  const appels: { table?: string; rpc?: string; params?: unknown }[] = [];
+  const appels: { table?: string; rpc?: string; fonction?: string; params?: unknown }[] = [];
 
   const builder = (reponse: Reponse) => {
     const chainable: Record<string, unknown> = {};
@@ -52,6 +54,12 @@ function clientDouble(reponses: {
       rpc(nom: string, params?: unknown) {
         appels.push({ rpc: nom, params });
         return Promise.resolve(reponses.rpc?.[nom] ?? { data: [] });
+      },
+      functions: {
+        invoke(nom: string, options?: { body?: unknown }) {
+          appels.push({ fonction: nom, params: options?.body });
+          return Promise.resolve(reponses.fonctions?.[nom] ?? { data: null });
+        },
       },
       auth: {
         getUser: () => Promise.resolve({ data: { user: { id: 'profil-1' } } }),
@@ -131,32 +139,42 @@ describe('ContenuService', () => {
   });
 
   describe('verifierCertificat', () => {
-    // Un numéro se recopie à la main, depuis un papier : la casse et les
-    // espaces de saisie ne doivent jamais faire échouer une vérification
-    // légitime. La normalisation appartient au service, pas à l'écran — sinon
-    // un second point d'entrée (lien direct, QR code) l'oublierait.
+    // La vérification ne passe plus par la RPC en direct mais par l'Edge
+    // Function `verifier-certificat` : la RPC n'est plus accessible à `anon`,
+    // parce qu'une limitation de débit ne peut pas s'écrire en SQL — PostgREST
+    // ne transmet pas l'adresse de l'appelant à la base (audit RGPD, P-18).
+    // Ce qui reste testable ici, c'est l'appel et le mapping ; le reste est
+    // couvert par les tests pgTAP.
     it('normalise le numéro saisi avant de chercher', async () => {
-      const { service, double } = creerService({ rpc: { verifier_certificat: { data: [] } } });
+      // Un numéro se recopie à la main, depuis un papier : la casse et les
+      // espaces de saisie ne doivent jamais faire échouer une vérification
+      // légitime. La normalisation appartient au service, pas à l'écran —
+      // sinon un second point d'entrée (lien direct, QR code) l'oublierait.
+      const { service, double } = creerService({
+        fonctions: { 'verifier-certificat': { data: { certificat: null } } },
+      });
 
       await service.verifierCertificat('  tc-2026-abcdefgh  ');
 
-      const appel = double.appels.find((a) => a.rpc === 'verifier_certificat');
-      expect(appel?.params).toEqual({ p_numero: 'TC-2026-ABCDEFGH' });
+      const appel = double.appels.find((a) => a.fonction === 'verifier-certificat');
+      expect(appel?.params).toEqual({ numero: 'TC-2026-ABCDEFGH' });
     });
 
     it('rend le certificat quand le numéro correspond', async () => {
       const { service } = creerService({
-        rpc: {
-          verifier_certificat: {
-            data: [
-              {
+        fonctions: {
+          'verifier-certificat': {
+            data: {
+              certificat: {
                 numero: 'TC-2026-ABCDEFGH',
                 titre_formation: 'Formation Trader Pro',
                 prenom: 'Ada',
-                nom: 'Lovelace',
+                // Le nom est réduit à son initiale par la base : vérifier une
+                // attestation ne doit pas divulguer une identité complète.
+                nom: 'L.',
                 date_obtention: '2026-08-01T10:00:00Z',
               },
-            ],
+            },
           },
         },
       });
@@ -164,91 +182,67 @@ describe('ContenuService', () => {
       const certificat = await service.verifierCertificat('TC-2026-ABCDEFGH');
 
       expect(certificat?.titre_formation).toBe('Formation Trader Pro');
+      expect(certificat?.nom).toBe('L.');
     });
 
     it('rend null sur un numéro inconnu, sans distinguer les causes', async () => {
       // Inventé, mal recopié ou révoqué : même réponse. Distinguer ferait de la
       // page un outil pour tester des numéros au hasard.
-      const { service } = creerService({ rpc: { verifier_certificat: { data: [] } } });
+      const { service } = creerService({
+        fonctions: { 'verifier-certificat': { data: { certificat: null } } },
+      });
 
       expect(await service.verifierCertificat('TC-2026-INCONNU1')).toBeNull();
     });
   });
 
   describe('maProgression', () => {
-    it('agrège les compteurs de leçons et de leçons terminées', async () => {
+    // Le calcul est descendu en base : le dénominateur doit porter sur le
+    // PROGRAMME, or `lecons_select_gated` ne montre que les étapes débloquées.
+    // Un `count(*)` côté client rendait donc un total qui suivait la
+    // progression — 8/15 au lieu de 8/103 (audit P-24). Ce que le service
+    // garde, c'est l'appel et le repli.
+    it('rend les compteurs calculés par la base', async () => {
       const { service } = creerService({
-        tables: {
-          lecons: { count: 40 },
-          progression_lecons: { count: 12 },
-        },
+        rpc: { ma_progression: { data: [{ terminees: 12, total: 103 }] } },
       });
 
-      expect(await service.maProgression()).toEqual({ terminees: 12, total: 40 });
+      expect(await service.maProgression()).toEqual({ terminees: 12, total: 103 });
     });
 
-    it('renvoie zéro plutôt que null quand la base ne compte rien', async () => {
-      const { service } = creerService({
-        tables: { lecons: {}, progression_lecons: {} },
-      });
+    it('renvoie zéro plutôt que null quand la base ne rend rien', async () => {
+      const { service } = creerService({ rpc: { ma_progression: { data: [] } } });
 
       expect(await service.maProgression()).toEqual({ terminees: 0, total: 0 });
     });
   });
 
   describe('prochainesLecons', () => {
-    const structure = [
-      {
-        id_section: 's-1',
-        titre: 'Module 1',
-        lecons: [
-          { id_lecon: 'l-1', titre: 'Faite' },
-          { id_lecon: 'l-2', titre: 'À faire' },
-        ],
-      },
-      {
-        id_section: 's-2',
-        titre: 'Module 2',
-        lecons: [{ id_lecon: 'l-3', titre: 'À faire aussi' }],
-      },
-    ];
-
-    it('écarte les leçons déjà terminées et respecte la limite', async () => {
-      const { service } = creerService({
-        tables: {
-          sections: { data: structure },
-          progression_lecons: { data: [{ id_lecon: 'l-1' }] },
-        },
-      });
-
-      const prochaines = await service.prochainesLecons(1);
-
-      expect(prochaines.length).toBe(1);
-      expect(prochaines[0].id_lecon).toBe('l-2');
-    });
-
-    it("conserve l'ordre du programme à travers les modules", async () => {
-      const { service } = creerService({
-        tables: {
-          sections: { data: structure },
-          progression_lecons: { data: [{ id_lecon: 'l-1' }] },
+    // Le tri et le filtrage sont descendus en base : la méthode chargeait tout
+    // le programme — sections, leçons et ressources jointes — pour n'en garder
+    // que les premières lignes non terminées (audit P-10).
+    it('transmet la limite demandée et rend ce que la base renvoie', async () => {
+      const { service, double } = creerService({
+        rpc: {
+          prochaines_lecons: {
+            data: [
+              { id_lecon: 'l-2', id_section: 's-1', titre: 'À faire' },
+              { id_lecon: 'l-3', id_section: 's-2', titre: 'À faire aussi' },
+            ],
+          },
         },
       });
 
       const prochaines = await service.prochainesLecons(5);
 
+      expect(double.appels.find((a) => a.rpc === 'prochaines_lecons')?.params).toEqual({
+        p_limite: 5,
+      });
       expect(prochaines.map((l) => l.id_lecon)).toEqual(['l-2', 'l-3']);
     });
 
     it('retourne une liste vide quand tout est terminé', async () => {
-      const { service } = creerService({
-        tables: {
-          sections: { data: structure },
-          progression_lecons: {
-            data: [{ id_lecon: 'l-1' }, { id_lecon: 'l-2' }, { id_lecon: 'l-3' }],
-          },
-        },
-      });
+      const { service } = creerService({ rpc: { prochaines_lecons: { data: [] } } });
 
       expect(await service.prochainesLecons(5)).toEqual([]);
     });

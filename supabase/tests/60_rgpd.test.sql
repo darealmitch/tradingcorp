@@ -106,9 +106,13 @@ select is(
   'art. 20 — le paiement d''Alice figure bien dans son export'
 );
 
+-- Code et message explicites plutôt que deux `null` : non typés, ceux-ci
+-- laissent PostgreSQL hésiter entre les surcharges de `throws_ok` (char(5) ou
+-- int en deuxième position), ce qui échoue avec « function is not unique ».
 select throws_ok(
   $$select mes_donnees_personnelles()$$,
-  null, null,
+  'P0001'::char(5),
+  'Connexion requise',
   'art. 15 — sans session, l''export est refusé'
 );
 
@@ -189,7 +193,9 @@ select is(
 -- Onze ans : au-delà de l'obligation comptable de dix ans.
 update public.paiements set date_paiement = now() - interval '11 years'
  where id_paiement = '9b000000-0000-0000-0000-00000000000e';
-select public.appliquer_retention_paiements(10);
+-- `perform` et non `select` : un appel non-assertif émet une ligne de
+-- résultat au milieu du flux TAP, que le parseur n'a aucune raison d'attendre.
+do $$ begin perform public.appliquer_retention_paiements(10); end $$;
 
 select is(
   (select count(*) from public.paiements
