@@ -14,6 +14,19 @@
       <a routerLink="/" fragment="commencer">Ouvrir un compte</a>
     </nav>
 
+    <!--
+      Les pages légales vivent dans le pied de page parce que c'est là qu'on les
+      cherche, et qu'elles doivent être accessibles depuis TOUTE page — y compris
+      avant l'inscription, l'information devant précéder la collecte
+      (RGPD art. 13 ; mentions légales : LCEN art. 6-III).
+    -->
+    <nav class="footer-nav" aria-label="Informations légales">
+      <span class="footer-label">Informations</span>
+      <a routerLink="/confidentialite">Confidentialité</a>
+      <a routerLink="/mentions-legales">Mentions légales</a>
+      <a routerLink="/cgv">CGV</a>
+    </nav>
+
     <div class="footer-contact">
       <span class="footer-label">Contact</span>
       <a href="mailto:contact&#64;tradingcorp.com">contact&#64;tradingcorp.com</a>
@@ -25,6 +38,9 @@
       Le trading comporte un risque de perte en capital. Les performances passées ne préjugent pas
       des performances futures.
     </p>
-    <p>© {{ year }} TradingCorp. Tous droits réservés.</p>
+    <p>
+      © {{ year }} TradingCorp. Tous droits réservés. —
+      <a routerLink="/confidentialite">Tes données et tes droits</a>
+    </p>
   </div>
 </footer>

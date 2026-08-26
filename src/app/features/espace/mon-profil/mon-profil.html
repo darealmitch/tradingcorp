@@ -1,6 +1,6 @@
 <header class="page-tete">
   <h1 class="page-titre">Profil</h1>
-  <p class="page-sous">Ton nom et ton prénom officiels sont gérés par l'administration.</p>
+  <p class="page-sous">Tes informations, tes données, et ce que tu peux en faire.</p>
 </header>
 
 <div class="panneau">
@@ -16,20 +16,122 @@
     }
   </div>
 
-  <dl class="profil-details">
-    <div class="profil-ligne">
-      <dt>Nom et prénom</dt>
-      <dd class="cellule-discrete">Modifiables uniquement par un administrateur</dd>
-    </div>
-    <div class="profil-ligne">
-      <dt>Membre depuis</dt>
-      <dd>{{ membreDepuis() }}</dd>
-    </div>
-    <div class="profil-ligne">
-      <dt>Authentification</dt>
-      <dd>E-mail et mot de passe</dd>
-    </div>
-  </dl>
+  @if (editionOuverte()) {
+    <form class="profil-edition" (ngSubmit)="enregistrerIdentite()">
+      <div class="champ">
+        <label for="prenom">Prénom</label>
+        <input
+          id="prenom"
+          type="text"
+          maxlength="100"
+          required
+          [ngModel]="prenomSaisi()"
+          (ngModelChange)="prenomSaisi.set($event)"
+          name="prenom"
+        />
+      </div>
+      <div class="champ">
+        <label for="nom">Nom</label>
+        <input
+          id="nom"
+          type="text"
+          maxlength="100"
+          [ngModel]="nomSaisi()"
+          (ngModelChange)="nomSaisi.set($event)"
+          name="nom"
+        />
+      </div>
+
+      @if (messageIdentite(); as message) {
+        <p class="message-erreur" role="alert">{{ message }}</p>
+      }
+
+      <div class="profil-actions">
+        <button class="btn btn-primaire btn-compact" type="submit" [disabled]="enregistrement()">
+          {{ enregistrement() ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+        <button
+          class="btn btn-ghost btn-compact"
+          type="button"
+          (click)="annulerEdition()"
+          [disabled]="enregistrement()"
+        >
+          Annuler
+        </button>
+      </div>
+    </form>
+  } @else {
+    <dl class="profil-details">
+      <div class="profil-ligne">
+        <dt>Nom et prénom</dt>
+        <dd>
+          <button class="btn btn-ghost btn-compact" type="button" (click)="ouvrirEdition()">
+            Modifier
+          </button>
+          @if (identiteEnregistree()) {
+            <span class="cellule-discrete">Modification enregistrée.</span>
+          }
+        </dd>
+      </div>
+      <div class="profil-ligne">
+        <dt>Adresse e-mail</dt>
+        <dd class="cellule-discrete">
+          Modifiable sur demande à
+          <a href="mailto:contact&#64;tradingcorp.com">contact&#64;tradingcorp.com</a> — le
+          changement doit être confirmé sur la nouvelle adresse.
+        </dd>
+      </div>
+      <div class="profil-ligne">
+        <dt>Date de naissance</dt>
+        <dd class="cellule-discrete">
+          Non modifiable : elle atteste que tu es majeur au moment de l'inscription.
+        </dd>
+      </div>
+      <div class="profil-ligne">
+        <dt>Membre depuis</dt>
+        <dd>{{ membreDepuis() }}</dd>
+      </div>
+    </dl>
+  }
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     Droits RGPD. Accès, portabilité et effacement sont exerçables ici même ;
+     les autres droits passent par le contact indiqué, faute de sens
+     opérationnel à les automatiser sur un compte de formation.
+     ───────────────────────────────────────────────────────────────────── -->
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Mes données personnelles</h2>
+  </div>
+
+  <p class="page-sous">
+    Tu peux récupérer à tout moment l'ensemble des données que TradingCorp détient sur toi :
+    identité, inscriptions, progression, résultats de quiz, certificats, avis, commentaires,
+    notifications et paiements. Le fichier est au format JSON, lisible et réutilisable ailleurs.
+  </p>
+
+  @if (messageExport(); as message) {
+    <p class="message-erreur" role="alert">{{ message }}</p>
+  }
+
+  <div class="profil-actions">
+    <button
+      class="btn btn-ghost btn-compact"
+      type="button"
+      (click)="telechargerMesDonnees()"
+      [disabled]="exportEnCours()"
+    >
+      {{ exportEnCours() ? 'Préparation…' : 'Télécharger mes données' }}
+    </button>
+  </div>
+
+  <p class="cellule-discrete">
+    Pour demander la limitation ou t'opposer à un traitement, écris à
+    <a href="mailto:contact&#64;tradingcorp.com">contact&#64;tradingcorp.com</a>. Le détail de tes
+    droits figure dans la
+    <a routerLink="/confidentialite" href="/confidentialite">politique de confidentialité</a>.
+  </p>
 </div>
 
 <div class="panneau">
@@ -39,4 +141,61 @@
   <button class="btn btn-ghost btn-compact" type="button" (click)="deconnecter()">
     Se déconnecter
   </button>
+</div>
+
+<div class="panneau panneau-danger">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Supprimer mon compte</h2>
+  </div>
+
+  <p class="page-sous">
+    La suppression est <strong>définitive</strong>. Sont effacés : ton identité, tes inscriptions,
+    ta progression, tes résultats de quiz, tes certificats et les fichiers correspondants, tes avis,
+    tes commentaires et tes notifications.
+  </p>
+  <p class="cellule-discrete">
+    Deux exceptions, que la loi impose ou permet : tes <strong>paiements</strong> sont conservés dix
+    ans en tant que pièces comptables (article L123-22 du Code de commerce), et les actions
+    d'administration te concernant restent tracées dans le journal — sans ton nom ni ton adresse,
+    qui en sont retirés immédiatement. Une donnée supprimée peut subsister au plus 30 jours dans les
+    sauvegardes.
+  </p>
+
+  @if (messageSuppression(); as message) {
+    <p class="message-erreur" role="alert">{{ message }}</p>
+  }
+
+  @if (suppressionDemandee()) {
+    <p class="message-erreur">
+      Confirmes-tu la suppression définitive de ton compte ? Cette action est irréversible.
+    </p>
+    <div class="profil-actions">
+      <button
+        class="btn btn-danger btn-compact"
+        type="button"
+        (click)="confirmerSuppression()"
+        [disabled]="suppressionEnCours()"
+      >
+        {{ suppressionEnCours() ? 'Suppression…' : 'Oui, supprimer définitivement' }}
+      </button>
+      <button
+        class="btn btn-ghost btn-compact"
+        type="button"
+        (click)="suppressionDemandee.set(false)"
+        [disabled]="suppressionEnCours()"
+      >
+        Annuler
+      </button>
+    </div>
+  } @else {
+    <div class="profil-actions">
+      <button
+        class="btn btn-ghost btn-compact"
+        type="button"
+        (click)="suppressionDemandee.set(true)"
+      >
+        Supprimer mon compte
+      </button>
+    </div>
+  }
 </div>

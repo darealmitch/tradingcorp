@@ -60,6 +60,16 @@ export class Inscription {
       email: ['', [Validators.required, Validators.email]],
       mdp: ['', [Validators.required, Validators.minLength(8)]],
       confirmation: ['', [Validators.required]],
+      // Acceptation des CGV : `requiredTrue`, et la case n'est jamais
+      // pré-cochée. C'est ce qui donne sa base légale au traitement — le
+      // parcours repose sur l'exécution d'un contrat (RGPD art. 6.1.b), or un
+      // contrat suppose qu'il ait été accepté.
+      //
+      // À ne PAS confondre avec un consentement au sens de l'art. 6.1.a :
+      // aucun traitement de TradingCorp n'en dépend, et présenter cette case
+      // comme un consentement laisserait croire qu'il est révocable à tout
+      // moment — ce qu'une acceptation contractuelle n'est pas.
+      conditions: [false, [Validators.requiredTrue]],
     },
     { validators: mdpIdentiques },
   );

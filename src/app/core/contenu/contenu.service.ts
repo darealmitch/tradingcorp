@@ -212,20 +212,19 @@ export class ContenuService {
 
   /** Progression du profil connecté : leçons terminées / leçons accessibles. */
   async maProgression(): Promise<ProgressionResume> {
-    const [total, terminees] = await Promise.all([
-      this.acces.compter(
-        'comptage des étapes',
-        this.acces.table('lecons').select('id_lecon', { count: 'exact', head: true }),
-      ),
-      this.acces.compter(
-        'comptage des étapes terminées',
-        this.acces
-          .table('progression_lecons')
-          .select('id_progression_lecon', { count: 'exact', head: true })
-          .not('terminee_le', 'is', null),
-      ),
-    ]);
-    return { terminees, total };
+    // Le total NE PEUT PAS se compter d'ici. `lecons_select_gated` ne montre à
+    // un apprenant que ses leçons DÉBLOQUÉES : un `count(*)` sur la table rend
+    // le nombre d'étapes ouvertes, pas la longueur du programme. Le
+    // dénominateur suivait donc la progression — 3 étapes terminées sur 4
+    // visibles affichaient 75 % là où le programme en compte 103, soit 3 %
+    // (audit P-24). `ma_progression()` compte côté serveur, sur les leçons
+    // publiées de la formation, et rend un total qui ne bouge pas.
+    const lignes = await this.acces.lire<ProgressionResume[]>(
+      'lecture de la progression',
+      this.acces.appel('ma_progression'),
+      [],
+    );
+    return lignes[0] ?? { terminees: 0, total: 0 };
   }
 
   /**
@@ -278,28 +277,29 @@ export class ContenuService {
    * numéro est long et tiré au hasard : on ne le devine pas, on le détient.
    */
   async verifierCertificat(numero: string): Promise<CertificatVerifie | null> {
-    const lignes = await this.acces.lire<CertificatVerifie[]>(
+    // L'appel passe par une Edge Function, et non plus par la RPC en direct :
+    // celle-ci était ouverte à `anon` sans rien qui limite le nombre d'essais,
+    // et la base ne peut pas compter un débit — PostgREST ne lui transmet pas
+    // l'adresse de l'appelant (audit P-18). La fonction limite par IP, puis
+    // interroge la base en rôle de service.
+    const { donnees } = await this.acces.invoquer<{ certificat: CertificatVerifie | null }>(
       'vérification d’un certificat',
-      this.acces.appel('verifier_certificat', { p_numero: numero.trim().toUpperCase() }),
-      [],
+      'verifier-certificat',
+      { numero: numero.trim().toUpperCase() },
     );
-    return lignes[0] ?? null;
+    return donnees?.certificat ?? null;
   }
 
   /** Prochaines leçons non terminées, dans l'ordre du programme. */
   async prochainesLecons(limite: number): Promise<LeconResume[]> {
-    const [structure, progression] = await Promise.all([
-      this.chargerStructure(),
-      this.acces.lire<{ id_lecon: string }[]>(
-        'lecture de la progression',
-        this.acces.table('progression_lecons').select('id_lecon').not('terminee_le', 'is', null),
-        [],
-      ),
-    ]);
-    const faites = new Set(progression.map((p) => p.id_lecon));
-    return structure
-      .flatMap((section) => section.lecons)
-      .filter((lecon) => !faites.has(lecon.id_lecon))
-      .slice(0, limite);
+    // Le tri et le filtrage se font en base. Cette méthode chargeait le
+    // programme ENTIER — sections, leçons et ressources jointes — pour n'en
+    // garder que les premières lignes non terminées : une centaine de leçons
+    // transportées pour en afficher une (audit P-10).
+    return this.acces.lire<LeconResume[]>(
+      'lecture des prochaines étapes',
+      this.acces.appel('prochaines_lecons', { p_limite: limite }),
+      [],
+    );
   }
 }

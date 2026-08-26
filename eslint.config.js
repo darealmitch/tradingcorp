@@ -6,6 +6,14 @@ const angular = require('angular-eslint');
 
 module.exports = defineConfig([
   {
+    // Fichier GÉNÉRÉ depuis le schéma PostgreSQL (`npm run types:generate`).
+    // Le corriger pour satisfaire le style ne servirait à rien : la
+    // régénération suivante réintroduirait les mêmes écarts. On le laisse tel
+    // que l'outil le produit, ce qui garde le diff lisible d'une fois sur
+    // l'autre.
+    ignores: ['src/app/core/supabase/database.types.ts'],
+  },
+  {
     files: ['**/*.ts'],
     extends: [
       eslint.configs.recommended,

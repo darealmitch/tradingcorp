@@ -6,9 +6,22 @@
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
+  /* Quatre colonnes depuis l'ajout du bloc « Informations » (pages légales). */
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
   gap: 48px;
   padding-bottom: 48px;
+}
+
+/*
+ * Palier intermédiaire : à quatre colonnes, les liens se cassent en deux lignes
+ * bien avant le seuil mobile. On repasse à deux colonnes tant qu'il reste de la
+ * place, plutôt que d'empiler tout de suite.
+ */
+@media (max-width: 960px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
 }
 
 .footer-brand p {

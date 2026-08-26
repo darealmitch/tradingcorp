@@ -29,6 +29,9 @@ interface LigneNotification {
  * Notifications du profil connecté (table `notifications`, RLS : ses lignes
  * uniquement). Alimentée côté serveur — ex. le webhook Stripe à l'achat.
  */
+/** Notifications chargées d'un coup : le volet n'en affiche jamais autant. */
+const MAX_NOTIFICATIONS = 100;
+
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
   private readonly acces = inject(AccesDonnees);
@@ -55,7 +58,10 @@ export class NotificationsService {
       this.acces
         .table('notifications')
         .select('id_notification, titre, message, date_envoi, lu_le, priorite')
-        .order('date_envoi', { ascending: false }),
+        .order('date_envoi', { ascending: false })
+        // Le volet en montre les plus récentes : au-delà, c'est de l'historique
+        // que personne ne déroule, transporté à chaque ouverture (audit P-10).
+        .limit(MAX_NOTIFICATIONS),
       [],
     );
     this.listeSig.set(

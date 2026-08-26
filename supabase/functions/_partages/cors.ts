@@ -44,3 +44,23 @@ export function reponsePreflight(req: Request, methodes = 'POST, OPTIONS'): Resp
     headers: { ...enTetesCors(req), 'Access-Control-Allow-Methods': methodes },
   });
 }
+
+/**
+ * L'origine de la requête, si et seulement si elle figure dans la liste
+ * blanche ; sinon `SITE_URL`, l'adresse du site publié.
+ *
+ * Sert à construire une URL de retour — typiquement les `success_url` et
+ * `cancel_url` d'une session Stripe (P-20). Les en-têtes CORS ne suffisent
+ * pas à protéger cet usage : ils sont appliqués PAR LE NAVIGATEUR, à la
+ * lecture de la réponse. Un appel direct — curl, script serveur — porte
+ * l'en-tête `Origin` qu'il veut et n'a que faire de ce qui lui est renvoyé.
+ * Toute valeur issue de `Origin` qui finit dans une redirection doit donc
+ * être confrontée à la liste, jamais recopiée telle quelle.
+ */
+export function origineValidee(req: Request): string {
+  const origine = req.headers.get('Origin') ?? '';
+  if (ORIGINES.includes(origine)) {
+    return origine;
+  }
+  return Deno.env.get('SITE_URL') ?? ORIGINES[0] ?? '';
+}

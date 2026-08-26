@@ -67,6 +67,10 @@ supabase/.temp/
 # Notes internes (personnel, pas destiné au dépôt)
 AUDIT-ARCHITECTURE.md
 VIDEOS-BUNNY.md
+AUDIT-PREPRODUCTION-2026-07-31.md
+AUDIT-SUIVI-2026-08-25.md
+AUDIT-RGPD-2026-08-25.md
+RGPD-REGISTRE-ET-PROCEDURES.md
 
 # Maquette de refonte : support de décision, le rendu final vit dans src/
 maquette-refonte.html

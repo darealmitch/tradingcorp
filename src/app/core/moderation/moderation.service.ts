@@ -89,15 +89,24 @@ export class ModerationService {
 
   /** Note moyenne des avis approuvés, formatée — null tant qu'aucun avis. */
   async noteMoyenne(): Promise<string | null> {
-    const avis = await this.acces.lire<{ note: number }[]>(
-      'lecture des notes',
-      this.acces.table('avis').select('note').eq('statut', 'approuve'),
-      [],
+    // La moyenne se calcule en base. Charger tous les avis approuvés pour les
+    // additionner dans le navigateur faisait croître le transfert avec le
+    // succès de la plateforme, pour produire un seul nombre (audit P-10).
+    const brut = await this.acces.lire<number | string | null>(
+      'lecture de la note moyenne',
+      this.acces.appel('note_moyenne_avis'),
+      null,
     );
-    if (avis.length === 0) {
+    if (brut === null) {
       return null;
     }
-    const moyenne = avis.reduce((somme, a) => somme + a.note, 0) / avis.length;
+    // `numeric` peut arriver en nombre ou en chaîne selon la sérialisation :
+    // sur une chaîne, `toLocaleString` existerait mais ignorerait les options
+    // et rendrait la valeur brute — d'où la conversion explicite.
+    const moyenne = Number(brut);
+    if (Number.isNaN(moyenne)) {
+      return null;
+    }
     return `${moyenne.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} / 5`;
   }
 }

@@ -2,7 +2,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@18';
-import { enTetesCors, reponsePreflight } from '../_partages/cors.ts';
+import { enTetesCors, origineValidee, reponsePreflight } from '../_partages/cors.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
   // Client HTTP basé sur fetch : l'edge runtime n'a pas le module http de Node.
@@ -84,8 +84,14 @@ Deno.serve(async (req) => {
       return json(req, { erreur: 'Tu es déjà inscrit à cette formation.' }, 409);
     }
 
-    // Origine de l'appel : ramène vers l'app qui a initié l'achat (dev ou prod).
-    const origine = req.headers.get('Origin') ?? Deno.env.get('SITE_URL') ?? '';
+    // Origine de l'appel : ramène vers l'app qui a initié l'achat (dev ou prod),
+    // mais UNIQUEMENT si elle est connue. L'en-tête `Origin` était repris tel
+    // quel : un appel forgé faisait revenir l'acheteur, après son paiement sur
+    // la page Stripe, vers le domaine de son choix — le moment idéal pour lui
+    // présenter une fausse page de confirmation (P-20). La restriction CORS
+    // posée depuis ne couvre pas ce cas : elle s'applique dans le navigateur,
+    // et n'empêche pas un appel direct de porter l'en-tête qu'il veut.
+    const origine = origineValidee(req);
 
     // Le prix vient de la table formations (source de vérité) — pas de Price
     // Stripe à synchroniser. Le webhook rattachera le paiement au compte via

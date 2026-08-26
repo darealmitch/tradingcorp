@@ -19,6 +19,11 @@ export interface ApprenantSuivi {
   terminees: number;
   /** Nombre total de leçons du programme, pour situer `terminees`. */
   total: number;
+  /**
+   * Nombre d'apprenants au total — pas seulement dans la page rendue.
+   * Permet de savoir s'il reste des pages sans lancer une seconde requête.
+   */
+  nombre_total: number;
 }
 
 /**
