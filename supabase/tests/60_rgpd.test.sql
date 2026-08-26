@@ -61,6 +61,12 @@ begin
   execute 'set local role authenticated';
   execute p_sql into r;
   execute 'reset role';
+  -- Les claims sont posés avec `is_local` : ils survivent à l'appel et valent
+  -- pour TOUTE la transaction. Sans ce nettoyage, l'identité du dernier appel
+  -- resterait en place et le test « sans session » trouverait une session —
+  -- il ne lèverait aucune exception, et vérifierait donc le contraire de ce
+  -- qu'il annonce.
+  perform set_config('request.jwt.claims', '', true);
   return r;
 end;
 $$;
