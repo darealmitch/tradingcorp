@@ -10,7 +10,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(15);
+select plan(16);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Jeu d'essai : un administrateur, un apprenant inscrit et payant, une
@@ -62,6 +62,10 @@ begin
   execute 'set local role ' || case when p_sub is null then 'anon' else 'authenticated' end;
   execute p_sql into n;
   execute 'reset role';
+  -- Les claims sont posés avec `is_local` : ils valent pour toute la
+  -- transaction, pas seulement pour cet appel. On les efface pour qu'aucune
+  -- assertion suivante n'hérite d'une identité qu'elle n'a pas demandée.
+  perform set_config('request.jwt.claims', '', true);
   return n;
 end;
 $$;

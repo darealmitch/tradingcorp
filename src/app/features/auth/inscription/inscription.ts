@@ -116,7 +116,7 @@ export class Inscription {
   }
 
   protected invalide(
-    nom: 'prenom' | 'nom' | 'dateNaissance' | 'email' | 'mdp' | 'confirmation',
+    nom: 'prenom' | 'nom' | 'dateNaissance' | 'email' | 'mdp' | 'confirmation' | 'conditions',
   ): boolean {
     const ctrl = this.form.controls[nom];
     return ctrl.invalid && ctrl.touched;
