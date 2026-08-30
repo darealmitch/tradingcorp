@@ -31,6 +31,10 @@
 // ni quiz, ni achat, faute d'autorisation CORS).
 const SITES = new Map<string, string>([
   ['https://tradingcorp.fr', 'https://tradingcorp.fr'],
+  // Adresse technique du projet Cloudflare, permanente et servie en parallèle
+  // du domaine. C'est là que le site se recette avant chaque bascule de DNS —
+  // sans cette entrée, le ticker y reste muet.
+  ['https://tradingcorp.pages.dev', 'https://tradingcorp.pages.dev'],
   // L'hébergeur redirige www vers l'apex, mais cette origine peut porter un
   // appel avant que la redirection ne s'applique.
   ['https://www.tradingcorp.fr', 'https://www.tradingcorp.fr'],
