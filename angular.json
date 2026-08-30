@@ -24,7 +24,7 @@
               {
                 "glob": "**/*",
                 "input": "public",
-                "ignore": ["**/rogner-source.mp4"]
+                "ignore": ["**/rogner-source.mp4", "**/presentation.mp4"]
               }
             ],
             "styles": ["src/styles.css"]
