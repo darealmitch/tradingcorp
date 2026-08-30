@@ -149,6 +149,17 @@ cohérence des migrations, `deno check` sur les Edge Functions, puis un job qui
 **reconstruit une base éphémère depuis les seules migrations** et y joue les tests
 d'autorisation. Publication sur GitHub Pages après une CI verte.
 
+Le site est servi sur **https://tradingcorp.fr**, à la racine du domaine — d'où
+`--base-href /` dans la CI. Le domaine tient à deux fichiers versionnés :
+`public/CNAME`, qui voyage dans l'artefact publié (sans lui, un déploiement
+efface le domaine personnalisé enregistré côté dépôt), et `public/robots.txt`,
+qui référence `public/sitemap.xml`.
+
+Trois endroits nomment ce domaine et doivent changer ensemble le jour où il
+change : `public/CNAME`, `supabase/functions/_partages/cors.ts` (liste blanche
+CORS et bases de retour Stripe) et la configuration des URL de Supabase Auth,
+qui vit hors du dépôt.
+
 Une sauvegarde quotidienne de la base tourne dans `sauvegarde-bdd.yml`.
 
 ---

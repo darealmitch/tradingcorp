@@ -1,5 +1,5 @@
-// Origines autorisées à appeler les Edge Functions, partagées par toutes les
-// fonctions appelées depuis le navigateur.
+// Sites autorisés à appeler les Edge Functions depuis un navigateur, partagés
+// par toutes les fonctions.
 //
 // Elles répondaient jusqu'ici `Access-Control-Allow-Origin: *`, ce qui laissait
 // n'importe quelle page du web déclencher un appel authentifié depuis le
@@ -9,15 +9,52 @@
 // réponse par un script tiers, et laissait le quota de cmc-proxy ouvert à qui
 // voulait s'en servir depuis son propre site.
 //
-// SITE_URL permet d'ajouter une origine sans redéployer (préproduction, nom de
-// domaine définitif). Localhost reste accepté pour le développement : il n'a de
-// valeur que sur la machine du développeur, jamais sur le site publié.
-const ORIGINES = [
-  'https://darealmitch.github.io',
-  'http://localhost:4200',
-  'http://127.0.0.1:4200',
-  Deno.env.get('SITE_URL') ?? '',
-].filter(Boolean);
+// ⚠️ DEUX NOTIONS DISTINCTES, longtemps confondues ici :
+//
+//   • l'ORIGINE (schéma + hôte) — ce que le navigateur envoie dans `Origin`,
+//     et la seule chose que le CORS compare. Elle ne porte jamais de chemin ;
+//   • la BASE DE L'APPLICATION — l'adresse à laquelle le site est réellement
+//     servi, chemin compris. Sur GitHub Pages, l'application vit sous
+//     `/tradingcorp/`, pas à la racine du domaine.
+//
+// Les confondre renvoyait l'acheteur, après son paiement, vers
+// `https://darealmitch.github.io/espace?achat=succes` : la racine du domaine,
+// où GitHub affiche « Site not found ». Le paiement était bien encaissé et
+// l'accès bien ouvert par le webhook — mais le client voyait une page d'erreur
+// au moment précis où il venait de payer. D'où cette table, qui associe à
+// chaque origine autorisée la base réelle de l'application.
+//
+// Sur tradingcorp.fr les deux coïncident enfin — le site est servi à la racine
+// de son domaine. La distinction reste néanmoins nécessaire : elle protège de
+// la réapparition du défaut le jour où le site vivrait de nouveau sous un
+// chemin (préproduction, retour sur GitHub Pages).
+const SITES = new Map<string, string>([
+  ['https://tradingcorp.fr', 'https://tradingcorp.fr'],
+  // GitHub redirige www vers l'apex dès que le domaine personnalisé est posé,
+  // mais l'origine www peut porter un appel avant cette redirection.
+  ['https://www.tradingcorp.fr', 'https://www.tradingcorp.fr'],
+  // Le développement sert l'application à la racine : origine et base y sont
+  // confondues, et n'ont de valeur que sur la machine du développeur.
+  ['http://localhost:4200', 'http://localhost:4200'],
+  ['http://127.0.0.1:4200', 'http://127.0.0.1:4200'],
+]);
+
+// SITE_URL ajoute un site sans redéployer (préproduction, nom de domaine
+// définitif) et peut porter un chemin : son origine entre dans la liste
+// blanche, sa valeur complète devient la base de retour. Une valeur mal formée
+// est ignorée plutôt que de faire échouer toutes les fonctions au démarrage.
+const SITE_CONFIGURE = (Deno.env.get('SITE_URL') ?? '').replace(/\/+$/, '');
+if (SITE_CONFIGURE) {
+  try {
+    SITES.set(new URL(SITE_CONFIGURE).origin, SITE_CONFIGURE);
+  } catch {
+    console.error('SITE_URL ignorée : ce n’est pas une URL absolue valide.');
+  }
+}
+
+// Repli lorsque ni l'origine appelante ni SITE_URL ne renseignent la base :
+// l'adresse du site publié, la première déclarée ci-dessus.
+const [BASE_PAR_DEFAUT] = [...SITES.values()];
 
 /**
  * En-têtes CORS pour cette requête. L'origine n'est reflétée que si elle est
@@ -31,7 +68,7 @@ export function enTetesCors(req: Request): Record<string, string> {
     Vary: 'Origin',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   };
-  if (ORIGINES.includes(origine)) {
+  if (SITES.has(origine)) {
     entetes['Access-Control-Allow-Origin'] = origine;
   }
   return entetes;
@@ -46,8 +83,9 @@ export function reponsePreflight(req: Request, methodes = 'POST, OPTIONS'): Resp
 }
 
 /**
- * L'origine de la requête, si et seulement si elle figure dans la liste
- * blanche ; sinon `SITE_URL`, l'adresse du site publié.
+ * Base de l'application d'où provient la requête — chemin compris — si et
+ * seulement si son origine figure dans la liste blanche ; sinon celle du site
+ * publié.
  *
  * Sert à construire une URL de retour — typiquement les `success_url` et
  * `cancel_url` d'une session Stripe (P-20). Les en-têtes CORS ne suffisent
@@ -57,10 +95,10 @@ export function reponsePreflight(req: Request, methodes = 'POST, OPTIONS'): Resp
  * Toute valeur issue de `Origin` qui finit dans une redirection doit donc
  * être confrontée à la liste, jamais recopiée telle quelle.
  */
-export function origineValidee(req: Request): string {
+export function baseApplication(req: Request): string {
   const origine = req.headers.get('Origin') ?? '';
-  if (ORIGINES.includes(origine)) {
-    return origine;
-  }
-  return Deno.env.get('SITE_URL') ?? ORIGINES[0] ?? '';
+  // `||` et non `??` : une origine inconnue rend `undefined`, mais SITE_URL
+  // non renseignée rend la chaîne vide — qui n'est pas « nullish » et
+  // passerait donc à travers un `??`, produisant une URL de retour vide.
+  return SITES.get(origine) || SITE_CONFIGURE || BASE_PAR_DEFAUT;
 }

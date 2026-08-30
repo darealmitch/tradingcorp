@@ -57,9 +57,13 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
 
-      # base-href = chemin du site Pages (https://<user>.github.io/tradingcorp/).
+      # base-href = racine : le site est servi sur son propre domaine
+      # (public/CNAME → tradingcorp.fr), et non plus sous le chemin de projet
+      # https://<user>.github.io/tradingcorp/. Ce fichier CNAME voyage dans
+      # l'artefact publié : sans lui, un déploiement effacerait le domaine
+      # personnalisé enregistré dans les réglages du dépôt.
       - name: Build de production
-        run: npx ng build --base-href /tradingcorp/
+        run: npx ng build --base-href /
 
       # GitHub Pages sert 404.html sur toute URL inconnue : en y plaçant
       # l'index, les routes Angular profondes (/parcours, /espace…) fonctionnent.
