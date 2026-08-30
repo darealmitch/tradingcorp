@@ -177,13 +177,13 @@ export class AuthService {
    * Redirige vers Google puis revient sur /auth/callback (flux PKCE).
    *
    * L'URL de retour se construit sur `document.baseURI`, pas sur
-   * `location.origin` : en production le site est publié SOUS un chemin
-   * (`/tradingcorp/` sur GitHub Pages). `location.origin` produisait
-   * `https://darealmitch.github.io/auth/callback` — vérifié, cette adresse
-   * renvoie la page 404 de GitHub et non l'application, le repli SPA ne valant
-   * que sous le chemin du site. `baseURI` porte déjà ce chemin (il vient de la
-   * balise <base href> posée au build), et vaut l'origine seule en
-   * développement, où l'application est servie à la racine.
+   * `location.origin`. Les deux coïncident depuis que le site est servi à la
+   * racine de tradingcorp.fr, mais ils divergeaient quand il vivait sous
+   * `/tradingcorp/` : `location.origin` produisait alors
+   * `https://darealmitch.github.io/auth/callback`, adresse qui renvoyait la
+   * page 404 de GitHub et non l'application. `baseURI` porte le chemin de la
+   * balise <base href> posée au build, quel qu'il soit — la formule reste donc
+   * juste si le site retourne un jour sous un chemin.
    */
   async connexionGoogle(): Promise<ResultatAuth> {
     const { error } = await this.supabase.auth.signInWithOAuth({
