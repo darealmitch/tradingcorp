@@ -125,7 +125,32 @@
       <button class="bouton-fermeture" type="button" (click)="closeVideo()" aria-label="Fermer">
         <app-icone nom="fermer" [taille]="18" />
       </button>
-      @if (video.type === 'embed') {
+      @if (video.type === 'consentement') {
+        <!--
+          Information préalable au dépôt de traceurs par un contenu tiers, comme
+          la CNIL le demande : ce qui sera déposé, par qui, et la possibilité de
+          refuser en fermant simplement cette fenêtre.
+        -->
+        <div class="video-consentement">
+          <h3>Cette vidéo est hébergée par Bunny.net</h3>
+          <p>
+            La lancer chargera le lecteur de Bunny.net, qui enregistrera deux cookies sur ton
+            appareil : tes préférences de lecture (volume, qualité) et le cache des icônes du
+            lecteur. Aucun cookie publicitaire, aucun suivi entre sites.
+          </p>
+          <p class="video-consentement-lien">
+            <a href="https://bunny.net/gdpr/" target="_blank" rel="noopener noreferrer">
+              Politique de confidentialité de Bunny.net
+            </a>
+          </p>
+          <div class="video-consentement-actions">
+            <button class="btn btn-primary" type="button" (click)="accepterLecteurTiers()">
+              Accepter et lancer la vidéo
+            </button>
+            <button class="btn btn-ghost" type="button" (click)="closeVideo()">Refuser</button>
+          </div>
+        </div>
+      } @else if (video.type === 'embed') {
         <iframe
           [src]="video.src"
           title="Vidéo de présentation"
