@@ -24,15 +24,23 @@
 // au moment précis où il venait de payer. D'où cette table, qui associe à
 // chaque origine autorisée la base réelle de l'application.
 //
-// Sur tradingcorp.fr les deux coïncident enfin — le site est servi à la racine
-// de son domaine. La distinction reste néanmoins nécessaire : elle protège de
-// la réapparition du défaut le jour où le site vivrait de nouveau sous un
-// chemin (préproduction, retour sur GitHub Pages).
+// Sur tradingcorp.fr les deux coïncident — le site est servi à la racine de son
+// domaine. Pas sur GitHub Pages, où la même application est publiée en
+// démonstration SOUS le chemin `/tradingcorp/` : cette entrée-là est la raison
+// d'être de la table, et la démonstration serait muette sans elle (ni ticker,
+// ni quiz, ni achat, faute d'autorisation CORS).
 const SITES = new Map<string, string>([
   ['https://tradingcorp.fr', 'https://tradingcorp.fr'],
-  // GitHub redirige www vers l'apex dès que le domaine personnalisé est posé,
-  // mais l'origine www peut porter un appel avant cette redirection.
+  // L'hébergeur redirige www vers l'apex, mais cette origine peut porter un
+  // appel avant que la redirection ne s'applique.
   ['https://www.tradingcorp.fr', 'https://www.tradingcorp.fr'],
+  // Version de démonstration, publiée par le job `demonstration` de la CI.
+  ['https://darealmitch.github.io', 'https://darealmitch.github.io/tradingcorp'],
+  // Développement, hébergé sur Vercel. Un nom à nous plutôt que l'adresse
+  // *.vercel.app : les URL de prévisualisation changent à chaque branche, et
+  // autoriser le suffixe entier reviendrait à ouvrir ces fonctions à tout site
+  // publié sur Vercel, y compris ceux d'inconnus.
+  ['https://dev.tradingcorp.fr', 'https://dev.tradingcorp.fr'],
   // Le développement sert l'application à la racine : origine et base y sont
   // confondues, et n'ont de valeur que sur la machine du développeur.
   ['http://localhost:4200', 'http://localhost:4200'],

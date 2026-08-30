@@ -1,8 +1,22 @@
 name: CI & Déploiement
 
-# Pipeline UNIQUE : vérifie à chaque push/PR, et publie sur GitHub Pages
-# uniquement depuis `main`. Le site publié est TOUJOURS construit à partir du
-# commit courant — aucun dossier de build n'est versionné.
+# Pipeline UNIQUE : vérifie à chaque push/PR, et publie DEUX fois depuis
+# `main`, à partir du même code :
+#
+#   • Cloudflare Pages → https://tradingcorp.fr          le site de production
+#   • GitHub Pages     → …github.io/tradingcorp/         la version de démonstration
+#
+# Une seule branche, un seul code source : rien ne peut diverger entre les deux.
+# Seul le build change — la démonstration vit sous un chemin (`/tradingcorp/`),
+# la production à la racine de son domaine.
+#
+# Le site publié est TOUJOURS construit à partir du commit courant — aucun
+# dossier de build n'est versionné.
+#
+# La publication reste conditionnée à une vérification verte. C'est la raison
+# pour laquelle le déploiement n'est PAS confié à l'intégration Git de
+# Cloudflare, qui publierait à chaque push sans rien attendre : ici, un test
+# rouge empêche la mise en ligne.
 
 on:
   push:
@@ -13,12 +27,10 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # Un seul déploiement à la fois ; deux pushes rapprochés ne se doublent pas.
 concurrency:
-  group: pages
+  group: deploiement
   cancel-in-progress: true
 
 jobs:
@@ -57,24 +69,21 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
 
-      # base-href = racine : le site est servi sur son propre domaine
-      # (public/CNAME → tradingcorp.fr), et non plus sous le chemin de projet
-      # https://<user>.github.io/tradingcorp/. Ce fichier CNAME voyage dans
-      # l'artefact publié : sans lui, un déploiement effacerait le domaine
-      # personnalisé enregistré dans les réglages du dépôt.
+      # base-href = racine : le site est servi à la racine de tradingcorp.fr.
+      # Le repli des routes profondes ne se fait plus en dupliquant l'index en
+      # 404.html — `public/_redirects` l'exprime, et Cloudflare répond 200.
       - name: Build de production
         run: npx ng build --base-href /
 
-      # GitHub Pages sert 404.html sur toute URL inconnue : en y plaçant
-      # l'index, les routes Angular profondes (/parcours, /espace…) fonctionnent.
-      - name: Repli SPA pour les routes profondes
-        run: cp dist/TradingCorp/browser/index.html dist/TradingCorp/browser/404.html
-
-      - name: Préparer l'artefact Pages
+      # Le build voyage jusqu'au job de publication plutôt que d'être refait :
+      # reconstruire, c'est publier autre chose que ce qui vient d'être testé.
+      - name: Conserver le build pour la publication
         if: github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: site
           path: dist/TradingCorp/browser
+          retention-days: 1
 
   # Les Edge Functions vivent hors du projet Angular, dans un autre exécutable :
   # rien ne les compilait jusqu'ici, et une erreur de type n'apparaissait qu'au
@@ -139,11 +148,79 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
+    steps:
+      - name: Récupérer le build vérifié
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+
+      # Deux secrets à poser dans le dépôt (Settings → Secrets → Actions) :
+      #   CLOUDFLARE_API_TOKEN   jeton limité à « Cloudflare Pages : Edit »
+      #   CLOUDFLARE_ACCOUNT_ID  visible dans l'URL du tableau de bord Cloudflare
+      - name: Déployer sur Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=tradingcorp --branch=main
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # VERSION DE DÉMONSTRATION — GitHub Pages
+  #
+  # Même code, autre adresse : elle sert à montrer le projet sans donner
+  # l'adresse commerciale. Trois différences, toutes produites ici et jamais
+  # dans les sources, pour qu'il n'existe qu'une seule version du code :
+  #
+  #   1. `--base-href /tradingcorp/` — GitHub Pages sert sous le nom du dépôt ;
+  #   2. `404.html` — le repli SPA de GitHub Pages, qui ignore `_redirects` ;
+  #   3. un `robots.txt` fermé et pas de `sitemap.xml` — deux sites au contenu
+  #      identique se cannibalisent dans les moteurs de recherche, et c'est
+  #      tradingcorp.fr qui doit ressortir.
+  #
+  # Le build n'est pas réutilisable depuis `verify` : un `base-href` est inscrit
+  # dans les fichiers produits, il faut donc reconstruire.
+  # ───────────────────────────────────────────────────────────────────────────
+  demonstration:
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.publication.outputs.page_url }}
 
     steps:
-      - name: Déployer sur GitHub Pages
-        id: deployment
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Build de démonstration
+        run: npx ng build --base-href /tradingcorp/
+
+      - name: Repli SPA et retrait du référencement
+        run: |
+          cd dist/TradingCorp/browser
+          cp index.html 404.html
+          rm -f sitemap.xml
+          printf '# Version de démonstration — le site indexable est https://tradingcorp.fr\nUser-agent: *\nDisallow: /\n' > robots.txt
+
+      - name: Préparer l'artefact Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/TradingCorp/browser
+
+      - name: Publier sur GitHub Pages
+        id: publication
         uses: actions/deploy-pages@v4

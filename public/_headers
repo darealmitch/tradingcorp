@@ -1,0 +1,63 @@
+# En-têtes HTTP — lus par Cloudflare Pages.
+#
+# GitHub Pages n'en permettait aucun : c'est l'une des deux raisons du
+# déménagement. Un site qui encaisse des paiements et détient des comptes
+# apprenants doit pouvoir dire au navigateur ce qu'il s'autorise.
+
+/*
+  # Le site ne doit jamais être encadré : c'est la parade au clickjacking, où
+  # une page tierce superpose un cadre invisible au-dessus d'un bouton réel.
+  X-Frame-Options: DENY
+
+  # Interdit au navigateur de « deviner » le type d'un fichier servi. Sans lui,
+  # un fichier déposé par un utilisateur et servi en text/plain peut être
+  # réinterprété comme du script.
+  X-Content-Type-Options: nosniff
+
+  # L'adresse complète n'est transmise qu'à notre propre origine ; un site tiers
+  # ne reçoit que le domaine. Évite de fuiter un identifiant de leçon ou un
+  # numéro de certificat dans un Referer.
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Aucune de ces API n'est utilisée. Les refuser explicitement empêche un
+  # script tiers compromis de les réclamer. `payment` peut être rouvert le jour
+  # où le paiement serait intégré dans la page : aujourd'hui, Stripe Checkout
+  # est une redirection vers son propre domaine, rien ne s'exécute ici.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+  # HTTPS obligatoire pendant un an, sous-domaines compris. Volontairement SANS
+  # `preload` : l'inscription sur la liste des navigateurs est très lente à
+  # défaire, et ce domaine est jeune.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Politique de sécurité du contenu — en OBSERVATION pour l'instant.
+  #
+  # `Report-Only` signale les violations dans la console du navigateur sans
+  # rien bloquer. C'est délibéré : une CSP mal calibrée casse silencieusement
+  # un écran — et ici les écrans en question sont ceux d'apprenants qui ont
+  # payé. Elle sera basculée en `Content-Security-Policy` une fois le site
+  # parcouru de bout en bout sans avertissement.
+  #
+  # Les origines listées sont celles réellement appelées, relevées dans le code
+  # et dans la base :
+  #   • supabase.co            — API, Edge Functions, Storage (wss: temps réel)
+  #   • vz-8e333926-6ea.b-cdn.net — les vidéos des 64 chapitres, servies en HLS
+  #                                (hls.js les récupère en XHR, d'où connect-src)
+  #   • iframe.mediadelivery.net  — le lecteur Bunny de la vidéo de présentation
+  #   • res.cloudinary.com     — les images du site
+  #   • api.cloudinary.com     — l'envoi de médias depuis l'administration
+  #
+  # `style-src 'unsafe-inline'` est imposé par Angular, qui pose des styles
+  # calculés directement sur les éléments. `script-src` n'a pas cette
+  # tolérance : le build de production ne contient aucun script en ligne.
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com; font-src 'self'; media-src 'self' blob: https://vz-8e333926-6ea.b-cdn.net; connect-src 'self' https://swzjzwymzjhdatcobibs.supabase.co wss://swzjzwymzjhdatcobibs.supabase.co https://vz-8e333926-6ea.b-cdn.net https://api.cloudinary.com; frame-src https://iframe.mediadelivery.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+
+# Les fichiers versionnés par leur empreinte ne changent jamais de contenu :
+# ils peuvent être gardés un an. index.html, lui, garde le cache par défaut,
+# sans quoi un déploiement mettrait des heures à atteindre les visiteurs.
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable

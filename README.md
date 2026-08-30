@@ -147,18 +147,55 @@ c'est elle qui s'ouvre à l'achat et se révoque au remboursement.
 `main` déclenche la CI (`.github/workflows/ci.yml`) : lint, format, tests, build,
 cohérence des migrations, `deno check` sur les Edge Functions, puis un job qui
 **reconstruit une base éphémère depuis les seules migrations** et y joue les tests
-d'autorisation. Publication sur GitHub Pages après une CI verte.
+d'autorisation. Publication sur **Cloudflare Pages** après une CI verte.
 
-Le site est servi sur **https://tradingcorp.fr**, à la racine du domaine — d'où
-`--base-href /` dans la CI. Le domaine tient à deux fichiers versionnés :
-`public/CNAME`, qui voyage dans l'artefact publié (sans lui, un déploiement
-efface le domaine personnalisé enregistré côté dépôt), et `public/robots.txt`,
-qui référence `public/sitemap.xml`.
+Le déploiement n'est **pas** confié à l'intégration Git de Cloudflare, qui
+publierait à chaque push sans rien attendre : le job `deploy` récupère le build
+déjà vérifié et l'envoie avec `wrangler`. Un test rouge empêche la mise en
+ligne. Deux secrets le font marcher : `CLOUDFLARE_API_TOKEN` (portée « Cloudflare
+Pages : Edit ») et `CLOUDFLARE_ACCOUNT_ID`.
 
-Trois endroits nomment ce domaine et doivent changer ensemble le jour où il
-change : `public/CNAME`, `supabase/functions/_partages/cors.ts` (liste blanche
-CORS et bases de retour Stripe) et la configuration des URL de Supabase Auth,
-qui vit hors du dépôt.
+### Les trois environnements
+
+| Adresse                              | Hébergeur        | Rôle           | Publié par                   |
+| ------------------------------------ | ---------------- | -------------- | ---------------------------- |
+| `tradingcorp.fr`                     | Cloudflare Pages | **production** | job `deploy`, après CI verte |
+| `darealmitch.github.io/tradingcorp/` | GitHub Pages     | démonstration  | job `demonstration`          |
+| `dev.tradingcorp.fr`                 | Vercel           | développement  | intégration Git de Vercel    |
+
+Une seule branche et un seul code source : les différences sont produites au
+build, jamais dans les sources. La démonstration est construite avec
+`--base-href /tradingcorp/`, reçoit un `404.html` en guise de repli SPA et un
+`robots.txt` fermé — deux sites au contenu identique se cannibalisent dans les
+moteurs, et c'est `tradingcorp.fr` qui doit ressortir.
+
+Vercel ne lit ni `_headers` ni `_redirects` : sa configuration vit dans
+`vercel.json`, qui rejoue les mêmes en-têtes et ajoute `X-Robots-Tag: noindex`.
+
+> ⚠️ **Le développement partage la base de production.** Décision assumée tant
+> qu'il n'y a pas de clients : un compte supprimé pendant un test est un compte
+> réellement supprimé, et un achat lancé depuis `dev.` est un vrai paiement.
+> Le jour où des apprenants payants existent, il faut un second projet Supabase
+> — le plan gratuit en autorise deux — avec les migrations et les seeds rejoués
+> dessus.
+
+### Le site de production
+
+Servi sur **https://tradingcorp.fr**, à la racine du domaine — d'où
+`--base-href /`. Deux fichiers de `public/` pilotent l'hébergement :
+
+- `_redirects` — repli SPA `/* /index.html 200`. Le **200** est ce que GitHub
+  Pages ne savait pas faire : ses routes profondes répondaient 404 tout en
+  affichant la bonne page.
+- `_headers` — en-têtes de sécurité (HSTS, `X-Frame-Options`, `Referrer-Policy`)
+  et politique de sécurité du contenu, **en `Report-Only`** tant que le site n'a
+  pas été parcouru de bout en bout sans avertissement. GitHub Pages n'autorisait
+  aucun en-tête personnalisé : c'est l'une des deux raisons du déménagement.
+
+Deux endroits nomment le domaine et doivent changer ensemble le jour où il
+change : `supabase/functions/_partages/cors.ts` (liste blanche CORS et bases de
+retour Stripe) et la configuration des URL de Supabase Auth, hors dépôt. Les
+origines autorisées par la CSP sont listées dans `_headers`.
 
 Une sauvegarde quotidienne de la base tourne dans `sauvegarde-bdd.yml`.
 

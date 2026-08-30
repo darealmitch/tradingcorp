@@ -1,0 +1,14 @@
+# Repli SPA — lu par Cloudflare Pages.
+#
+# Angular route côté navigateur : /parcours, /espace, /cgv n'existent pas comme
+# fichiers. Toute adresse inconnue doit donc servir index.html, à charge pour le
+# routeur de reconnaître le chemin.
+#
+# Le 200 final est ce que GitHub Pages ne savait pas faire : là-bas, le repli
+# passait par 404.html et les routes profondes répondaient « 404 » tout en
+# affichant la bonne page. Les navigateurs s'en accommodent, pas les robots
+# d'indexation ni les sondes de supervision.
+#
+# Cette règle est volontairement la dernière : les fichiers réellement présents
+# (JS, CSS, images, robots.txt) sont servis avant qu'elle ne s'applique.
+/*    /index.html   200
