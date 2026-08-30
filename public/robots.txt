@@ -1,0 +1,12 @@
+# Espace apprenant et parcours de formation : réservés aux comptes inscrits,
+# rien à indexer. Le reste du site est public et destiné à l'être.
+User-agent: *
+Allow: /
+Disallow: /espace
+Disallow: /parcours
+Disallow: /auth/
+Disallow: /nouveau-mot-de-passe
+Disallow: /date-de-naissance
+Disallow: /facteurs
+
+Sitemap: https://tradingcorp.fr/sitemap.xml
