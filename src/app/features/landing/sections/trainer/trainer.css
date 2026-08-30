@@ -519,3 +519,47 @@
     animation: none;
   }
 }
+
+/* ===== Consentement au lecteur vidéo tiers ===== */
+/*
+ * Affiché à la place de l'iframe tant que le visiteur n'a pas accepté. Reprend
+ * la surface de la lightbox pour que l'enchaînement paraisse naturel : ce
+ * n'est pas un obstacle ajouté, c'est la première étape de la lecture.
+ */
+.video-consentement {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 46ch;
+  margin: 0 auto;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--text);
+  text-align: left;
+}
+
+.video-consentement h3 {
+  font-family: var(--font-title);
+  font-size: 1.15rem;
+}
+
+.video-consentement p {
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.video-consentement-lien a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.video-consentement-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
