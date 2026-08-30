@@ -141,6 +141,12 @@ jobs:
             -in sauvegarde.dump -out sauvegarde.dump.enc -pass env:CLE
           ls -lh sauvegarde.dump.enc
 
+      # `apikey` accompagne `Authorization` : Supabase a deux générations de
+      # clés privilégiées — l'ancienne `service_role` (un JWT) et la nouvelle
+      # `sb_secret_…`. La première se contente du porteur, la seconde attend
+      # aussi cet en-tête. Les envoyer tous les deux fait fonctionner le dépôt
+      # quelle que soit la clé posée dans le secret, dont le nom est resté
+      # `SUPABASE_SERVICE_ROLE_KEY` par continuité.
       - name: Déposer dans le Storage Supabase
         env:
           URL: ${{ secrets.SUPABASE_URL }}
@@ -155,6 +161,7 @@ jobs:
           CODE=$(curl -s -o reponse.txt -w '%{http_code}' \
             -X POST "$URL/storage/v1/object/sauvegardes/$NOM" \
             -H "Authorization: Bearer $CLE_SERVICE" \
+            -H "apikey: $CLE_SERVICE" \
             -H "Content-Type: application/octet-stream" \
             --data-binary @sauvegarde.dump.enc)
 
@@ -182,6 +189,7 @@ jobs:
 
           curl -s -X POST "$URL/storage/v1/object/list/sauvegardes" \
             -H "Authorization: Bearer $CLE_SERVICE" \
+            -H "apikey: $CLE_SERVICE" \
             -H "Content-Type: application/json" \
             -d '{"prefix":"","limit":1000,"sortBy":{"column":"created_at","order":"asc"}}' \
             > liste.json
@@ -192,6 +200,7 @@ jobs:
           if [ "$NOMBRE" -gt 0 ]; then
             curl -s -X DELETE "$URL/storage/v1/object/sauvegardes" \
               -H "Authorization: Bearer $CLE_SERVICE" \
+              -H "apikey: $CLE_SERVICE" \
               -H "Content-Type: application/json" \
               -d "{\"prefixes\": $(cat a_purger.json)}" > /dev/null
             echo "$NOMBRE sauvegarde(s) purgée(s)."
