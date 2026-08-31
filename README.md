@@ -192,10 +192,12 @@ Servi sur **https://tradingcorp.fr**, à la racine du domaine — d'où
   pas été parcouru de bout en bout sans avertissement. GitHub Pages n'autorisait
   aucun en-tête personnalisé : c'est l'une des deux raisons du déménagement.
 
-Deux endroits nomment le domaine et doivent changer ensemble le jour où il
+Trois endroits nomment le domaine et doivent changer ensemble le jour où il
 change : `supabase/functions/_partages/cors.ts` (liste blanche CORS et bases de
-retour Stripe) et la configuration des URL de Supabase Auth, hors dépôt. Les
-origines autorisées par la CSP sont listées dans `_headers`.
+retour Stripe), `src/app/core/seo/url-canonique.service.ts` (l'adresse de
+référence déclarée aux moteurs de recherche) et la configuration des URL de
+Supabase Auth, hors dépôt. Les origines autorisées par la CSP sont listées dans
+`_headers`.
 
 Une sauvegarde quotidienne de la base tourne dans `sauvegarde-bdd.yml`.
 

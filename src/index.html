@@ -32,6 +32,17 @@
     />
     <meta property="og:image" content="https://tradingcorp.fr/tradingCorp.png" />
     <meta name="twitter:card" content="summary_large_image" />
+    <!--
+      Adresse de référence pour les moteurs de recherche. Le site est servi à
+      trois adresses (le domaine, l'adresse technique de l'hébergeur et la
+      démonstration) : sans cette balise, la valeur d'un seul site se
+      répartirait entre trois doublons.
+
+      Celle-ci est figée sur l'accueil, pour les robots qui n'exécutent pas le
+      JavaScript et ne verront jamais que ce fichier. Pour les autres,
+      UrlCanoniqueService la réécrit à chaque navigation.
+    -->
+    <link rel="canonical" href="https://tradingcorp.fr/" />
     <link rel="icon" type="image/png" href="tradingCorp.png" />
     <link rel="apple-touch-icon" href="tradingCorp.png" />
   </head>
