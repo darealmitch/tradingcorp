@@ -152,11 +152,12 @@ jobs:
   # fichiers pour 12 lignes enregistrées.
   #
   # ⚠️ `functions deploy` protège par défaut chaque fonction derrière un JWT.
-  # Trois d'entre elles doivent rester PUBLIQUES, et les déployer sans le dire
+  # Quatre d'entre elles doivent rester PUBLIQUES, et les déployer sans le dire
   # les rendrait muettes : le ticker de l'accueil, le webhook que Stripe appelle
-  # sans jeton, et la vérification d'un diplôme par un employeur qui n'a pas de
-  # compte. La liste ci-dessous est donc à tenir à jour — c'est elle qui décide,
-  # et le défaut (protégé) est le bon défaut.
+  # sans jeton, la vérification d'un diplôme par un employeur qui n'a pas de
+  # compte, et la collecte d'incidents — dont l'intérêt est justement de
+  # recueillir les erreurs des visiteurs non connectés. La liste ci-dessous est
+  # à tenir à jour : c'est elle qui décide, et le défaut (protégé) est le bon.
   # ───────────────────────────────────────────────────────────────────────────
   fonctions-deploiement:
     needs: [verify, fonctions]
@@ -191,7 +192,7 @@ jobs:
 
           # Appelées sans jeton : Stripe ne s'authentifie que par sa signature,
           # et les deux autres servent des visiteurs anonymes.
-          PUBLIQUES="cmc-proxy stripe-webhook verifier-certificat"
+          PUBLIQUES="cmc-proxy stripe-webhook verifier-certificat incident"
 
           for dossier in supabase/functions/*/; do
             nom=$(basename "$dossier")
