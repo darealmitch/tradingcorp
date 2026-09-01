@@ -41,7 +41,7 @@ src/app/
   features/    Écrans, un dossier par route
 supabase/
   migrations/  Le schéma, versionné — source de vérité
-  functions/   9 Edge Functions (Deno)
+  functions/   10 Edge Functions (Deno)
   tests/       Tests d'autorisation pgTAP
 ```
 
@@ -109,6 +109,7 @@ Après toute migration touchant tables ou fonctions : `npm run types:generate`.
 | `cloudinary-signature` | Signe un envoi de média (staff)                    | requis                     |
 | `cmc-proxy`            | Relais CoinMarketCap du ticker                     | **non**                    |
 | `verifier-certificat`  | Vérification publique d'un diplôme                 | **non**                    |
+| `incident`             | Collecte les erreurs survenues dans le navigateur  | **non**                    |
 
 **La CI les publie** à chaque passage vert sur `main` (job `fonctions-deploiement`,
 après le `deno check`). Le déploiement à la main n'est plus la voie normale :
@@ -116,8 +117,8 @@ c'était le seul endroit où le dépôt pouvait s'écarter du déployé sans que
 ne le signale.
 
 ⚠️ `functions deploy` protège par défaut chaque fonction derrière un JWT. Les
-trois qui doivent rester publiques — `cmc-proxy`, `stripe-webhook`,
-`verifier-certificat` — sont énumérées dans le workflow, et c'est cette liste
+quatre qui doivent rester publiques — `cmc-proxy`, `stripe-webhook`,
+`verifier-certificat`, `incident` — sont énumérées dans le workflow, et c'est cette liste
 qui décide. Le défaut (protégé) est le bon défaut : une fonction ajoutée sans
 qu'on y pense naît fermée.
 

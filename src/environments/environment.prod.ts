@@ -11,8 +11,9 @@ export const environment = {
   // en URL d'EMBED pour le lecteur iframe (cf. environment.ts).
   bunnyPresentationVideoUrl:
     'https://iframe.mediadelivery.net/embed/708929/ac46adc6-1c4c-4e1e-9681-1808d07461fd',
-  // Collecteur d'erreurs distant (P-14). Vide = rien n'est transmis, et
-  // l'application se comporte exactement comme avant. Renseigner l'URL d'un
-  // collecteur acceptant du JSON en POST suffit à ouvrir la supervision.
-  supervisionUrl: '',
+  // Collecteur d'erreurs (P-14). Les incidents du NAVIGATEUR partent vers
+  // l'Edge Function `incident`, qui les range dans la table du même nom : ni
+  // sous-traitant supplémentaire à déclarer au registre, ni transfert hors UE.
+  // Les erreurs serveur, elles, sont déjà dans les logs Supabase.
+  supervisionUrl: 'https://swzjzwymzjhdatcobibs.supabase.co/functions/v1/incident',
 };
