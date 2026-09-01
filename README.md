@@ -41,7 +41,7 @@ src/app/
   features/    Écrans, un dossier par route
 supabase/
   migrations/  Le schéma, versionné — source de vérité
-  functions/   7 Edge Functions (Deno)
+  functions/   9 Edge Functions (Deno)
   tests/       Tests d'autorisation pgTAP
 ```
 
@@ -98,20 +98,33 @@ Après toute migration touchant tables ou fonctions : `npm run types:generate`.
 
 ## Edge Functions
 
-| Fonction              | Rôle                                               | JWT                        |
-| --------------------- | -------------------------------------------------- | -------------------------- |
-| `checkout`            | Ouvre une session Stripe Checkout                  | requis                     |
-| `stripe-webhook`      | Enregistre paiements, inscriptions, remboursements | **non** (signature Stripe) |
-| `corriger-quiz`       | Corrige un quiz côté serveur                       | requis                     |
-| `creer-compte`        | Création de compte par un administrateur           | requis                     |
-| `supprimer-compte`    | Suppression de compte                              | requis                     |
-| `generer-certificat`  | Produit le diplôme PDF                             | requis                     |
-| `cmc-proxy`           | Relais CoinMarketCap du ticker                     | **non**                    |
-| `verifier-certificat` | Vérification publique d'un diplôme                 | **non**                    |
+| Fonction               | Rôle                                               | JWT                        |
+| ---------------------- | -------------------------------------------------- | -------------------------- |
+| `checkout`             | Ouvre une session Stripe Checkout                  | requis                     |
+| `stripe-webhook`       | Enregistre paiements, inscriptions, remboursements | **non** (signature Stripe) |
+| `corriger-quiz`        | Corrige un quiz côté serveur                       | requis                     |
+| `creer-compte`         | Création de compte par un administrateur           | requis                     |
+| `supprimer-compte`     | Suppression de compte                              | requis                     |
+| `generer-certificat`   | Produit le diplôme PDF                             | requis                     |
+| `cloudinary-signature` | Signe un envoi de média (staff)                    | requis                     |
+| `cmc-proxy`            | Relais CoinMarketCap du ticker                     | **non**                    |
+| `verifier-certificat`  | Vérification publique d'un diplôme                 | **non**                    |
+
+**La CI les publie** à chaque passage vert sur `main` (job `fonctions-deploiement`,
+après le `deno check`). Le déploiement à la main n'est plus la voie normale :
+c'était le seul endroit où le dépôt pouvait s'écarter du déployé sans que rien
+ne le signale.
+
+⚠️ `functions deploy` protège par défaut chaque fonction derrière un JWT. Les
+trois qui doivent rester publiques — `cmc-proxy`, `stripe-webhook`,
+`verifier-certificat` — sont énumérées dans le workflow, et c'est cette liste
+qui décide. Le défaut (protégé) est le bon défaut : une fonction ajoutée sans
+qu'on y pense naît fermée.
 
 ```bash
-supabase functions deploy <nom>
-supabase functions deploy cmc-proxy --no-verify-jwt          # idem verifier-certificat, stripe-webhook
+# Publication manuelle, en dépannage seulement :
+supabase functions deploy <nom> --project-ref swzjzwymzjhdatcobibs
+supabase functions deploy cmc-proxy --project-ref swzjzwymzjhdatcobibs --no-verify-jwt
 ```
 
 Secrets attendus : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CMC_API_KEY`,
