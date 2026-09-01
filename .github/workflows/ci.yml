@@ -122,9 +122,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Version épinglée, et non `latest` : avec `latest`, l'action interroge
+      # l'API GitHub pour résoudre le numéro, et se fait rejeter par le quota
+      # partagé des runners — « rate limit exceeded ». L'échec est
+      # intermittent, donc pire qu'un échec franc : la CI casse au hasard, sur
+      # un commit qui n'y est pour rien. Épingler supprime l'appel et rend le
+      # passage reproductible.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.116.0
 
       # Le dépôt ne versionne pas de config.toml : on repart de la
       # configuration par défaut du CLI, sans rien figer.
@@ -166,9 +172,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Version épinglée, et non `latest` : avec `latest`, l'action interroge
+      # l'API GitHub pour résoudre le numéro, et se fait rejeter par le quota
+      # partagé des runners — « rate limit exceeded ». L'échec est
+      # intermittent, donc pire qu'un échec franc : la CI casse au hasard, sur
+      # un commit qui n'y est pour rien. Épingler supprime l'appel et rend le
+      # passage reproductible.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.116.0
 
       - name: Publier les Edge Functions
         run: |
