@@ -137,6 +137,65 @@ jobs:
       - name: Tests d'autorisation
         run: supabase test db
 
+  # ───────────────────────────────────────────────────────────────────────────
+  # EDGE FUNCTIONS
+  #
+  # Elles étaient publiées à la main, une par une. C'était le seul endroit du
+  # projet où le dépôt pouvait s'écarter du déployé SANS QUE RIEN NE LE SIGNALE
+  # — le défaut exact qui avait fait diverger les migrations de la base, 29
+  # fichiers pour 12 lignes enregistrées.
+  #
+  # ⚠️ `functions deploy` protège par défaut chaque fonction derrière un JWT.
+  # Trois d'entre elles doivent rester PUBLIQUES, et les déployer sans le dire
+  # les rendrait muettes : le ticker de l'accueil, le webhook que Stripe appelle
+  # sans jeton, et la vérification d'un diplôme par un employeur qui n'a pas de
+  # compte. La liste ci-dessous est donc à tenir à jour — c'est elle qui décide,
+  # et le défaut (protégé) est le bon défaut.
+  # ───────────────────────────────────────────────────────────────────────────
+  fonctions-deploiement:
+    needs: [verify, fonctions]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    env:
+      REF: swzjzwymzjhdatcobibs
+      # Jeton personnel Supabase (Account → Access Tokens), posé dans les
+      # secrets du dépôt.
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Publier les Edge Functions
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || {
+            echo "::error::secret SUPABASE_ACCESS_TOKEN absent — publication impossible"
+            exit 1
+          }
+
+          # Appelées sans jeton : Stripe ne s'authentifie que par sa signature,
+          # et les deux autres servent des visiteurs anonymes.
+          PUBLIQUES="cmc-proxy stripe-webhook verifier-certificat"
+
+          for dossier in supabase/functions/*/; do
+            nom=$(basename "$dossier")
+            # `_partages` n'est pas une fonction : c'est le code commun que
+            # chaque fonction importe.
+            [ "$nom" = "_partages" ] && continue
+
+            if echo "$PUBLIQUES" | grep -qw "$nom"; then
+              echo "→ $nom (publique)"
+              supabase functions deploy "$nom" --project-ref "$REF" --no-verify-jwt
+            else
+              echo "→ $nom (jeton requis)"
+              supabase functions deploy "$nom" --project-ref "$REF"
+            fi
+          done
+
   deploy:
     # Publication seulement après une vérification verte, et seulement sur main.
     #
