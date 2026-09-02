@@ -11,15 +11,35 @@ parce qu'un gabarit se relit en revue de code, pas dans un formulaire.
 Supabase → **Authentication** → **Emails** → onglet **Templates**, puis pour
 chacun : coller le HTML, et remplacer l'objet.
 
-| Fichier                              | Gabarit Supabase     | Objet                         |
-| ------------------------------------ | -------------------- | ----------------------------- |
-| `reinitialisation-mot-de-passe.html` | Reset Password       | Réinitialise ton mot de passe |
-| `invitation.html`                    | Invite user          | Ton accès à TradingCorp       |
-| `confirmation-inscription.html`      | Confirm signup       | Confirme ton adresse e-mail   |
-| `changement-email.html`              | Change Email Address | Confirme ta nouvelle adresse  |
+| Fichier                              | Gabarit Supabase     | Objet                        |
+| ------------------------------------ | -------------------- | ---------------------------- |
+| `reinitialisation-mot-de-passe.html` | Reset Password       | Ton code de réinitialisation |
+| `invitation.html`                    | Invite user          | Ton accès à TradingCorp      |
+| `confirmation-inscription.html`      | Confirm signup       | Confirme ton adresse e-mail  |
+| `changement-email.html`              | Change Email Address | Confirme ta nouvelle adresse |
 
 `Magic Link` et `Reauthentication` ne sont pas fournis : l'application n'utilise
 ni la connexion par lien, ni la ré-authentification.
+
+## Un code, pas un lien, pour la réinitialisation
+
+Ce gabarit-là ne contient **aucun lien** : il affiche `{{ .Token }}`, le code à
+six chiffres, que la personne recopie sur le site.
+
+La raison est technique et sans échappatoire. Le client Supabase est configuré
+en `pkce` — nécessaire au retour de la connexion Google. Dans ce mode, la
+demande de réinitialisation dépose un secret dans le navigateur, et le lien reçu
+**ne vaut que dans ce navigateur**. Faire sa demande sur un ordinateur puis
+ouvrir l'e-mail sur son téléphone — le geste le plus banal qui soit — menait à
+un lien mort, sans explication utile.
+
+Deux bénéfices en prime : l'e-mail ne porte plus l'adresse technique du projet
+Supabase, que le destinataire voyait au survol du lien ; et le réglage
+`redirect_to` n'entre plus en jeu, donc plus de risque d'atterrir sur la racine
+du site au lieu de la page attendue.
+
+Les trois autres gabarits gardent leur lien : ils ouvrent une session, pas une
+réinitialisation, et le parcours se déroule dans le navigateur qui reçoit.
 
 ## Ce qui structure ces gabarits
 
