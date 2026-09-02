@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   NonNullableFormBuilder,
@@ -31,6 +31,13 @@ export class NouveauMdp {
 
   protected readonly chargement = signal(false);
   protected readonly erreur = signal<string | null>(null);
+
+  /**
+   * Vrai quand la venue ici est imposée (mot de passe temporaire posé par un
+   * administrateur), faux quand elle vient d'une réinitialisation demandée.
+   * Ne change que le texte : le geste et sa vérification sont les mêmes.
+   */
+  protected readonly changementImpose = computed(() => !!this.auth.profil()?.doit_changer_mdp);
 
   protected readonly form = this.fb.group(
     {

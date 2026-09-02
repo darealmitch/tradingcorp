@@ -1,0 +1,54 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <app-logo class="auth-logo" [taille]="26" />
+
+    @if (envoye()) {
+      <h1 class="auth-title">Regarde tes e-mails</h1>
+      <p class="auth-sub">
+        Si un compte existe avec cette adresse, tu viens de recevoir un lien pour choisir un nouveau
+        mot de passe. Il est valable une heure et ne peut servir qu'une fois.
+      </p>
+      <p class="auth-sub">
+        Rien reçu au bout de quelques minutes ? Pense à regarder tes courriers indésirables.
+      </p>
+      <p class="auth-alt"><a routerLink="/connexion">Retour à la connexion</a></p>
+    } @else {
+      <h1 class="auth-title">Mot de passe oublié</h1>
+      <p class="auth-sub">
+        Indique l'adresse de ton compte : nous t'enverrons un lien pour en choisir un nouveau.
+      </p>
+
+      @if (erreur(); as message) {
+        <p class="form-erreur" role="alert">{{ message }}</p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
+        <div class="champ">
+          <label for="email"
+            >Adresse e-mail<span class="champ-requis" aria-hidden="true">*</span></label
+          >
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            required
+            [attr.aria-invalid]="invalide() || null"
+            autocomplete="email"
+            placeholder="toi@exemple.fr"
+          />
+          @if (invalide()) {
+            <p class="champ-erreur" role="alert">Adresse e-mail invalide.</p>
+          }
+        </div>
+
+        <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
+          {{ chargement() ? 'Envoi…' : 'Recevoir le lien' }}
+        </button>
+      </form>
+
+      <p class="auth-alt">
+        Tu t'en souviens finalement ? <a routerLink="/connexion">Se connecter</a>
+      </p>
+    }
+  </div>
+</div>

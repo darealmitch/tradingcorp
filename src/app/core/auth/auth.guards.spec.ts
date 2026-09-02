@@ -250,13 +250,19 @@ describe('Gardes de route', () => {
       expect(resultat).toBe(true);
     });
 
-    it("renvoie vers l'espace quand aucun blocage n'est actif", async () => {
+    // Ce garde renvoyait vers l'espace quand `doit_changer_mdp` était faux.
+    // C'était juste tant que la page ne servait qu'aux comptes créés par un
+    // administrateur ; ça rendait la RÉINITIALISATION impossible, puisqu'une
+    // personne qui a simplement oublié son mot de passe ne porte pas ce
+    // drapeau. Elle suivait son lien, arrivait ici, et se faisait renvoyer à
+    // l'espace sans avoir rien pu changer.
+    it('ouvre la page à une session sans blocage — le cas de la réinitialisation', async () => {
       const resultat = await executer(
         changementMdpRequisGuard,
         authDouble({ connecte: true, profil: unProfil({ doit_changer_mdp: false }) }),
         '/nouveau-mot-de-passe',
       );
-      expect(cible(resultat)).toBe('/espace');
+      expect(resultat).toBe(true);
     });
 
     it('renvoie un visiteur vers la connexion', async () => {

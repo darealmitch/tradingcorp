@@ -2,10 +2,20 @@
   <div class="auth-card">
     <app-logo class="auth-logo" [taille]="26" />
     <h1 class="auth-title">Choisis ton mot de passe</h1>
-    <p class="auth-sub">
-      Ton compte a été créé avec un mot de passe temporaire. Définis ton mot de passe personnel pour
-      accéder à ton espace.
-    </p>
+    <!-- Deux parcours mènent ici : un compte créé par un administrateur, qui
+         arrive avec un mot de passe temporaire, et une réinitialisation
+         demandée par quelqu'un qui a oublié le sien. Leur annoncer à tous un
+         « mot de passe temporaire » en laisserait la moitié perplexe. -->
+    @if (changementImpose()) {
+      <p class="auth-sub">
+        Ton compte a été créé avec un mot de passe temporaire. Définis ton mot de passe personnel
+        pour accéder à ton espace.
+      </p>
+    } @else {
+      <p class="auth-sub">
+        Définis ton nouveau mot de passe. Tu seras connecté à ton espace juste après.
+      </p>
+    }
 
     @if (erreur(); as message) {
       <p class="form-erreur" role="alert">{{ message }}</p>
