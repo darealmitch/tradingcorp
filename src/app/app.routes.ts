@@ -36,6 +36,15 @@ export const routes: Routes = [
     title: 'TradingCorp — Créer un compte',
   },
   {
+    path: 'mot-de-passe-oublie',
+    loadComponent: () =>
+      import('./features/auth/mot-de-passe-oublie/mot-de-passe-oublie').then(
+        (m) => m.MotDePasseOublie,
+      ),
+    canActivate: [inviteGuard],
+    title: 'TradingCorp — Mot de passe oublié',
+  },
+  {
     path: 'auth/callback',
     loadComponent: () => import('./features/auth/callback/callback').then((m) => m.Callback),
     title: 'TradingCorp — Connexion en cours',

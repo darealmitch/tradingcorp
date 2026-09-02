@@ -228,6 +228,31 @@ export class AuthService {
   }
 
   /**
+   * Demande l'envoi d'un lien de réinitialisation.
+   *
+   * Jusqu'ici, un apprenant qui oubliait son mot de passe n'avait AUCUNE issue :
+   * pas de lien sur la page de connexion, aucun appel à cette méthode dans le
+   * code. Il fallait écrire à l'éditeur, qui réinitialisait à la main depuis le
+   * tableau de bord — pour un accès acheté 997 €.
+   *
+   * Le lien ramène sur `/nouveau-mot-de-passe`, la page qui servait déjà aux
+   * comptes créés par un administrateur : c'est le même geste, et il n'y a
+   * aucune raison d'en écrire un second.
+   *
+   * `document.baseURI` plutôt que `location.origin`, pour la raison exposée
+   * dans `connexionGoogle`.
+   */
+  async demanderReinitialisation(email: string): Promise<ResultatAuth> {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${document.baseURI}nouveau-mot-de-passe`,
+    });
+    if (error) {
+      return { ok: false, erreur: this.messageErreur(error) };
+    }
+    return { ok: true };
+  }
+
+  /**
    * Renseigne la date de naissance absente d'un profil, une seule fois.
    *
    * Sert les comptes nés d'une connexion Google : Google ne transmet ni date de

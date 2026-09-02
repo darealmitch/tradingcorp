@@ -71,6 +71,8 @@ function clientDouble(options: Options = {}) {
         signInWithOAuth: (params: unknown) => tracer('signInWithOAuth', params, { error: erreur }),
         signOut: () => tracer('signOut', undefined, { error: null }),
         updateUser: (params: unknown) => tracer('updateUser', params, { error: erreur }),
+        resetPasswordForEmail: (email: unknown, options: unknown) =>
+          tracer('resetPasswordForEmail', { email, options }, { error: erreur }),
       },
       from(table: string) {
         appels.push({ nom: `from:${table}` });
@@ -234,6 +236,39 @@ describe('AuthService', () => {
       expect((await service.connexion('a@b.fr', 'x')).erreur).toBe(
         'Une erreur est survenue. Réessaie.',
       );
+    });
+  });
+
+  describe('demanderReinitialisation', () => {
+    it('adresse la demande au serveur avec le retour vers la page de définition', async () => {
+      const { service, double } = await creerService({ session: null });
+
+      const resultat = await service.demanderReinitialisation('  Ada@Exemple.fr  ');
+
+      expect(resultat.ok).toBe(true);
+      const appel = double.appels.find((a) => a.nom === 'resetPasswordForEmail');
+      const params = appel?.params as { email: string; options: { redirectTo: string } };
+      // L'espace de trop est une faute de frappe courante au clavier mobile ;
+      // transmis tel quel, il ne correspond à aucun compte et la personne ne
+      // reçoit rien, sans jamais savoir pourquoi.
+      expect(params.email).toBe('Ada@Exemple.fr');
+      // Le retour doit mener à la page qui définit le mot de passe. Une adresse
+      // fausse ici produit un e-mail impeccable dont le lien ne mène nulle part.
+      expect(params.options.redirectTo).toContain('nouveau-mot-de-passe');
+    });
+
+    it("remonte l'échec du serveur plutôt que de le taire", async () => {
+      // Le succès est annoncé de la même façon qu'un compte existe ou non — ne
+      // pas renseigner qui est client. Mais une panne d'ENVOI, elle, doit se
+      // voir : sinon l'écran promet un e-mail que personne n'a expédié.
+      const { service } = await creerService({
+        session: null,
+        erreur: { message: 'SMTP indisponible' },
+      });
+
+      const resultat = await service.demanderReinitialisation('ada@exemple.fr');
+
+      expect(resultat.ok).toBe(false);
     });
   });
 
