@@ -1,10 +1,8 @@
 <!doctype html>
 <html lang="fr">
   <body style="margin: 0; padding: 0; background: #f7f8fc">
-    <!-- Préheader : première ligne visible dans la liste des messages, avant
-         même l'ouverture. Masquée dans le corps du message. -->
     <div style="display: none; max-height: 0; overflow: hidden; opacity: 0">
-      Choisis un nouveau mot de passe pour ton compte TradingCorp.
+      Ton code pour choisir un nouveau mot de passe TradingCorp.
     </div>
 
     <table
@@ -32,8 +30,6 @@
               overflow: hidden;
             "
           >
-            <!-- En-tête SOMBRE : le logo est dessiné en dégradé clair, il
-                 disparaîtrait sur fond blanc. -->
             <tr>
               <td align="center" style="background: #05060b; padding: 28px 24px">
                 <img
@@ -56,35 +52,41 @@
                     font-weight: 700;
                   "
                 >
-                  Réinitialise ton mot de passe
+                  Ton code de réinitialisation
                 </h1>
                 <p style="margin: 0 0 14px 0; font-size: 15px; line-height: 1.65; color: #0e111c">
-                  Tu as demandé à changer le mot de passe de ton compte TradingCorp. Clique sur le
-                  bouton ci-dessous pour en choisir un nouveau.
-                </p>
-                <p style="margin: 0 0 14px 0; font-size: 15px; line-height: 1.65; color: #0e111c">
-                  Ce lien n'est valable qu'une heure, et ne peut servir qu'une fois.
+                  Tu as demandé à changer le mot de passe de ton compte TradingCorp. Recopie le code
+                  ci-dessous dans la page restée ouverte.
                 </p>
               </td>
             </tr>
 
+            <!-- Le code, et rien d'autre. Pas de lien : le client est en PKCE,
+                 un lien ne vaudrait que dans le navigateur d'où vient la
+                 demande — inutilisable dès qu'on lit ses e-mails sur un autre
+                 appareil. Un code se recopie de n'importe où. -->
             <tr>
-              <td align="center" style="padding: 12px 32px 28px 32px">
+              <td align="center" style="padding: 14px 32px 6px 32px">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                   <tr>
-                    <td align="center" style="background: #5b46e0; border-radius: 10px">
-                      <a
-                        href="{{ .ConfirmationURL }}"
+                    <td
+                      align="center"
+                      style="
+                        background: #f2f0ff;
+                        border: 1px solid #d9d3ff;
+                        border-radius: 12px;
+                        padding: 20px 34px;
+                      "
+                    >
+                      <span
                         style="
-                          display: inline-block;
-                          padding: 14px 30px;
-                          font-family: Helvetica, Arial, sans-serif;
-                          font-size: 16px;
-                          font-weight: 600;
-                          color: #ffffff;
-                          text-decoration: none;
+                          font-family: 'Courier New', Courier, monospace;
+                          font-size: 34px;
+                          letter-spacing: 9px;
+                          font-weight: 700;
+                          color: #3d2fb8;
                         "
-                        >Choisir un nouveau mot de passe</a
+                        >{{ .Token }}</span
                       >
                     </td>
                   </tr>
@@ -92,25 +94,18 @@
               </td>
             </tr>
 
-            <!-- Repli : tous les clients n'affichent pas les boutons, et
-                 certains lecteurs les suppriment. Le lien doit rester
-                 atteignable en texte. -->
             <tr>
               <td
+                align="center"
                 style="
-                  padding: 0 32px 28px 32px;
+                  padding: 14px 32px 30px 32px;
                   font-family: Helvetica, Arial, sans-serif;
                   font-size: 13px;
                   line-height: 1.6;
                   color: #5a6480;
                 "
               >
-                <p style="margin: 0 0 6px 0">
-                  Si le bouton ne fonctionne pas, copie cette adresse dans ton navigateur :
-                </p>
-                <p style="margin: 0; word-break: break-all">
-                  <a href="{{ .ConfirmationURL }}" style="color: #5b46e0">{{ .ConfirmationURL }}</a>
-                </p>
+                Ce code est valable une heure et ne peut servir qu'une fois.
               </td>
             </tr>
 
@@ -127,7 +122,8 @@
               >
                 <p style="margin: 0">
                   Tu n'as rien demandé ? Ignore ce message : ton mot de passe reste inchangé, et
-                  personne n'a accédé à ton compte.
+                  personne n'a accédé à ton compte. Ne communique ce code à personne — aucun membre
+                  de TradingCorp ne te le demandera.
                 </p>
                 <p style="margin: 10px 0 0 0">
                   TradingCorp —

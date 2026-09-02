@@ -2,27 +2,17 @@
   <div class="auth-card">
     <app-logo class="auth-logo" [taille]="26" />
 
-    @if (envoye()) {
-      <h1 class="auth-title">Regarde tes e-mails</h1>
-      <p class="auth-sub">
-        Si un compte existe avec cette adresse, tu viens de recevoir un lien pour choisir un nouveau
-        mot de passe. Il est valable une heure et ne peut servir qu'une fois.
-      </p>
-      <p class="auth-sub">
-        Rien reçu au bout de quelques minutes ? Pense à regarder tes courriers indésirables.
-      </p>
-      <p class="auth-alt"><a routerLink="/connexion">Retour à la connexion</a></p>
-    } @else {
+    @if (erreur(); as message) {
+      <p class="form-erreur" role="alert">{{ message }}</p>
+    }
+
+    @if (etape() === 'demande') {
       <h1 class="auth-title">Mot de passe oublié</h1>
       <p class="auth-sub">
-        Indique l'adresse de ton compte : nous t'enverrons un lien pour en choisir un nouveau.
+        Indique l'adresse de ton compte : nous t'enverrons un code à six chiffres.
       </p>
 
-      @if (erreur(); as message) {
-        <p class="form-erreur" role="alert">{{ message }}</p>
-      }
-
-      <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
+      <form [formGroup]="formEmail" (ngSubmit)="demander()" novalidate>
         <div class="champ">
           <label for="email"
             >Adresse e-mail<span class="champ-requis" aria-hidden="true">*</span></label
@@ -32,22 +22,95 @@
             type="email"
             formControlName="email"
             required
-            [attr.aria-invalid]="invalide() || null"
+            [attr.aria-invalid]="emailInvalide() || null"
             autocomplete="email"
             placeholder="toi@exemple.fr"
           />
-          @if (invalide()) {
+          @if (emailInvalide()) {
             <p class="champ-erreur" role="alert">Adresse e-mail invalide.</p>
           }
         </div>
 
         <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
-          {{ chargement() ? 'Envoi…' : 'Recevoir le lien' }}
+          {{ chargement() ? 'Envoi…' : 'Recevoir un code' }}
         </button>
       </form>
 
       <p class="auth-alt">
         Tu t'en souviens finalement ? <a routerLink="/connexion">Se connecter</a>
+      </p>
+    } @else {
+      <h1 class="auth-title">Saisis ton code</h1>
+      <p class="auth-sub">
+        Si un compte existe avec cette adresse, un code à six chiffres vient d'y être envoyé. Il est
+        valable une heure. Pense à regarder tes courriers indésirables.
+      </p>
+
+      <form [formGroup]="formCode" (ngSubmit)="valider()" novalidate>
+        <div class="champ">
+          <label for="code">Code reçu<span class="champ-requis" aria-hidden="true">*</span></label>
+          <!-- inputmode numérique : sur mobile, ouvre le pavé de chiffres plutôt
+               que le clavier complet. one-time-code laisse iOS et Android
+               proposer le code directement depuis la notification. -->
+          <input
+            id="code"
+            type="text"
+            formControlName="code"
+            required
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="one-time-code"
+            [attr.aria-invalid]="invalide('code') || null"
+            placeholder="123456"
+          />
+          @if (invalide('code')) {
+            <p class="champ-erreur" role="alert">Six chiffres attendus.</p>
+          }
+        </div>
+
+        <div class="champ">
+          <label for="mdp"
+            >Nouveau mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
+          >
+          <input
+            id="mdp"
+            type="password"
+            formControlName="mdp"
+            required
+            [attr.aria-invalid]="invalide('mdp') || null"
+            autocomplete="new-password"
+            placeholder="8 caractères minimum"
+          />
+          @if (invalide('mdp')) {
+            <p class="champ-erreur" role="alert">8 caractères minimum.</p>
+          }
+        </div>
+
+        <div class="champ">
+          <label for="confirmation"
+            >Confirme le mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
+          >
+          <input
+            id="confirmation"
+            type="password"
+            formControlName="confirmation"
+            required
+            [attr.aria-invalid]="mdpDifferents() || null"
+            autocomplete="new-password"
+          />
+          @if (mdpDifferents()) {
+            <p class="champ-erreur" role="alert">Les deux mots de passe ne correspondent pas.</p>
+          }
+        </div>
+
+        <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
+          {{ chargement() ? 'Validation…' : 'Changer mon mot de passe' }}
+        </button>
+      </form>
+
+      <p class="auth-alt">
+        Adresse erronée ?
+        <a href="#" (click)="recommencer(); $event.preventDefault()">Recommencer</a>
       </p>
     }
   </div>

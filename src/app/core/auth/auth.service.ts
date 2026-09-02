@@ -253,6 +253,38 @@ export class AuthService {
   }
 
   /**
+   * Termine une réinitialisation : vérifie le code reçu par e-mail, puis pose
+   * le nouveau mot de passe.
+   *
+   * POURQUOI UN CODE ET NON UN LIEN. Le client est en `pkce` — nécessaire au
+   * retour de la connexion Google. Dans ce mode, la demande dépose un secret
+   * dans le navigateur, et le lien reçu ne vaut QUE dans ce navigateur-là.
+   * Quelqu'un qui fait sa demande sur son ordinateur puis ouvre l'e-mail sur
+   * son téléphone se heurte à un lien mort, sans comprendre pourquoi. Le code
+   * se recopie : l'appareil qui reçoit l'e-mail n'a plus d'importance.
+   *
+   * Accessoirement, l'e-mail ne porte plus l'adresse technique du projet
+   * Supabase — que le destinataire voyait au survol du lien.
+   *
+   * Les deux appels s'enchaînent ici plutôt que dans l'écran : `verifyOtp`
+   * ouvre une session, et laisser l'appelant décider quoi en faire ferait de
+   * cette session à demi-utile un état à gérer partout.
+   */
+  async reinitialiserMotDePasse(email: string, code: string, mdp: string): Promise<ResultatAuth> {
+    const { error } = await this.supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: code.trim(),
+      type: 'recovery',
+    });
+    if (error) {
+      return { ok: false, erreur: this.messageErreur(error) };
+    }
+    // Le code n'a fait qu'ouvrir la session : sans cette seconde étape, la
+    // personne serait connectée avec le mot de passe qu'elle a justement oublié.
+    return this.definirNouveauMotDePasse(mdp);
+  }
+
+  /**
    * Renseigne la date de naissance absente d'un profil, une seule fois.
    *
    * Sert les comptes nés d'une connexion Google : Google ne transmet ni date de
@@ -327,6 +359,16 @@ export class AuthService {
     }
     if (brut.includes('password should be')) {
       return 'Le mot de passe doit contenir au moins 8 caractères.';
+    }
+    // Code de réinitialisation faux, déjà utilisé ou périmé. Supabase répond
+    // « Token has expired or is invalid » : formulé tel quel, l'utilisateur ne
+    // sait pas s'il doit ressaisir ou tout recommencer.
+    if (
+      brut.includes('token has expired') ||
+      brut.includes('otp') ||
+      brut.includes('invalid token')
+    ) {
+      return 'Code incorrect ou expiré. Demande un nouveau code.';
     }
     if (brut.includes('rate limit') || brut.includes('too many')) {
       return 'Trop de tentatives. Réessaie dans quelques minutes.';
