@@ -8,7 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "types:generate": "supabase gen types typescript --project-id swzjzwymzjhdatcobibs --schema public > src/app/core/supabase/database.types.ts"
+    "types:generate": "supabase gen types typescript --project-id swzjzwymzjhdatcobibs --schema public > src/app/core/supabase/database.types.ts",
+    "gabarits:verifier": "node scripts/gabarits-emails.mjs",
+    "gabarits:publier": "node scripts/gabarits-emails.mjs --publier"
   },
   "private": true,
   "packageManager": "npm@11.6.2",
