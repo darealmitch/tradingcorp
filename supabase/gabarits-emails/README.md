@@ -18,6 +18,28 @@ chacun : coller le HTML, et remplacer l'objet.
 | `confirmation-inscription.html`      | Confirm signup       | Confirme ton adresse e-mail  |
 | `changement-email.html`              | Change Email Address | Confirme ta nouvelle adresse |
 
+## Sans copier-coller
+
+Le collage manuel a déjà produit ce qu'il produit toujours : le 3 septembre
+2026, la console servait encore un gabarit de réinitialisation périmé — celui
+avec un lien — pendant que le dépôt portait la version à code, et les quatre
+objets étaient restés à l'anglais d'origine.
+
+```bash
+export SUPABASE_ACCESS_TOKEN="sbp_…"   # https://supabase.com/dashboard/account/tokens
+npm run gabarits:verifier              # compare, ne modifie rien
+npm run gabarits:publier               # aligne la console sur le dépôt
+```
+
+La vérification sort en code 1 dès qu'un objet ou un corps diverge : elle peut
+donc servir de garde-fou en CI, à condition d'y poser le jeton en secret. La
+publication n'envoie que les huit champs concernés — le reste de la
+configuration Auth, fournisseurs et SMTP compris, n'est pas touché — puis relit
+le résultat, l'API ignorant en silence un nom de champ inconnu.
+
+L'en-tête de commentaire de chaque fichier, lui, est retiré avant l'envoi :
+c'est une note interne, elle n'a pas à voyager jusque chez les destinataires.
+
 `Magic Link` et `Reauthentication` ne sont pas fournis : l'application n'utilise
 ni la connexion par lien, ni la ré-authentification.
 
