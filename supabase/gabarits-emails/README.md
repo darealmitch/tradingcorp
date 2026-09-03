@@ -43,11 +43,17 @@ réinitialisation, et le parcours se déroule dans le navigateur qui reçoit.
 
 ## Ce qui structure ces gabarits
 
-**Un en-tête sombre.** Le logo est dessiné en dégradé clair — « TRADING » y est
-d'un gris presque blanc. Sur un fond blanc, la moitié du logo disparaît. Le
-bandeau `#05060b` reprend la couleur du site et le rend lisible, sans imposer un
-message entièrement sombre : beaucoup de messageries rendent mal les fonds
-foncés, et certaines les inversent.
+**Un en-tête blanc, sous une bande d'accent.** Le premier jet posait le logo
+sur un bandeau `#05060b`, pour le raisonnement suivant : « TRADING » est dessiné
+en dégradé gris-vers-blanc, il s'effacerait sur fond clair. Le raisonnement
+était juste, la prémisse fausse — `tradingCorp.png` **porte son propre fond
+blanc opaque** : aucun pixel transparent sur 374 715, les quatre coins à
+`#ffffff`. Le bandeau sombre n'entourait donc pas le logo, il entourait un
+grand rectangle blanc. L'en-tête est passé en blanc, ce que le logo attend, et
+la couleur de marque tient dans une bande de 4 px au-dessus.
+
+Si un jour le logo est détouré, le bandeau sombre redevient possible — mais
+c'est le fichier qu'il faut corriger d'abord, pas le gabarit.
 
 **Des tables et des styles en ligne.** Ce n'est pas de la nostalgie : les
 clients de messagerie ignorent les feuilles de style externes, et plusieurs

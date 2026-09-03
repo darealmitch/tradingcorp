@@ -1,4 +1,8 @@
 <!doctype html>
+<!-- Supabase → Authentication → Emails → onglet « Reset Password ».
+     L'objet est un champ SÉPARÉ du corps, juste au-dessus. Sans lui,
+     le message part avec l'objet anglais par défaut de Supabase.
+     Objet : Ton code de réinitialisation -->
 <html lang="fr">
   <body style="margin: 0; padding: 0; background: #f7f8fc">
     <div style="display: none; max-height: 0; overflow: hidden; opacity: 0">
@@ -30,13 +34,31 @@
               overflow: hidden;
             "
           >
+            <!-- Bande d'accent : la seule couleur de marque en haut du message.
+                 Pas de bandeau sombre — le logo est un PNG à fond blanc OPAQUE
+                 (aucun pixel transparent) : un fond foncé ne le met pas en
+                 valeur, il l'encadre d'un grand rectangle blanc. -->
             <tr>
-              <td align="center" style="background: #05060b; padding: 28px 24px">
+              <td
+                bgcolor="#5b46e0"
+                height="4"
+                style="height: 4px; line-height: 4px; font-size: 0; background: #5b46e0"
+              >
+                &nbsp;
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                align="center"
+                bgcolor="#ffffff"
+                style="background: #ffffff; padding: 24px 24px 14px 24px"
+              >
                 <img
                   src="https://tradingcorp.fr/tradingCorp.png"
                   alt="TradingCorp"
-                  width="200"
-                  style="display: block; border: 0; width: 200px; max-width: 60%; height: auto"
+                  width="220"
+                  style="display: block; border: 0; width: 220px; max-width: 72%; height: auto"
                 />
               </td>
             </tr>
