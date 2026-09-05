@@ -8,7 +8,7 @@ import { Trainer } from './sections/trainer/trainer';
 import { Curriculum } from './sections/curriculum/curriculum';
 import { Transition } from './sections/transition/transition';
 import { Particles } from '../../shared/particles';
-import { BarreAchat } from './barre-achat/barre-achat';
+import { BarreAchat } from '../../shared/ui/barre-achat';
 
 @Component({
   selector: 'app-landing',
