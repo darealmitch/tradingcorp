@@ -22,6 +22,28 @@
     }
 
     <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
+      @if (dateNaissanceRequise()) {
+        <div class="champ">
+          <label for="dateNaissance"
+            >Date de naissance<span class="champ-requis" aria-hidden="true">*</span></label
+          >
+          <input
+            id="dateNaissance"
+            type="date"
+            formControlName="dateNaissance"
+            required
+            [min]="minNaissance"
+            [max]="maxNaissance"
+            [attr.aria-invalid]="invalide('dateNaissance') || null"
+            autocomplete="bday"
+          />
+          <p class="champ-aide">
+            La formation s'adresse à des personnes majeures : cette information est demandée une
+            seule fois.
+          </p>
+        </div>
+      }
+
       <div class="champ">
         <label for="mdp"
           >Nouveau mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
