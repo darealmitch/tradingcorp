@@ -89,18 +89,7 @@ const MILESTONES: Milestone[] = [
  *  - `embed`   : lecteur Bunny Stream en <iframe> (la présentation, hébergée
  *                sur Bunny — trop lourde pour le dépôt, et servie en HLS).
  */
-type VideoOuverte =
-  | { type: 'fichier'; src: string }
-  | { type: 'embed'; src: SafeResourceUrl }
-  /** Étape intermédiaire : demande de consentement avant de charger le lecteur tiers. */
-  | { type: 'consentement' };
-
-/**
- * Consentement au lecteur vidéo tiers (Bunny). Conservé pour ne pas redemander
- * à chaque visite — le RGPD impose de pouvoir prouver le consentement, et le
- * redemander sans cesse le rendrait mécanique donc dénué de valeur.
- */
-const CLE_CONSENTEMENT_LECTEUR = 'tradingcorp.consentement.lecteur-video';
+type VideoOuverte = { type: 'fichier'; src: string } | { type: 'embed'; src: SafeResourceUrl };
 
 /** Retours clients filmés après un entretien téléphonique avec Keryan. */
 const TESTIMONIALS = [
@@ -168,52 +157,20 @@ export class Trainer {
   /**
    * Ouvre la vidéo de présentation (lecteur Bunny en iframe).
    *
-   * Contrairement aux témoignages — de simples fichiers lus par `<video>` —
-   * le lecteur Bunny dépose deux cookies sur le terminal du visiteur
+   * Contrairement aux témoignages — de simples fichiers lus par `<video>` — le
+   * lecteur Bunny dépose deux cookies sur le terminal du visiteur
    * (`plyr--lib-759` pour les préférences de lecture, `cache-sprite-plyr` pour
    * le cache des icônes). La CNIL demande, pour tout contenu multimédia tiers,
-   * de recueillir le consentement AVANT l'activation.
+   * d'informer AVANT l'activation et de recueillir un acte positif.
    *
-   * D'où cette étape : l'iframe n'est pas construite tant que le visiteur n'a
-   * pas accepté. Le reste de la page n'a jamais rien déposé, l'iframe n'étant
-   * rendue qu'après un clic — c'est ce consentement-là qui manquait.
+   * L'information est portée par la note qui accompagne le bouton, lisible
+   * sans rien cliquer (`aria-describedby` la rattache au bouton pour les
+   * lecteurs d'écran). Le clic est donc l'acte positif éclairé, et l'iframe
+   * n'est construite qu'à cet instant : tant que personne ne lance la vidéo,
+   * rien n'est chargé et rien n'est déposé.
    */
   protected openPresentation(event: Event): void {
-    if (this.lecteurTiersAccepte()) {
-      this.ouvrir({ type: 'embed', src: this.presentationEmbed }, event);
-      return;
-    }
-    this.ouvrir({ type: 'consentement' }, event);
-  }
-
-  /** Le visiteur accepte le lecteur tiers : on charge enfin l'iframe. */
-  protected accepterLecteurTiers(): void {
-    this.memoriserConsentement();
-    this.activeVideo.set({ type: 'embed', src: this.presentationEmbed });
-  }
-
-  /**
-   * Consentement mémorisé pour ne pas être redemandé à chaque visite.
-   *
-   * `try/catch` parce qu'un navigateur en navigation privée, ou configuré pour
-   * refuser le stockage, fait lever l'accès plutôt que de rendre `null`. Dans
-   * ce cas on redemande simplement à chaque fois — jamais on ne suppose un
-   * accord qu'on n'a pas pu lire.
-   */
-  private lecteurTiersAccepte(): boolean {
-    try {
-      return localStorage.getItem(CLE_CONSENTEMENT_LECTEUR) === 'accepte';
-    } catch {
-      return false;
-    }
-  }
-
-  private memoriserConsentement(): void {
-    try {
-      localStorage.setItem(CLE_CONSENTEMENT_LECTEUR, 'accepte');
-    } catch {
-      // Sans stockage, le consentement vaut pour cette lecture seulement.
-    }
+    this.ouvrir({ type: 'embed', src: this.presentationEmbed }, event);
   }
 
   private ouvrir(video: VideoOuverte, event: Event): void {
