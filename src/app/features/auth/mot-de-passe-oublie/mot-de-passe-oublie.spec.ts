@@ -1,91 +1,52 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { signal } from '@angular/core';
 import { MotDePasseOublie } from './mot-de-passe-oublie';
 import { AuthService } from '../../../core/auth/auth.service';
-import { Profil } from '../../../core/auth/profil.model';
-
-function unProfil(surcharge: Partial<Profil> = {}): Profil {
-  return {
-    id_profil: 'p-1',
-    prenom: 'Ada',
-    nom: 'Lovelace',
-    role: 'apprenant',
-    date_naissance: '1990-01-01',
-    doit_changer_mdp: false,
-    est_test: false,
-    est_proprietaire: false,
-    date_creation: '2026-01-01',
-    date_modification: '2026-01-01',
-    ...surcharge,
-  } as Profil;
-}
 
 /**
- * Ce que vérifient ces tests : la date de naissance est réclamée à qui ne l'a
- * pas, jamais aux autres, et toujours AVANT le mot de passe. Les anciens élèves
- * repris de Wix arrivent sans elle — l'export n'en portait aucune — et un
- * compte ne doit pas devenir utilisable sans que la majorité soit établie.
+ * Cet écran ne fait plus qu'une chose : demander l'envoi d'un lien. Il a
+ * longtemps réclamé un code à six chiffres — que le gabarit d'e-mail n'envoie
+ * plus depuis qu'il porte un lien. Ces tests verrouillent l'absence de ce
+ * champ : un écran qui demande un code introuvable est pire que pas d'écran.
  */
-describe('MotDePasseOublie — étape date de naissance', () => {
+describe('MotDePasseOublie', () => {
   let fixture: ComponentFixture<MotDePasseOublie>;
-  let appels: string[];
-  let profil: ReturnType<typeof signal<Profil | null>>;
-
-  function html(): string {
-    return (fixture.nativeElement as HTMLElement).innerHTML;
-  }
+  let demandes: string[];
 
   function champ(id: string): HTMLInputElement | null {
     return (fixture.nativeElement as HTMLElement).querySelector(`#${id}`);
   }
 
-  function saisir(id: string, valeur: string): void {
-    const el = champ(id)!;
-    el.value = valeur;
-    el.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
+  function texte(): string {
+    return (fixture.nativeElement as HTMLElement).textContent ?? '';
   }
 
-  function soumettre(): void {
+  function saisirEtEnvoyer(adresse: string): void {
+    const el = champ('email')!;
+    el.value = adresse;
+    el.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
     (fixture.nativeElement as HTMLElement)
       .querySelector('form')!
       .dispatchEvent(new Event('submit', { cancelable: true }));
     fixture.detectChanges();
   }
 
-  async function monter(profilRendu: Profil | null): Promise<void> {
-    appels = [];
-    profil = signal<Profil | null>(profilRendu);
-
-    const doubleAuth = {
-      profil,
-      demanderReinitialisation: async () => {
-        appels.push('demande');
-        return { ok: true };
-      },
-      verifierCodeReinitialisation: async () => {
-        appels.push('verifierCode');
-        return { ok: true };
-      },
-      definirDateNaissance: async () => {
-        appels.push('definirDateNaissance');
-        return { ok: true };
-      },
-      definirNouveauMotDePasse: async () => {
-        appels.push('definirNouveauMotDePasse');
-        return { ok: true };
-      },
-    };
-
+  async function monter(reponse: { ok: boolean; erreur?: string } = { ok: true }): Promise<void> {
+    demandes = [];
     await TestBed.configureTestingModule({
       imports: [MotDePasseOublie],
       providers: [
-        // La route d'arrivée doit exister : le composant y navigue en fin de
-        // parcours, et un routeur vide rejetait la navigation — une erreur hors
-        // test, invisible en local mais fatale à l'intégration continue.
-        provideRouter([{ path: 'espace', children: [] }]),
-        { provide: AuthService, useValue: doubleAuth },
+        provideRouter([]),
+        {
+          provide: AuthService,
+          useValue: {
+            demanderReinitialisation: async (email: string) => {
+              demandes.push(email);
+              return reponse;
+            },
+          },
+        },
       ],
     }).compileComponents();
 
@@ -95,100 +56,70 @@ describe('MotDePasseOublie — étape date de naissance', () => {
     fixture.detectChanges();
   }
 
-  /** Va jusqu'à l'écran de finalisation : adresse, puis code. */
-  async function allerJusquAuMotDePasse(): Promise<void> {
-    saisir('email', 'ada@exemple.fr');
-    soumettre();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    saisir('code', '123456');
-    soumettre();
-    await fixture.whenStable();
-    fixture.detectChanges();
-  }
-
   afterEach(() => TestBed.resetTestingModule());
 
-  it('ne réclame pas la date à qui la connaît déjà', async () => {
-    await monter(unProfil({ date_naissance: '1990-01-01' }));
-    await allerJusquAuMotDePasse();
+  it('ne demande que l’adresse', async () => {
+    await monter();
 
+    expect(champ('email')).not.toBeNull();
+    // Aucun de ces champs n'a plus lieu d'être ici.
+    expect(champ('code')).toBeNull();
+    expect(champ('mdp')).toBeNull();
     expect(champ('dateNaissance')).toBeNull();
-    expect(champ('mdp')).not.toBeNull();
+    expect(texte()).toContain('un lien');
   });
 
-  it('réclame la date à un apprenant qui ne l’a pas', async () => {
-    // Le cas des anciens élèves migrés depuis Wix.
-    await monter(unProfil({ date_naissance: null }));
-    await allerJusquAuMotDePasse();
-
-    expect(champ('dateNaissance')).not.toBeNull();
-    expect(html()).toContain('personnes majeures');
+  it('ne parle jamais de code à six chiffres', async () => {
+    await monter();
+    expect(texte()).not.toContain('six chiffres');
+    expect(texte()).not.toContain('code');
   });
 
-  it('ne la réclame pas au personnel', async () => {
-    // La règle des dix-huit ans vise les apprenants, pas l'équipe.
-    await monter(unProfil({ role: 'formateur', date_naissance: null }));
-    await allerJusquAuMotDePasse();
-
-    expect(champ('dateNaissance')).toBeNull();
-  });
-
-  it('refuse de finaliser tant que la date manque', async () => {
-    await monter(unProfil({ date_naissance: null }));
-    await allerJusquAuMotDePasse();
-
-    saisir('mdp', 'un-mot-de-passe-long');
-    saisir('confirmation', 'un-mot-de-passe-long');
-    soumettre();
+  it('transmet l’adresse saisie', async () => {
+    await monter();
+    saisirEtEnvoyer('ada@exemple.fr');
     await fixture.whenStable();
 
-    // Ni date, ni mot de passe : la récupération n'est pas finalisée.
-    expect(appels).not.toContain('definirDateNaissance');
-    expect(appels).not.toContain('definirNouveauMotDePasse');
+    expect(demandes).toEqual(['ada@exemple.fr']);
   });
 
-  it('enregistre la date AVANT le mot de passe', async () => {
-    await monter(unProfil({ date_naissance: null }));
-    await allerJusquAuMotDePasse();
-
-    saisir('dateNaissance', '1990-05-04');
-    saisir('mdp', 'un-mot-de-passe-long');
-    saisir('confirmation', 'un-mot-de-passe-long');
-    soumettre();
-    await fixture.whenStable();
-
-    // L'ordre est le fond du sujet : poser l'inverse laisserait un compte
-    // utilisable sans que la majorité ait été établie.
-    expect(appels.indexOf('definirDateNaissance')).toBeGreaterThan(-1);
-    expect(appels.indexOf('definirDateNaissance')).toBeLessThan(
-      appels.indexOf('definirNouveauMotDePasse'),
-    );
-  });
-
-  it('n’appelle pas la date quand elle est déjà connue', async () => {
-    await monter(unProfil({ date_naissance: '1990-01-01' }));
-    await allerJusquAuMotDePasse();
-
-    saisir('mdp', 'un-mot-de-passe-long');
-    saisir('confirmation', 'un-mot-de-passe-long');
-    soumettre();
-    await fixture.whenStable();
-
-    expect(appels).not.toContain('definirDateNaissance');
-    expect(appels).toContain('definirNouveauMotDePasse');
-  });
-
-  it('vérifie le code avant de montrer le mot de passe', async () => {
-    await monter(unProfil());
-    saisir('email', 'ada@exemple.fr');
-    soumettre();
+  it('renvoie vers la boîte mail, sans réclamer quoi que ce soit', async () => {
+    await monter();
+    saisirEtEnvoyer('ada@exemple.fr');
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // À l'étape du code, aucun champ de mot de passe : le code seul d'abord.
-    expect(champ('code')).not.toBeNull();
-    expect(champ('mdp')).toBeNull();
+    expect(texte()).toContain('Regarde ta boîte mail');
+    expect(texte()).toContain('Récupérer mon compte');
+    expect(champ('code')).toBeNull();
+  });
+
+  it('ne révèle pas si l’adresse a un compte', async () => {
+    // Distinguer « adresse inconnue » de « lien envoyé » offrirait la liste des
+    // clients à qui voudrait la deviner.
+    await monter();
+    saisirEtEnvoyer('inconnu@exemple.fr');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(texte()).toContain('Si un compte existe');
+  });
+
+  it('dit la panne d’envoi plutôt que de la taire', async () => {
+    await monter({ ok: false, erreur: 'SMTP indisponible' });
+    saisirEtEnvoyer('ada@exemple.fr');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(texte()).toContain('SMTP indisponible');
+    expect(texte()).not.toContain('Regarde ta boîte mail');
+  });
+
+  it('n’envoie rien sur une adresse invalide', async () => {
+    await monter();
+    saisirEtEnvoyer('pas-une-adresse');
+    await fixture.whenStable();
+
+    expect(demandes).toEqual([]);
   });
 });

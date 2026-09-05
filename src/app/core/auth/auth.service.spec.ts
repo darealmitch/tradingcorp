@@ -249,21 +249,23 @@ describe('AuthService', () => {
   });
 
   describe('demanderReinitialisation', () => {
-    it('adresse la demande au serveur avec le retour vers la page de définition', async () => {
+    it('adresse la demande au serveur, sans retour à négocier', async () => {
       const { service, double } = await creerService({ session: null });
 
       const resultat = await service.demanderReinitialisation('  Ada@Exemple.fr  ');
 
       expect(resultat.ok).toBe(true);
       const appel = double.appels.find((a) => a.nom === 'resetPasswordForEmail');
-      const params = appel?.params as { email: string; options: { redirectTo: string } };
+      const params = appel?.params as { email: string; options?: unknown };
       // L'espace de trop est une faute de frappe courante au clavier mobile ;
       // transmis tel quel, il ne correspond à aucun compte et la personne ne
       // reçoit rien, sans jamais savoir pourquoi.
       expect(params.email).toBe('Ada@Exemple.fr');
-      // Le retour doit mener à la page qui définit le mot de passe. Une adresse
-      // fausse ici produit un e-mail impeccable dont le lien ne mène nulle part.
-      expect(params.options.redirectTo).toContain('nouveau-mot-de-passe');
+      // Aucune option de retour : le gabarit bâtit lui-même le lien vers
+      // `/recuperation`. En passer une ici ferait revivre l'ancien parcours,
+      // celui qui traversait le service d'authentification et retombait sur la
+      // racine du site.
+      expect(params.options).toBeUndefined();
     });
 
     it("remonte l'échec du serveur plutôt que de le taire", async () => {
@@ -278,38 +280,6 @@ describe('AuthService', () => {
       const resultat = await service.demanderReinitialisation('ada@exemple.fr');
 
       expect(resultat.ok).toBe(false);
-    });
-  });
-
-  describe('verifierCodeReinitialisation', () => {
-    it('vérifie le code sans toucher au mot de passe', async () => {
-      const { service, double } = await creerService({ session: SESSION, profil: unProfil() });
-
-      const resultat = await service.verifierCodeReinitialisation('ada@exemple.fr', '123456');
-
-      expect(resultat.ok).toBe(true);
-      expect(double.appels.find((a) => a.nom === 'verifyOtp')?.params).toEqual({
-        email: 'ada@exemple.fr',
-        token: '123456',
-        type: 'recovery',
-      });
-      // Le mot de passe est le geste suivant, jamais celui-ci : entre les deux
-      // s'intercale la date de naissance quand le profil l'ignore.
-      expect(double.appels.some((a) => a.nom === 'updateUser')).toBe(false);
-    });
-
-    it('ne laisse rien passer quand le code est refusé', async () => {
-      const { service, double } = await creerService({
-        session: SESSION,
-        profil: unProfil(),
-        codeInvalide: { message: 'Token has expired or is invalid' },
-      });
-
-      const resultat = await service.verifierCodeReinitialisation('ada@exemple.fr', '000000');
-
-      expect(resultat.ok).toBe(false);
-      expect(resultat.erreur).toContain('Code incorrect ou expiré');
-      expect(double.appels.some((a) => a.nom === 'updateUser')).toBe(false);
     });
   });
 

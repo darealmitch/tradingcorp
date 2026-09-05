@@ -235,59 +235,16 @@ export class AuthService {
    * code. Il fallait écrire à l'éditeur, qui réinitialisait à la main depuis le
    * tableau de bord — pour un accès acheté 997 €.
    *
-   * Le lien ramène sur `/nouveau-mot-de-passe`, la page qui servait déjà aux
-   * comptes créés par un administrateur : c'est le même geste, et il n'y a
-   * aucune raison d'en écrire un second.
-   *
-   * `document.baseURI` plutôt que `location.origin`, pour la raison exposée
-   * dans `connexionGoogle`.
+   * Le gabarit de l'e-mail bâtit lui-même le lien, vers `/recuperation`, à
+   * partir de `{{ .TokenHash }}` : c'est cette page qui ouvre la session puis
+   * mène au choix du mot de passe. Aucun `redirectTo` n'est donc transmis — il
+   * ne servait qu'à l'ancien parcours, celui qui traversait
+   * `…supabase.co/auth/v1/verify` et retombait sur la racine du site.
    */
   async demanderReinitialisation(email: string): Promise<ResultatAuth> {
-    const { error } = await this.supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${document.baseURI}nouveau-mot-de-passe`,
-    });
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email.trim());
     if (error) {
       return { ok: false, erreur: this.messageErreur(error) };
-    }
-    return { ok: true };
-  }
-
-  /**
-   * Termine une réinitialisation : vérifie le code reçu par e-mail, puis pose
-   * le nouveau mot de passe.
-   *
-   * POURQUOI UN CODE ET NON UN LIEN. Le client est en `pkce` — nécessaire au
-   * retour de la connexion Google. Dans ce mode, la demande dépose un secret
-   * dans le navigateur, et le lien reçu ne vaut QUE dans ce navigateur-là.
-   * Quelqu'un qui fait sa demande sur son ordinateur puis ouvre l'e-mail sur
-   * son téléphone se heurte à un lien mort, sans comprendre pourquoi. Le code
-   * se recopie : l'appareil qui reçoit l'e-mail n'a plus d'importance.
-   *
-   * Accessoirement, l'e-mail ne porte plus l'adresse technique du projet
-   * Supabase — que le destinataire voyait au survol du lien.
-   *
-   * La vérification du code est séparée de la définition du mot de passe parce
-   * qu'il faut savoir, entre les deux, si le profil connaît sa date de
-   * naissance — et cela ne se lit qu'une fois la session ouverte. Les anciens
-   * élèves repris de Wix arrivent sans elle : l'export n'en contenait aucune,
-   * et la loi comme la formation supposent un adulte.
-   *
-   * Le profil est chargé depuis l'identifiant que renvoie `verifyOtp`, et non
-   * depuis le signal de session : celui-ci n'est alimenté qu'au prochain
-   * événement d'authentification, donc pas encore ici.
-   */
-  async verifierCodeReinitialisation(email: string, code: string): Promise<ResultatAuth> {
-    const { data, error } = await this.supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: code.trim(),
-      type: 'recovery',
-    });
-    if (error) {
-      return { ok: false, erreur: this.messageErreur(error) };
-    }
-    const identifiant = data?.session?.user.id ?? data?.user?.id;
-    if (identifiant) {
-      await this.chargerProfil(identifiant);
     }
     return { ok: true };
   }

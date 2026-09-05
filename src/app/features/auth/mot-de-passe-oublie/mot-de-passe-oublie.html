@@ -9,7 +9,8 @@
     @if (etape() === 'demande') {
       <h1 class="auth-title">Mot de passe oublié</h1>
       <p class="auth-sub">
-        Indique l'adresse de ton compte : nous t'enverrons un code à six chiffres.
+        Indique l'adresse de ton compte : nous t'enverrons un lien pour choisir un nouveau mot de
+        passe.
       </p>
 
       <form [formGroup]="formEmail" (ngSubmit)="demander()" novalidate>
@@ -32,123 +33,29 @@
         </div>
 
         <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
-          {{ chargement() ? 'Envoi…' : 'Recevoir un code' }}
+          {{ chargement() ? 'Envoi…' : 'Recevoir un lien' }}
         </button>
       </form>
 
       <p class="auth-alt">
         Tu t'en souviens finalement ? <a routerLink="/connexion">Se connecter</a>
       </p>
-    } @else if (etape() === 'code') {
-      <h1 class="auth-title">Saisis ton code</h1>
+    } @else {
+      <h1 class="auth-title">Regarde ta boîte mail</h1>
       <p class="auth-sub">
-        Si un compte existe avec cette adresse, un code à six chiffres vient d'y être envoyé. Il est
-        valable une heure. Pense à regarder tes courriers indésirables.
+        Si un compte existe avec cette adresse, un e-mail vient d'y être envoyé. Clique sur le
+        bouton <strong>« Récupérer mon compte »</strong> qu'il contient : tu choisiras ton nouveau
+        mot de passe sur la page qui s'ouvrira.
       </p>
-
-      <form [formGroup]="formCode" (ngSubmit)="validerCode()" novalidate>
-        <div class="champ">
-          <label for="code">Code reçu<span class="champ-requis" aria-hidden="true">*</span></label>
-          <!-- inputmode numérique : sur mobile, ouvre le pavé de chiffres plutôt
-               que le clavier complet. one-time-code laisse iOS et Android
-               proposer le code directement depuis la notification. -->
-          <input
-            id="code"
-            type="text"
-            formControlName="code"
-            required
-            inputmode="numeric"
-            maxlength="6"
-            autocomplete="one-time-code"
-            [attr.aria-invalid]="codeInvalide() || null"
-            placeholder="123456"
-          />
-          @if (codeInvalide()) {
-            <p class="champ-erreur" role="alert">Six chiffres attendus.</p>
-          }
-        </div>
-
-        <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
-          {{ chargement() ? 'Vérification…' : 'Valider le code' }}
-        </button>
-      </form>
+      <p class="auth-sub">
+        Le lien est valable une heure et ne sert qu'une fois. Pense à regarder tes courriers
+        indésirables.
+      </p>
 
       <p class="auth-alt">
         Adresse erronée ?
         <a href="#" (click)="recommencer(); $event.preventDefault()">Recommencer</a>
       </p>
-    } @else {
-      <h1 class="auth-title">Choisis ton mot de passe</h1>
-      <p class="auth-sub">
-        @if (dateNaissanceRequise()) {
-          Ton compte n'a pas encore de date de naissance : la formation s'adresse à des personnes
-          majeures. Renseigne-la, puis choisis ton nouveau mot de passe.
-        } @else {
-          Dernière étape : choisis le mot de passe avec lequel tu te connecteras.
-        }
-      </p>
-
-      <form [formGroup]="formFinalisation" (ngSubmit)="finaliser()" novalidate>
-        @if (dateNaissanceRequise()) {
-          <div class="champ">
-            <label for="dateNaissance"
-              >Date de naissance<span class="champ-requis" aria-hidden="true">*</span></label
-            >
-            <input
-              id="dateNaissance"
-              type="date"
-              formControlName="dateNaissance"
-              required
-              [min]="minNaissance"
-              [max]="maxNaissance"
-              [attr.aria-invalid]="invalide('dateNaissance') || null"
-              autocomplete="bday"
-            />
-            @if (invalide('dateNaissance')) {
-              <p class="champ-erreur" role="alert">Date de naissance requise.</p>
-            }
-          </div>
-        }
-
-        <div class="champ">
-          <label for="mdp"
-            >Nouveau mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
-          >
-          <input
-            id="mdp"
-            type="password"
-            formControlName="mdp"
-            required
-            [attr.aria-invalid]="invalide('mdp') || null"
-            autocomplete="new-password"
-            placeholder="8 caractères minimum"
-          />
-          @if (invalide('mdp')) {
-            <p class="champ-erreur" role="alert">8 caractères minimum.</p>
-          }
-        </div>
-
-        <div class="champ">
-          <label for="confirmation"
-            >Confirme le mot de passe<span class="champ-requis" aria-hidden="true">*</span></label
-          >
-          <input
-            id="confirmation"
-            type="password"
-            formControlName="confirmation"
-            required
-            [attr.aria-invalid]="mdpDifferents() || null"
-            autocomplete="new-password"
-          />
-          @if (mdpDifferents()) {
-            <p class="champ-erreur" role="alert">Les deux mots de passe ne correspondent pas.</p>
-          }
-        </div>
-
-        <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
-          {{ chargement() ? 'Finalisation…' : 'Terminer' }}
-        </button>
-      </form>
     }
   </div>
 </div>
