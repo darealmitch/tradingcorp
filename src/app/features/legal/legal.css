@@ -11,7 +11,10 @@
 .legal {
   max-width: 62ch;
   margin: 0 auto;
-  padding: 48px 20px 96px;
+  /* Le haut dégage la barre de navigation, fixe et haute de 73 px : sans cela
+     le titre de la page passe derrière elle. Même valeur que les écrans
+     d'authentification, qui traitent déjà ce cas. */
+  padding: 120px 20px 96px;
   color: var(--text);
   line-height: 1.7;
 }
