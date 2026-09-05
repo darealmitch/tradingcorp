@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { Icone } from './icone';
+import { VerrouDefilement } from '../../core/defilement/verrou-defilement';
 
 /** Hauteur au-delà de laquelle le bouton apparaît — environ un écran défilé. */
 const SEUIL_APPARITION = 600;
@@ -101,6 +102,8 @@ const SEUIL_APPARITION = 600;
   `,
 })
 export class RetourHaut {
+  private readonly verrou = inject(VerrouDefilement);
+
   protected readonly visible = signal(false);
 
   constructor() {
@@ -110,6 +113,11 @@ export class RetourHaut {
     // lieu — le composant reste ainsi inoffensif en environnement sans DOM.
     afterNextRender(() => {
       const surDefilement = (): void => {
+        // Page figée derrière le menu mobile : `scrollY` retombe à zéro sans
+        // que rien n'ait bougé, et le bouton disparaîtrait pour rien.
+        if (this.verrou.estVerrouille()) {
+          return;
+        }
         const doitEtreVisible = window.scrollY > SEUIL_APPARITION;
         if (doitEtreVisible !== this.visible()) {
           this.visible.set(doitEtreVisible);

@@ -16,17 +16,15 @@
 }
 
 /*
- * Le flou est abandonné pendant que le menu est ouvert, et ce n'est pas une
- * question de goût : un élément portant `backdrop-filter` devient le référent
- * des descendants en `position: fixed`. Le menu mobile, qui demande `inset: 0`
- * pour couvrir l'écran, se calait alors sur le bandeau — 72 px de haut. Son
- * fond ne masquait plus rien et ses liens se superposaient à la page, illisibles,
- * dès qu'on avait défilé. Le bandeau n'a de toute façon plus rien à flouter
- * quand le menu recouvre tout l'écran.
+ * Menu ouvert, le bandeau s'efface : la surcouche fournit déjà le fond plein
+ * écran, et deux voiles superposés donnaient une bande plus dense en haut.
+ * Ses boutons — bascule de thème, fermeture — restent visibles au-dessus.
  */
-.site-header.is-scrolled.is-open {
+.site-header.is-open {
+  background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  border-color: transparent;
 }
 
 .header-inner {
@@ -148,42 +146,87 @@
     display: flex;
   }
 
+  /* La navigation du bandeau appartient au bureau. Sous ce seuil, c'est la
+     surcouche qui porte les mêmes liens, et `display: none` retire ceux-ci de
+     l'arbre d'accessibilité — sans quoi ils feraient doublon. */
   .header-nav {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    flex-direction: column;
-    justify-content: center;
-    gap: 36px;
-    margin: 0;
-    background: color-mix(in srgb, var(--bg) 96%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s;
+    display: none;
   }
+}
 
-  .is-open .header-nav {
-    opacity: 1;
-    pointer-events: auto;
+/*
+ * ── Surcouche mobile ──────────────────────────────────────────────────────
+ *
+ * Elle vit hors du bandeau, à la racine du composant : aucun ancêtre ne porte
+ * de `backdrop-filter`, de `filter` ni de `transform`, donc rien ne peut la
+ * ramener à la taille d'un parent. `inset: 0` couvre l'écran, toujours, quelle
+ * que soit la position dans la page.
+ *
+ * z-index 48 : au-dessus de la barre d'achat (42), du retour en haut (40) et
+ * du contenu, mais sous le bandeau (50) — dont le bouton de fermeture doit
+ * rester atteignable.
+ */
+.menu-mobile {
+  position: fixed;
+  inset: 0;
+  z-index: 48;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--bg) 96%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  /* Le geste de défilement s'arrête ici et ne se propage pas à la page. */
+  overscroll-behavior: contain;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.25s,
+    visibility 0s linear 0.25s;
+}
+
+@media (max-width: 860px) {
+  .menu-mobile {
+    display: flex;
   }
+}
 
-  .header-nav a:not(.nav-cta),
-  .nav-deconnexion {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    color: var(--text);
-  }
+.menu-mobile.est-ouvert {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.25s,
+    visibility 0s;
+}
 
-  .nav-cta {
-    display: inline-flex;
-    margin-top: 16px;
-  }
+.menu-mobile-liens {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  /* Le contenu défile si la hauteur manque — écran court, clavier ouvert,
+     téléphone en paysage — sans jamais entraîner la page avec lui. */
+  max-height: 100dvh;
+  padding: 88px 24px 40px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 
-  @media (prefers-reduced-motion: reduce) {
-    .header-nav {
-      transition: none;
-    }
+.menu-mobile-liens a:not(.nav-cta),
+.menu-mobile-liens .nav-deconnexion {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.menu-mobile-liens .nav-cta {
+  display: inline-flex;
+  margin-top: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-mobile,
+  .menu-mobile.est-ouvert {
+    transition: none;
   }
 }

@@ -8,24 +8,9 @@
       <app-logo [taille]="19" />
     </a>
 
+    <!-- Navigation du bureau : elle reste en flux dans le bandeau, inchangée. -->
     <nav class="header-nav" aria-label="Navigation principale">
-      @if (!auth.estConnecte()) {
-        <a routerLink="/" fragment="formations" (click)="closeMenu()">Formations</a>
-        <a routerLink="/" fragment="notice" (click)="closeMenu()">Avis</a>
-        <a routerLink="/" fragment="resultats" (click)="closeMenu()">Résultats</a>
-        <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
-        <a routerLink="/facteurs" (click)="closeMenu()">Programme</a>
-        <a class="btn btn-primary nav-cta" routerLink="/inscription" (click)="closeMenu()"
-          >Ouvrir un compte</a
-        >
-      } @else {
-        <a routerLink="/parcours" routerLinkActive="est-actif" (click)="closeMenu()"
-          >Mon parcours</a
-        >
-        <a routerLink="/espace/notifications" (click)="closeMenu()">Notifications</a>
-        <a routerLink="/espace/profil" (click)="closeMenu()">Profil</a>
-        <button class="nav-deconnexion" type="button" (click)="deconnecter()">Déconnexion</button>
-      }
+      <ng-container [ngTemplateOutlet]="liens" />
     </nav>
 
     <button
@@ -55,3 +40,48 @@
     </button>
   </div>
 </header>
+
+<!--
+  Surcouche mobile, posée HORS du bandeau : un ancêtre portant un
+  `backdrop-filter` devient le référent des descendants en `position: fixed`,
+  et le menu se calait alors sur les 72 px du bandeau au lieu de l'écran. Hors
+  du bandeau, plus aucun ancêtre ne peut le contraindre.
+
+  Elle reste montée en permanence : démontée, elle disparaîtrait d'un coup à la
+  fermeture au lieu de s'effacer. `visibility` la retire du parcours de
+  tabulation et de l'arbre d'accessibilité tant qu'elle est close, ce qui évite
+  aussi que ses liens fassent doublon avec ceux du bandeau.
+-->
+<div
+  class="menu-mobile"
+  [class.est-ouvert]="menuOpen()"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu de navigation"
+>
+  <nav class="menu-mobile-liens">
+    <ng-container [ngTemplateOutlet]="liens" />
+  </nav>
+</div>
+
+<!--
+  Une seule source pour les deux emplacements : deux listes recopiées auraient
+  divergé au premier lien ajouté.
+-->
+<ng-template #liens>
+  @if (!auth.estConnecte()) {
+    <a routerLink="/" fragment="formations" (click)="closeMenu()">Formations</a>
+    <a routerLink="/" fragment="notice" (click)="closeMenu()">Avis</a>
+    <a routerLink="/" fragment="resultats" (click)="closeMenu()">Résultats</a>
+    <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
+    <a routerLink="/facteurs" (click)="closeMenu()">Programme</a>
+    <a class="btn btn-primary nav-cta" routerLink="/inscription" (click)="closeMenu()"
+      >Ouvrir un compte</a
+    >
+  } @else {
+    <a routerLink="/parcours" routerLinkActive="est-actif" (click)="closeMenu()">Mon parcours</a>
+    <a routerLink="/espace/notifications" (click)="closeMenu()">Notifications</a>
+    <a routerLink="/espace/profil" (click)="closeMenu()">Profil</a>
+    <button class="nav-deconnexion" type="button" (click)="deconnecter()">Déconnexion</button>
+  }
+</ng-template>
