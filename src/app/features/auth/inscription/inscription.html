@@ -94,10 +94,10 @@
             required
             [attr.aria-invalid]="invalide('mdp') || null"
             autocomplete="new-password"
-            placeholder="8 caractères minimum"
+            placeholder="10 caractères minimum"
           />
           @if (invalide('mdp')) {
-            <p class="champ-erreur" role="alert">8 caractères minimum.</p>
+            <p class="champ-erreur" role="alert">10 caractères minimum.</p>
           }
         </div>
 

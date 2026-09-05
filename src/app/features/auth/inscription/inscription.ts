@@ -34,6 +34,15 @@ function ageMinimum(min: number): (ctrl: AbstractControl) => ValidationErrors | 
   };
 }
 
+/**
+ * Longueur minimale d'un mot de passe. Alignée sur le serveur, qui refuse
+ * en deçà : le front en exigeait huit, l'authentification dix. Une personne
+ * qui en saisissait huit passait la validation, se voyait refuser par le
+ * serveur, et lisait « au moins 8 caractères » — un message qui lui donnait
+ * raison. Impasse silencieuse, sans issue possible.
+ */
+const LONGUEUR_MDP = 10;
+
 @Component({
   selector: 'app-inscription',
   templateUrl: './inscription.html',
@@ -58,7 +67,7 @@ export class Inscription {
       nom: ['', [Validators.required]],
       dateNaissance: ['', [Validators.required, ageMinimum(18)]],
       email: ['', [Validators.required, Validators.email]],
-      mdp: ['', [Validators.required, Validators.minLength(8)]],
+      mdp: ['', [Validators.required, Validators.minLength(LONGUEUR_MDP)]],
       confirmation: ['', [Validators.required]],
       // Acceptation des CGV : `requiredTrue`, et la case n'est jamais
       // pré-cochée. C'est ce qui donne sa base légale au traitement — le

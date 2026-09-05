@@ -17,6 +17,15 @@ function mdpIdentiques(groupe: AbstractControl): ValidationErrors | null {
   return mdp && confirmation && mdp !== confirmation ? { mdpDifferents: true } : null;
 }
 
+/**
+ * Longueur minimale d'un mot de passe. Alignée sur le serveur, qui refuse
+ * en deçà : le front en exigeait huit, l'authentification dix. Une personne
+ * qui en saisissait huit passait la validation, se voyait refuser par le
+ * serveur, et lisait « au moins 8 caractères » — un message qui lui donnait
+ * raison. Impasse silencieuse, sans issue possible.
+ */
+const LONGUEUR_MDP = 10;
+
 @Component({
   selector: 'app-nouveau-mdp',
   templateUrl: './nouveau-mdp.html',
@@ -60,7 +69,7 @@ export class NouveauMdp {
   protected readonly form = this.fb.group(
     {
       dateNaissance: [''],
-      mdp: ['', [Validators.required, Validators.minLength(8)]],
+      mdp: ['', [Validators.required, Validators.minLength(LONGUEUR_MDP)]],
       confirmation: ['', [Validators.required]],
     },
     { validators: mdpIdentiques },
