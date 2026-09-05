@@ -80,7 +80,13 @@ describe('MotDePasseOublie — étape date de naissance', () => {
 
     await TestBed.configureTestingModule({
       imports: [MotDePasseOublie],
-      providers: [provideRouter([]), { provide: AuthService, useValue: doubleAuth }],
+      providers: [
+        // La route d'arrivée doit exister : le composant y navigue en fin de
+        // parcours, et un routeur vide rejetait la navigation — une erreur hors
+        // test, invisible en local mais fatale à l'intégration continue.
+        provideRouter([{ path: 'espace', children: [] }]),
+        { provide: AuthService, useValue: doubleAuth },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MotDePasseOublie);
