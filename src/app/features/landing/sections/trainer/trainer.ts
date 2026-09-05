@@ -78,8 +78,8 @@ const MILESTONES: Milestone[] = [
   },
   {
     step: 'Transmission',
-    title: 'Formateur & cofondateur',
-    desc: '200+ élèves accompagnés, et Trading Corp cofondée pour transmettre cette méthode.',
+    title: 'Formateur & fondateur',
+    desc: '200+ élèves accompagnés, et Trading Corp fondée pour transmettre cette méthode.',
   },
 ];
 
