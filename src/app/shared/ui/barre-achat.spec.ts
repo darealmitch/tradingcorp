@@ -25,6 +25,9 @@ const FORMATION: Formation = {
 describe('BarreAchat', () => {
   let fixture: ComponentFixture<BarreAchat>;
 
+  /** Le seuil vaut une hauteur de fenêtre : on la fixe pour raisonner en clair. */
+  const HAUTEUR_FENETRE = 800;
+
   function defilerA(y: number): void {
     Object.defineProperty(window, 'scrollY', { value: y, writable: true, configurable: true });
     window.dispatchEvent(new Event('scroll'));
@@ -48,6 +51,11 @@ describe('BarreAchat', () => {
       ],
     }).compileComponents();
 
+    Object.defineProperty(window, 'innerHeight', {
+      value: HAUTEUR_FENETRE,
+      writable: true,
+      configurable: true,
+    });
     fixture = TestBed.createComponent(BarreAchat);
     Object.defineProperty(window, 'scrollY', { value: 0, writable: true, configurable: true });
     fixture.detectChanges();
@@ -68,14 +76,43 @@ describe('BarreAchat', () => {
 
   it('paraît une fois le premier écran défilé', async () => {
     await monter([FORMATION]);
-    defilerA(700);
+    defilerA(HAUTEUR_FENETRE + 100);
     expect(estVisible()).toBe(true);
   });
 
-  it('se retire lorsqu’on remonte au-dessus du seuil', async () => {
+  it('se retire lorsqu’on remonte franchement', async () => {
     await monter([FORMATION]);
-    defilerA(700);
-    defilerA(100);
+    defilerA(HAUTEUR_FENETRE + 100);
+    defilerA(0);
+    expect(estVisible()).toBe(false);
+  });
+
+  it('ne paraît pas tant que le premier écran n’est pas passé', async () => {
+    await monter([FORMATION]);
+
+    // Le hero et ses boutons occupent ce premier écran : y superposer la barre
+    // doublait un appel à l'action encore visible.
+    defilerA(HAUTEUR_FENETRE - 50);
+    expect(estVisible()).toBe(false);
+
+    defilerA(HAUTEUR_FENETRE + 1);
+    expect(estVisible()).toBe(true);
+  });
+
+  it('ne clignote pas quand on oscille autour du seuil', async () => {
+    await monter([FORMATION]);
+    defilerA(HAUTEUR_FENETRE + 20);
+    expect(estVisible()).toBe(true);
+
+    // Quatre pixels suffisaient à la faire disparaître ; l'inertie et le rebond
+    // d'iOS traversent ce point sans arrêt.
+    for (const y of [HAUTEUR_FENETRE - 4, HAUTEUR_FENETRE + 4, HAUTEUR_FENETRE - 30]) {
+      defilerA(y);
+      expect(estVisible()).toBe(true);
+    }
+
+    // Elle ne se retire qu'une fois franchement remonté.
+    defilerA(HAUTEUR_FENETRE * 0.5);
     expect(estVisible()).toBe(false);
   });
 
@@ -86,16 +123,16 @@ describe('BarreAchat', () => {
     // le doigt, en même temps que la barre glissait.
     expect(document.body.classList.contains('a-barre-achat')).toBe(true);
 
-    defilerA(700);
+    defilerA(HAUTEUR_FENETRE + 100);
     expect(document.body.classList.contains('a-barre-achat')).toBe(true);
 
-    defilerA(100);
+    defilerA(0);
     expect(document.body.classList.contains('a-barre-achat')).toBe(true);
   });
 
   it('affiche le prix venu de la base, pas une valeur écrite en dur', async () => {
     await monter([FORMATION]);
-    defilerA(700);
+    defilerA(HAUTEUR_FENETRE + 100);
 
     const texte = barre()?.textContent?.replace(/\s/g, ' ') ?? '';
     expect(texte).toContain('997');
@@ -107,7 +144,7 @@ describe('BarreAchat', () => {
     // `chargerFormations` renvoie un tableau vide en cas d'échec de lecture :
     // la barre perd son prix, jamais son appel à l'action.
     await monter([]);
-    defilerA(700);
+    defilerA(HAUTEUR_FENETRE + 100);
 
     expect(estVisible()).toBe(true);
     expect(barre()?.querySelector('a')?.getAttribute('href')).toBe('/inscription');
@@ -116,7 +153,7 @@ describe('BarreAchat', () => {
 
   it('n’arrondit pas un prix à centimes', async () => {
     await monter([{ ...FORMATION, prix_centimes: 99_799 }]);
-    defilerA(700);
+    defilerA(HAUTEUR_FENETRE + 100);
 
     const texte = barre()?.textContent?.replace(/\s/g, ' ') ?? '';
     expect(texte).toContain('997');
@@ -125,7 +162,7 @@ describe('BarreAchat', () => {
 
   it('ignore le défilement pendant que la page est figée', async () => {
     await monter([FORMATION]);
-    defilerA(700);
+    defilerA(HAUTEUR_FENETRE + 100);
     expect(estVisible()).toBe(true);
 
     // Ouvrir le menu mobile fige le corps de page : `scrollY` retombe à zéro
@@ -139,7 +176,7 @@ describe('BarreAchat', () => {
 
   it('nettoie derrière elle à la destruction', async () => {
     await monter([FORMATION]);
-    defilerA(700);
+    defilerA(HAUTEUR_FENETRE + 100);
     fixture.destroy();
 
     // La marge survivrait à la page de vente et décalerait toutes les suivantes.

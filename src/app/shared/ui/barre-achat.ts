@@ -11,10 +11,22 @@ import { CommerceService } from '../../core/commerce/commerce.service';
 import { VerrouDefilement } from '../../core/defilement/verrou-defilement';
 
 /**
- * Hauteur défilée au-delà de laquelle la barre paraît. Le hero mesure environ
- * un écran : à ce stade, ses boutons sont sortis du champ.
+ * La barre paraît quand un écran entier a été laissé derrière soi, et non à une
+ * hauteur fixe : mesuré sur le site, le hero fait 752 px sur un iPhone et
+ * 840 px sur un écran de bureau, ses boutons descendant jusqu'à 622 et 672 px.
+ * Un seuil constant de 600 px la faisait donc surgir alors qu'un appel à
+ * l'action était encore visible — à 22 px près sur mobile, en plein geste.
+ * `innerHeight` dépasse le hero dans les deux cas et s'adapte à l'appareil.
  */
-const SEUIL_APPARITION = 600;
+const seuilApparition = (): number => window.innerHeight;
+
+/**
+ * Elle ne se retire qu'en deçà d'une fraction de ce seuil. Sans cet écart, un
+ * aller-retour de quatre pixels suffisait à la faire clignoter — et le
+ * défilement par inertie, comme le rebond élastique d'iOS, traverse sans cesse
+ * un point unique.
+ */
+const FRACTION_DISPARITION = 0.6;
 
 /**
  * Rappel d'achat posé en bas d'écran sur les pages de vente — l'accueil et
@@ -60,13 +72,13 @@ const SEUIL_APPARITION = 600;
     .barre-achat {
       position: fixed;
       inset: auto 0 0 0;
-      transform: translateY(100%);
+      transform: translateY(14px);
       opacity: 0;
       visibility: hidden;
       transition:
-        transform 0.34s var(--ease-out),
-        opacity 0.24s ease,
-        visibility 0s linear 0.34s;
+        transform 0.32s var(--ease-out),
+        opacity 0.26s ease,
+        visibility 0s linear 0.32s;
       /* Au-dessus du bouton « retour en haut » (40), sous l'en-tête et les
          superpositions du parcours. */
       z-index: 42;
@@ -84,8 +96,8 @@ const SEUIL_APPARITION = 600;
       opacity: 1;
       visibility: visible;
       transition:
-        transform 0.34s var(--ease-out),
-        opacity 0.2s ease,
+        transform 0.32s var(--ease-out),
+        opacity 0.22s ease,
         visibility 0s;
     }
 
@@ -165,8 +177,12 @@ export class BarreAchat {
         if (this.verrou.estVerrouille()) {
           return;
         }
-        const doitParaitre = window.scrollY > SEUIL_APPARITION;
-        if (doitParaitre !== this.visible()) {
+        const y = window.scrollY;
+        const apparition = seuilApparition();
+        const dejaVisible = this.visible();
+        // Deux seuils selon l'état courant : c'est ce qui empêche l'oscillation.
+        const doitParaitre = dejaVisible ? y > apparition * FRACTION_DISPARITION : y > apparition;
+        if (doitParaitre !== dejaVisible) {
           this.visible.set(doitParaitre);
         }
       };
