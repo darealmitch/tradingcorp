@@ -202,6 +202,13 @@ export const routes: Routes = [
         title: 'TradingCorp — Journal',
       },
       {
+        path: 'migration',
+        loadComponent: () =>
+          import('./features/espace/migration/migration').then((m) => m.Migration),
+        canActivate: [roleGuard('admin')],
+        title: 'TradingCorp — Reprise des anciens élèves',
+      },
+      {
         path: 'parametres',
         loadComponent: () =>
           import('./features/espace/parametres/parametres').then((m) => m.Parametres),
