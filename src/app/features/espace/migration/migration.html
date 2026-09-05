@@ -1,91 +1,139 @@
 <header class="page-entete">
   <h1>Reprise des anciens élèves</h1>
   <p class="page-sous-titre">
-    Colle ici l'export <code>participants.csv</code> du programme Wix. Chaque élève retrouvera sa
-    formation et sa progression, et recevra un e-mail pour choisir son mot de passe.
+    Tes élèves de l'ancienne plateforme retrouvent leur formation là où ils l'avaient laissée.
   </p>
 </header>
 
-<section class="carte">
-  <label class="champ" for="colle">
-    <span>Export Wix</span>
-    <textarea
-      id="colle"
-      rows="8"
-      [ngModel]="colle()"
-      (ngModelChange)="colle.set($event)"
-      placeholder="participantId;name;email;joinDate;lastActivity;nStepsCompleted;nStepsAvailable"
-      spellcheck="false"
-    ></textarea>
-  </label>
+@if (lus().length === 0) {
+  <section class="carte">
+    <!-- Dépôt de fichier : l'export arrive de Wix par courrier, il n'y a
+         aucune raison d'en demander le contenu au presse-papiers. -->
+    <div
+      class="depot"
+      [class.est-survole]="survol()"
+      (dragover)="surSurvol($event, true)"
+      (dragleave)="surSurvol($event, false)"
+      (drop)="surDepot($event)"
+    >
+      <p class="depot-titre">Dépose ici le fichier reçu de Wix</p>
+      <p class="depot-aide">
+        Wix te l'envoie par e-mail quand tu exportes les participants du programme. Il s'appelle
+        généralement <code>participants.csv</code>.
+      </p>
+      <label class="btn btn-primary depot-bouton">
+        Choisir le fichier
+        <input type="file" accept=".csv,text/csv" (change)="surChoixFichier($event)" hidden />
+      </label>
+    </div>
 
-  <label class="case">
-    <input
-      type="checkbox"
-      [ngModel]="inclureSansProgression()"
-      (ngModelChange)="inclureSansProgression.set($event)"
-    />
-    <span>
-      Inclure les inscrits <strong>sans aucune étape achevée</strong>. Ils se sont inscrits au
-      programme sans jamais ouvrir de leçon : à toi de juger s'ils comptent comme d'anciens élèves.
-    </span>
-  </label>
+    @if (lectureImpossible()) {
+      <p class="form-erreur" role="alert">
+        Ce fichier n'a pas pu être lu. Vérifie qu'il s'agit bien de l'export des
+        <strong>participants du programme</strong> — celui qui contient leur avancement — et non de
+        la liste de contacts.
+      </p>
+    }
+  </section>
+} @else {
+  <section class="carte">
+    <div class="fichier">
+      <span class="fichier-nom">{{ nomFichier() }}</span>
+      <label class="lien-fichier">
+        Changer de fichier
+        <input type="file" accept=".csv,text/csv" (change)="surChoixFichier($event)" hidden />
+      </label>
+    </div>
 
-  @if (lignes().length > 0) {
     <p class="resume">
-      <strong>{{ retenues().length }}</strong> élève(s) à reprendre,
-      <strong>{{ ecartees().length }}</strong> écarté(s) sur {{ lignes().length }} ligne(s) lues.
+      <strong>{{ selection().length }}</strong> élève(s) sélectionné(s) sur
+      {{ exploitables().length }} trouvé(s).
     </p>
+
+    <div class="filtres">
+      <button class="lien-action" type="button" (click)="choisirCeuxQuiOntAvance()">
+        Ceux qui ont commencé ({{ avecProgression().length }})
+      </button>
+      <button class="lien-action" type="button" (click)="toutChoisir()">Tous</button>
+      <button class="lien-action" type="button" (click)="neRienChoisir()">Aucun</button>
+    </div>
 
     @if (tropNombreux()) {
       <p class="form-erreur" role="alert">
-        {{ retenues().length }} élèves d'un coup, pour un plafond de {{ plafond }} — c'est la limite
-        d'envoi du fournisseur d'e-mails. Procède par lots : colle une partie du fichier, migre,
-        puis reviens une heure plus tard avec la suite.
+        {{ selection().length }} élèves d'un coup, pour un maximum de {{ plafond }}. C'est la limite
+        d'envoi d'e-mails : décoche-en une partie, reprends-les, et reviens dans une heure pour les
+        suivants.
       </p>
     }
-  } @else if (colle().trim().length > 0) {
-    <p class="form-erreur" role="alert">
-      Fichier illisible : il faut la ligne d'en-têtes de Wix, avec au moins les colonnes
-      <code>email</code> et <code>nStepsCompleted</code>.
-    </p>
-  }
 
-  <div class="actions">
-    <button
-      class="btn btn-ghost"
-      type="button"
-      (click)="simuler()"
-      [disabled]="chargement() || retenues().length === 0 || tropNombreux()"
-    >
-      {{ chargement() ? 'Analyse…' : 'Simuler' }}
-    </button>
-    <button
-      class="btn btn-primary"
-      type="button"
-      (click)="migrer()"
-      [disabled]="chargement() || retenues().length === 0 || tropNombreux()"
-    >
-      Migrer et inviter
-    </button>
-  </div>
+    <ul class="eleves">
+      @for (eleve of exploitables(); track eleve.email) {
+        <li class="eleve" [class.est-choisi]="estChoisi(eleve.email)">
+          <label class="eleve-choix">
+            <input
+              type="checkbox"
+              [checked]="estChoisi(eleve.email)"
+              (change)="basculer(eleve.email)"
+            />
+            <span class="eleve-identite">
+              <span class="eleve-nom">{{ intitule(eleve) }}</span>
+              <span class="eleve-email">{{ eleve.email }}</span>
+            </span>
+          </label>
 
-  <p class="note">
-    La simulation n'écrit rien et n'envoie rien : elle dit ce qui serait fait. Fais-la d'abord.
-  </p>
-</section>
-
-@if (ecartees().length > 0) {
-  <section class="carte">
-    <h2>Écartés</h2>
-    <ul class="ecartes">
-      @for (ligne of ecartees(); track ligne.email) {
-        <li>
-          <code>{{ ligne.email || '(vide)' }}</code> — {{ ligne.motif }}
+          <span class="eleve-avancement">
+            @if (eleve.etapes === 0) {
+              <span class="eleve-vide">jamais commencé</span>
+            } @else {
+              <span class="jauge" aria-hidden="true">
+                <span class="jauge-remplie" [style.width.%]="pourcentage(eleve.etapes)"></span>
+              </span>
+              <span class="eleve-chiffres">
+                {{ eleve.etapes }} / {{ etapesProgramme }} leçons ·
+                {{ pourcentage(eleve.etapes) }} %
+              </span>
+            }
+          </span>
         </li>
       }
     </ul>
+
+    <div class="actions">
+      <button
+        class="btn btn-ghost"
+        type="button"
+        (click)="verifier()"
+        [disabled]="chargement() || selection().length === 0 || tropNombreux()"
+      >
+        {{ chargement() ? 'Un instant…' : 'Vérifier sans rien envoyer' }}
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="migrer()"
+        [disabled]="chargement() || selection().length === 0 || tropNombreux()"
+      >
+        Reprendre et inviter
+      </button>
+    </div>
+
+    <p class="note">
+      La vérification ne crée aucun compte et n'envoie aucun e-mail : elle montre ce qui se
+      passerait.
+    </p>
   </section>
+
+  @if (ecartes().length > 0) {
+    <section class="carte">
+      <h2>Lignes ignorées</h2>
+      <p class="note">Ces lignes du fichier ne sont pas exploitables.</p>
+      <ul class="ecartes">
+        @for (ligne of ecartes(); track ligne.email) {
+          <li>{{ ligne.email || 'ligne vide' }} — {{ ligne.motif }}</li>
+        }
+      </ul>
+    </section>
+  }
 }
 
 @if (erreur(); as message) {
@@ -95,45 +143,25 @@
 @if (bilans(); as resultats) {
   <section class="carte">
     <h2>
-      {{ derniereSimulation() ? 'Simulation' : 'Migration effectuée' }} —
-      {{ resultats.length }} élève(s)
+      {{ derniereVerification() ? 'Ce qui se passerait' : 'Reprise effectuée' }}
       @if (enEchec() > 0) {
         <span class="alerte">{{ enEchec() }} en échec</span>
       }
     </h2>
 
-    <div class="tableau-defilant">
-      <table class="tableau">
-        <thead>
-          <tr>
-            <th scope="col">Élève</th>
-            <th scope="col">Compte</th>
-            <th scope="col">Inscription</th>
-            <th scope="col">Leçons</th>
-            <th scope="col">Progression</th>
-            <th scope="col">Reprise à</th>
-            <th scope="col">Invitation</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (bilan of resultats; track bilan.email) {
-            <tr [class.est-en-echec]="bilan.probleme">
-              <td>{{ bilan.email }}</td>
-              <td>{{ libelleCompte(bilan) }}</td>
-              <td>{{ libelleInscription(bilan) }}</td>
-              <td>{{ bilan.lecons_marquees }}</td>
-              <td>{{ bilan.pourcentage }} %</td>
-              <td>{{ bilan.reprise_a }}</td>
-              <td>{{ libelleInvitation(bilan) }}</td>
-            </tr>
-            @if (bilan.probleme) {
-              <tr class="est-en-echec">
-                <td colspan="7">{{ bilan.probleme }}</td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
-    </div>
+    <ul class="bilans">
+      @for (bilan of resultats; track bilan.email) {
+        <li [class.est-en-echec]="bilan.probleme">
+          <span class="bilan-email">{{ bilan.email }}</span>
+          <span class="bilan-resume">{{ resume(bilan) }}</span>
+        </li>
+      }
+    </ul>
+
+    @if (derniereVerification()) {
+      <p class="note">
+        Rien n'a été créé ni envoyé. Si ce tableau te convient, lance « Reprendre et inviter ».
+      </p>
+    }
   </section>
 }
