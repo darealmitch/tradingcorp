@@ -266,12 +266,18 @@ export class AuthService {
    * Accessoirement, l'e-mail ne porte plus l'adresse technique du projet
    * Supabase — que le destinataire voyait au survol du lien.
    *
-   * Les deux appels s'enchaînent ici plutôt que dans l'écran : `verifyOtp`
-   * ouvre une session, et laisser l'appelant décider quoi en faire ferait de
-   * cette session à demi-utile un état à gérer partout.
+   * La vérification du code est séparée de la définition du mot de passe parce
+   * qu'il faut savoir, entre les deux, si le profil connaît sa date de
+   * naissance — et cela ne se lit qu'une fois la session ouverte. Les anciens
+   * élèves repris de Wix arrivent sans elle : l'export n'en contenait aucune,
+   * et la loi comme la formation supposent un adulte.
+   *
+   * Le profil est chargé depuis l'identifiant que renvoie `verifyOtp`, et non
+   * depuis le signal de session : celui-ci n'est alimenté qu'au prochain
+   * événement d'authentification, donc pas encore ici.
    */
-  async reinitialiserMotDePasse(email: string, code: string, mdp: string): Promise<ResultatAuth> {
-    const { error } = await this.supabase.auth.verifyOtp({
+  async verifierCodeReinitialisation(email: string, code: string): Promise<ResultatAuth> {
+    const { data, error } = await this.supabase.auth.verifyOtp({
       email: email.trim(),
       token: code.trim(),
       type: 'recovery',
@@ -279,9 +285,11 @@ export class AuthService {
     if (error) {
       return { ok: false, erreur: this.messageErreur(error) };
     }
-    // Le code n'a fait qu'ouvrir la session : sans cette seconde étape, la
-    // personne serait connectée avec le mot de passe qu'elle a justement oublié.
-    return this.definirNouveauMotDePasse(mdp);
+    const identifiant = data?.session?.user.id ?? data?.user?.id;
+    if (identifiant) {
+      await this.chargerProfil(identifiant);
+    }
+    return { ok: true };
   }
 
   /**
