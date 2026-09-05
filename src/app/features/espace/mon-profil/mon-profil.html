@@ -136,6 +136,79 @@
 
 <div class="panneau">
   <div class="panneau-tete">
+    <h2 class="panneau-titre">Mot de passe</h2>
+    @if (!mdpOuvert()) {
+      <button class="btn btn-ghost btn-compact" type="button" (click)="ouvrirMdp()">Changer</button>
+    }
+  </div>
+
+  @if (messageMdp(); as message) {
+    <p [class]="mdpChange() ? 'cellule-succes' : 'form-erreur'" role="alert">{{ message }}</p>
+  }
+
+  @if (mdpOuvert()) {
+    <!-- Le mot de passe actuel est redemandé : sans lui, une session oubliée
+         sur un poste partagé permettrait à un tiers de verrouiller le compte. -->
+    <div class="champ">
+      <label for="mdpActuel">Mot de passe actuel</label>
+      <input
+        id="mdpActuel"
+        type="password"
+        autocomplete="current-password"
+        [ngModel]="mdpActuel()"
+        (ngModelChange)="mdpActuel.set($event)"
+      />
+    </div>
+
+    <div class="champ">
+      <label for="mdpNouveau">Nouveau mot de passe</label>
+      <input
+        id="mdpNouveau"
+        type="password"
+        autocomplete="new-password"
+        [placeholder]="longueurMdp + ' caractères minimum'"
+        [ngModel]="mdpNouveau()"
+        (ngModelChange)="mdpNouveau.set($event)"
+      />
+      @if (mdpNouveau().length > 0 && mdpNouveau().length < longueurMdp) {
+        <p class="champ-erreur" role="alert">{{ longueurMdp }} caractères minimum.</p>
+      }
+    </div>
+
+    <div class="champ">
+      <label for="mdpConfirmation">Confirme le nouveau mot de passe</label>
+      <input
+        id="mdpConfirmation"
+        type="password"
+        autocomplete="new-password"
+        [ngModel]="mdpConfirmation()"
+        (ngModelChange)="mdpConfirmation.set($event)"
+      />
+      @if (mdpConfirmation().length > 0 && mdpNouveau() !== mdpConfirmation()) {
+        <p class="champ-erreur" role="alert">Les deux mots de passe ne correspondent pas.</p>
+      }
+    </div>
+
+    <div class="panneau-actions">
+      <button
+        class="btn btn-primary btn-compact"
+        type="button"
+        [disabled]="!mdpValide() || mdpEnCours()"
+        (click)="changerMdp()"
+      >
+        {{ mdpEnCours() ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+      <button class="btn btn-ghost btn-compact" type="button" (click)="fermerMdp()">Annuler</button>
+    </div>
+  } @else {
+    <p class="page-sous">
+      Choisis un nouveau mot de passe sans quitter ton espace. L'actuel te sera demandé.
+    </p>
+  }
+</div>
+
+<div class="panneau">
+  <div class="panneau-tete">
     <h2 class="panneau-titre">Session</h2>
   </div>
   <button class="btn btn-ghost btn-compact" type="button" (click)="deconnecter()">

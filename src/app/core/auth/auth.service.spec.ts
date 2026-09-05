@@ -283,6 +283,37 @@ describe('AuthService', () => {
     });
   });
 
+  describe('changerMotDePasse', () => {
+    it('vérifie l’actuel AVANT de poser le nouveau', async () => {
+      const { service, double } = await creerService({
+        session: { user: { id: 'u-1', email: 'ada@exemple.fr' } },
+        profil: unProfil(),
+      });
+
+      const resultat = await service.changerMotDePasse('ancien-mdp', 'nouveau-mdp-long');
+
+      expect(resultat.ok).toBe(true);
+      const noms = double.appels.map((a) => a.nom);
+      // Sans cette vérification, une session oubliée sur un poste partagé
+      // suffirait à un tiers pour verrouiller le compte de son titulaire.
+      expect(noms.indexOf('signInWithPassword')).toBeLessThan(noms.indexOf('updateUser'));
+    });
+
+    it('ne change rien si l’actuel est faux', async () => {
+      const { service, double } = await creerService({
+        session: { user: { id: 'u-1', email: 'ada@exemple.fr' } },
+        profil: unProfil(),
+        erreur: { message: 'Invalid login credentials' },
+      });
+
+      const resultat = await service.changerMotDePasse('mauvais', 'nouveau-mdp-long');
+
+      expect(resultat.ok).toBe(false);
+      expect(resultat.erreur).toContain('actuel incorrect');
+      expect(double.appels.some((a) => a.nom === 'updateUser')).toBe(false);
+    });
+  });
+
   describe('definirNouveauMotDePasse', () => {
     it('change le mot de passe sans appeler la moindre RPC', async () => {
       // NON-RÉGRESSION P-04. L'ancienne RPC `confirmer_changement_mdp` levait

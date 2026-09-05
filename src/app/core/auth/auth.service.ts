@@ -228,6 +228,33 @@ export class AuthService {
   }
 
   /**
+   * Change le mot de passe d'une personne déjà connectée, après vérification de
+   * l'actuel.
+   *
+   * `updateUser` seul suffirait techniquement : la session ouverte fait foi.
+   * Mais une session oubliée sur un poste partagé permettrait alors à un tiers
+   * de choisir un nouveau mot de passe et de verrouiller le compte de son
+   * titulaire. On redemande donc l'actuel, et on le vérifie par une connexion —
+   * le serveur est seul à savoir s'il est juste.
+   */
+  async changerMotDePasse(actuel: string, nouveau: string): Promise<ResultatAuth> {
+    const email = this.sessionSig()?.user.email;
+    if (!email) {
+      return { ok: false, erreur: 'Session expirée. Reconnecte-toi.' };
+    }
+
+    const { error: erreurActuel } = await this.supabase.auth.signInWithPassword({
+      email,
+      password: actuel,
+    });
+    if (erreurActuel) {
+      return { ok: false, erreur: 'Mot de passe actuel incorrect.' };
+    }
+
+    return this.definirNouveauMotDePasse(nouveau);
+  }
+
+  /**
    * Demande l'envoi d'un lien de réinitialisation.
    *
    * Jusqu'ici, un apprenant qui oubliait son mot de passe n'avait AUCUNE issue :

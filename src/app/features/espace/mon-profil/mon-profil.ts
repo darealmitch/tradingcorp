@@ -17,6 +17,9 @@ import { DonneesPersonnellesService } from '../../../core/donnees-personnelles/d
  * être délibérée. Limitation et opposition restent traitées sur demande, par
  * l'adresse indiquée dans la politique de confidentialité.
  */
+/** Longueur exigée par le serveur d'authentification ; l'annoncer autrement mène à une impasse. */
+const LONGUEUR_MDP = 10;
+
 @Component({
   selector: 'app-mon-profil',
   templateUrl: './mon-profil.html',
@@ -38,6 +41,16 @@ export class MonProfil {
   protected readonly messageIdentite = signal<string | null>(null);
   protected readonly identiteEnregistree = signal(false);
 
+  // ----- Mot de passe -----
+  protected readonly mdpOuvert = signal(false);
+  protected readonly mdpActuel = signal('');
+  protected readonly mdpNouveau = signal('');
+  protected readonly mdpConfirmation = signal('');
+  protected readonly mdpEnCours = signal(false);
+  protected readonly messageMdp = signal<string | null>(null);
+  protected readonly mdpChange = signal(false);
+  protected readonly longueurMdp = LONGUEUR_MDP;
+
   // ----- Export -----
   protected readonly exportEnCours = signal(false);
   protected readonly messageExport = signal<string | null>(null);
@@ -53,6 +66,51 @@ export class MonProfil {
       return '—';
     }
     return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(date));
+  }
+
+  protected ouvrirMdp(): void {
+    this.mdpOuvert.set(true);
+    this.messageMdp.set(null);
+    this.mdpChange.set(false);
+  }
+
+  protected fermerMdp(): void {
+    this.mdpOuvert.set(false);
+    this.mdpActuel.set('');
+    this.mdpNouveau.set('');
+    this.mdpConfirmation.set('');
+    this.messageMdp.set(null);
+  }
+
+  protected mdpValide(): boolean {
+    return (
+      this.mdpActuel().length > 0 &&
+      this.mdpNouveau().length >= LONGUEUR_MDP &&
+      this.mdpNouveau() === this.mdpConfirmation()
+    );
+  }
+
+  protected async changerMdp(): Promise<void> {
+    if (!this.mdpValide()) {
+      return;
+    }
+    this.mdpEnCours.set(true);
+    this.messageMdp.set(null);
+
+    const resultat = await this.auth.changerMotDePasse(this.mdpActuel(), this.mdpNouveau());
+    this.mdpEnCours.set(false);
+
+    if (!resultat.ok) {
+      this.mdpChange.set(false);
+      this.messageMdp.set(resultat.erreur ?? 'Le changement a échoué.');
+      return;
+    }
+    this.mdpChange.set(true);
+    this.messageMdp.set('Mot de passe modifié.');
+    this.mdpActuel.set('');
+    this.mdpNouveau.set('');
+    this.mdpConfirmation.set('');
+    this.mdpOuvert.set(false);
   }
 
   protected ouvrirEdition(): void {
