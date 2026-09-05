@@ -41,7 +41,9 @@ const SEUIL_APPARITION = 600;
     .retour-haut {
       position: fixed;
       right: 24px;
-      bottom: 24px;
+      /* Remonté au-dessus de la barre d'achat quand elle est là ; la variable
+         vaut zéro partout ailleurs. */
+      bottom: calc(24px + var(--hauteur-barre-achat, 0px));
       z-index: 40;
       display: grid;
       place-content: center;
@@ -81,7 +83,7 @@ const SEUIL_APPARITION = 600;
     @media (max-width: 640px) {
       .retour-haut {
         right: 16px;
-        bottom: 16px;
+        bottom: calc(16px + var(--hauteur-barre-achat, 0px));
         width: 42px;
         height: 42px;
       }
