@@ -31,7 +31,10 @@ describe('Migration — lecture de l’export Wix', () => {
       neRienChoisir(): void;
       lectureImpossible(): boolean;
       pourcentage(n: number): number;
-      intitule(e: { nom: string; email: string }): string;
+      identite(email: string): string;
+      corrigerIdentite(email: string, valeur: string): void;
+      suggestionRejetee(e: { nom: string; email: string }): boolean;
+      aMigrer(): { email: string; prenom: string; nom: string }[];
     };
     return c;
   }
@@ -135,7 +138,36 @@ describe('Migration — lecture de l’export Wix', () => {
     expect(etat().lectureImpossible()).toBe(true);
   });
 
-  it('affiche l’adresse quand Wix n’a pas donné de nom', async () => {
+  it('refuse d’importer un identifiant comme identité', async () => {
+    // « nathan.assimba » n'est pas un nom : c'est l'adresse sans le domaine.
+    // Importé tel quel, l'apprenant s'appelait ainsi dans toute l'interface.
+    await etat().lireFichier(fichier(EXPORT_WIX));
+
+    expect(etat().identite('nathan.assimba@icloud.com')).toBe('');
+    expect(etat().identite('mehdaoui.nabil113@gmail.com')).toBe('');
+    const nathan = etat()
+      .exploitables()
+      .find((e) => e.email.startsWith('nathan'))!;
+    expect(etat().suggestionRejetee(nathan)).toBe(true);
+  });
+
+  it('garde et capitalise un nom qui en est un', async () => {
+    await etat().lireFichier(fichier(EXPORT_WIX));
+    expect(etat().identite('jonathanlombi@gmail.com')).toBe('Jonathan Lombi');
+  });
+
+  it('laisse corriger l’identité avant la reprise', async () => {
+    await etat().lireFichier(fichier(EXPORT_WIX));
+    etat().corrigerIdentite('nathan.assimba@icloud.com', 'Nathan Assimba');
+
+    const nathan = etat()
+      .aMigrer()
+      .find((e) => e.email.startsWith('nathan'));
+    expect(nathan?.prenom).toBe('Nathan');
+    expect(nathan?.nom).toBe('Assimba');
+  });
+
+  it('n’invente pas d’identité quand Wix n’en donne aucune', async () => {
     await etat().lireFichier(
       fichier(
         [
@@ -145,8 +177,8 @@ describe('Migration — lecture de l’export Wix', () => {
       ),
     );
 
-    const eleve = etat().exploitables()[0];
-    expect(etat().intitule(eleve)).toBe('sans.nom@exemple.fr');
+    expect(etat().identite('sans.nom@exemple.fr')).toBe('');
+    expect(etat().suggestionRejetee(etat().exploitables()[0])).toBe(false);
   });
 
   it('exprime l’avancement en pourcentage du parcours', async () => {

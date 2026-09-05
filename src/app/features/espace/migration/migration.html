@@ -75,11 +75,27 @@
               [checked]="estChoisi(eleve.email)"
               (change)="basculer(eleve.email)"
             />
-            <span class="eleve-identite">
-              <span class="eleve-nom">{{ intitule(eleve) }}</span>
-              <span class="eleve-email">{{ eleve.email }}</span>
-            </span>
           </label>
+
+          <span class="eleve-identite">
+            <!-- Le nom se corrige ici plutôt qu'après coup dans les profils :
+                 Wix livre souvent un identifiant à la place d'une identité. -->
+            <input
+              class="eleve-nom"
+              type="text"
+              [value]="identite(eleve.email)"
+              (input)="corrigerIdentite(eleve.email, $any($event.target).value)"
+              placeholder="Prénom Nom"
+              [attr.aria-label]="'Nom de ' + eleve.email"
+              autocomplete="off"
+            />
+            <span class="eleve-email">
+              {{ eleve.email }}
+              @if (suggestionRejetee(eleve)) {
+                <span class="eleve-indice">— Wix ne donnait qu'un identifiant</span>
+              }
+            </span>
+          </span>
 
           <span class="eleve-avancement">
             @if (eleve.etapes === 0) {

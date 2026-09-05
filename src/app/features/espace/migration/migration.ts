@@ -44,6 +44,9 @@ export class Migration {
   /** Adresses cochées. Les élèves sans progression ne le sont pas d'office. */
   private readonly choisis = signal<ReadonlySet<string>>(new Set());
 
+  /** Identités corrigées à la main, par adresse. */
+  private readonly identites = signal<ReadonlyMap<string, string>>(new Map());
+
   protected readonly chargement = signal(false);
   protected readonly erreur = signal<string | null>(null);
   protected readonly bilans = signal<BilanMigration[] | null>(null);
@@ -63,6 +66,42 @@ export class Migration {
 
   protected estChoisi(email: string): boolean {
     return this.choisis().has(email);
+  }
+
+  protected identite(email: string): string {
+    return this.identites().get(email) ?? '';
+  }
+
+  protected corrigerIdentite(email: string, valeur: string): void {
+    const suivant = new Map(this.identites());
+    suivant.set(email, valeur);
+    this.identites.set(suivant);
+  }
+
+  /**
+   * Wix range dans son champ `name` ce que la personne a bien voulu y mettre :
+   * parfois un nom, souvent l'identifiant tiré de l'adresse — « nathan.assimba ».
+   * Importé tel quel, il donne des apprenants nommés comme des comptes
+   * techniques. On ne retient donc que ce qui ressemble à une identité, et on
+   * laisse le champ vide — mais modifiable — pour le reste.
+   */
+  private identiteProbable(nom: string, email: string): string {
+    const brut = nom.trim();
+    if (!brut) {
+      return '';
+    }
+    const local = (email.split('@')[0] ?? '').toLowerCase();
+    const identifiant =
+      !brut.includes(' ') &&
+      (brut.includes('.') || /\d/.test(brut) || brut.toLowerCase() === local);
+    if (identifiant) {
+      return '';
+    }
+    // « senku » → « Senku » : Wix ne capitalise rien.
+    return brut
+      .split(/\s+/)
+      .map((mot) => mot.charAt(0).toUpperCase() + mot.slice(1))
+      .join(' ');
   }
 
   protected basculer(email: string): void {
@@ -119,6 +158,9 @@ export class Migration {
     // Sélection de départ : ceux qui ont réellement suivi des leçons. Les
     // autres se sont inscrits sans jamais rien ouvrir — à l'éditeur d'en juger.
     this.choisis.set(new Set(lus.filter((e) => !e.motif && e.etapes > 0).map((e) => e.email)));
+    this.identites.set(
+      new Map(lus.map((e) => [e.email, this.identiteProbable(e.nom, e.email)] as const)),
+    );
   }
 
   /**
@@ -171,8 +213,8 @@ export class Migration {
 
   private aMigrer(): EleveAMigrer[] {
     return this.selection().map((e) => {
-      // Wix range prénom et nom dans un seul champ, souvent vide.
-      const morceaux = e.nom.split(/\s+/).filter(Boolean);
+      // Un seul champ côté Wix : le premier mot fait le prénom, le reste le nom.
+      const morceaux = this.identite(e.email).trim().split(/\s+/).filter(Boolean);
       return {
         email: e.email,
         etapes_terminees: e.etapes,
@@ -248,8 +290,8 @@ export class Migration {
     return Math.round((100 * etapes) / ETAPES_PROGRAMME);
   }
 
-  /** Nom affichable : Wix laisse souvent le champ vide. */
-  protected intitule(eleve: EleveLu): string {
-    return eleve.nom.trim() || eleve.email;
+  /** Ce que Wix proposait, quand ce n'était pas un identifiant. */
+  protected suggestionRejetee(eleve: EleveLu): boolean {
+    return eleve.nom.trim().length > 0 && this.identiteProbable(eleve.nom, eleve.email) === '';
   }
 }
