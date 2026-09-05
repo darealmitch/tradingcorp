@@ -359,6 +359,7 @@ describe('Protection des routes déclarées', () => {
     paiements: ['admin'],
     journal: ['admin'],
     parametres: ['admin'],
+    migration: ['admin'],
   };
 
   function noeud(chemin: string): Route {

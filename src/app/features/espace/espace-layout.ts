@@ -49,6 +49,7 @@ const ELEMENTS_NAV: ElementNav[] = [
   { libelle: 'Utilisateurs', icone: 'profil', lien: '/espace/utilisateurs', roles: ['admin'] },
   { libelle: 'Paiements', icone: 'paiements', lien: '/espace/paiements', roles: ['admin'] },
   { libelle: 'Journal', icone: 'journal', lien: '/espace/journal', roles: ['admin'] },
+  { libelle: 'Reprise Wix', icone: 'apprenants', lien: '/espace/migration', roles: ['admin'] },
   { libelle: 'Paramètres', icone: 'parametres', lien: '/espace/parametres', roles: ['admin'] },
 ];
 
