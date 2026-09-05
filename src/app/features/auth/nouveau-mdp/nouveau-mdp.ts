@@ -39,8 +39,27 @@ export class NouveauMdp {
    */
   protected readonly changementImpose = computed(() => !!this.auth.profil()?.doit_changer_mdp);
 
+  /**
+   * Vrai quand le profil ignore sa date de naissance. Le cas vient des comptes
+   * nés d'une connexion Google et des anciens élèves repris de Wix, dont
+   * l'export n'en portait aucune. La récupération n'est pas finie tant qu'elle
+   * n'est pas donnée : la formation s'adresse à des adultes, et le serveur
+   * refuse tout profil de moins de dix-huit ans.
+   */
+  protected readonly dateNaissanceRequise = computed(() => {
+    const profil = this.auth.profil();
+    return !!profil && profil.role === 'apprenant' && !profil.date_naissance;
+  });
+
+  /** Bornes du sélecteur : dix-huit ans révolus, et rien d'invraisemblable. */
+  protected readonly maxNaissance = new Date(Date.now() - 18 * 365.25 * 24 * 3600 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  protected readonly minNaissance = '1900-01-01';
+
   protected readonly form = this.fb.group(
     {
+      dateNaissance: [''],
       mdp: ['', [Validators.required, Validators.minLength(8)]],
       confirmation: ['', [Validators.required]],
     },
@@ -52,10 +71,28 @@ export class NouveauMdp {
       this.form.markAllAsTouched();
       return;
     }
+    const { dateNaissance, mdp } = this.form.getRawValue();
+    if (this.dateNaissanceRequise() && !dateNaissance) {
+      this.erreur.set('Renseigne ta date de naissance pour continuer.');
+      return;
+    }
+
     this.chargement.set(true);
     this.erreur.set(null);
 
-    const resultat = await this.auth.definirNouveauMotDePasse(this.form.getRawValue().mdp);
+    // La date d'abord : le mot de passe est le dernier geste, celui qui clôt la
+    // récupération. L'inverse laisserait un compte utilisable sans que la
+    // majorité ait été établie.
+    if (this.dateNaissanceRequise()) {
+      const date = await this.auth.definirDateNaissance(dateNaissance);
+      if (!date.ok) {
+        this.erreur.set(date.erreur ?? 'Une erreur est survenue.');
+        this.chargement.set(false);
+        return;
+      }
+    }
+
+    const resultat = await this.auth.definirNouveauMotDePasse(mdp);
     if (!resultat.ok) {
       this.erreur.set(resultat.erreur ?? 'Une erreur est survenue.');
       this.chargement.set(false);
@@ -64,7 +101,7 @@ export class NouveauMdp {
     await this.router.navigateByUrl('/espace');
   }
 
-  protected invalide(nom: 'mdp' | 'confirmation'): boolean {
+  protected invalide(nom: 'dateNaissance' | 'mdp' | 'confirmation'): boolean {
     const ctrl = this.form.controls[nom];
     return ctrl.invalid && ctrl.touched;
   }

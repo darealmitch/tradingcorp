@@ -293,6 +293,36 @@ export class AuthService {
   }
 
   /**
+   * Ouvre la session depuis le lien reçu par e-mail.
+   *
+   * Le lien pointe vers TradingCorp et porte un `token_hash` — le jeton haché
+   * que Supabase expose sous `{{ .TokenHash }}` dans ses gabarits. C'est la
+   * voie recommandée pour bâtir soi-même le lien : elle évite le détour par
+   * `…supabase.co/auth/v1/verify`, que le destinataire voyait au survol du
+   * bouton, et surtout elle ne dépend d'AUCUN secret déposé dans le navigateur.
+   *
+   * C'est ce dernier point qui faisait échouer le lien précédent :
+   * `resetPasswordForEmail` produit, en mode `pkce`, une adresse qui n'a de
+   * sens que dans le navigateur ayant fait la demande. Or pour un ancien élève
+   * repris de Wix, c'est l'administrateur qui déclenche l'envoi — le secret
+   * n'existe nulle part, et le lien ne pouvait pas aboutir.
+   */
+  async ouvrirSessionDepuisLien(tokenHash: string, type: string): Promise<ResultatAuth> {
+    const { data, error } = await this.supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: type === 'invite' ? 'invite' : 'recovery',
+    });
+    if (error) {
+      return { ok: false, erreur: this.messageErreur(error) };
+    }
+    const identifiant = data?.session?.user.id ?? data?.user?.id;
+    if (identifiant) {
+      await this.chargerProfil(identifiant);
+    }
+    return { ok: true };
+  }
+
+  /**
    * Renseigne la date de naissance absente d'un profil, une seule fois.
    *
    * Sert les comptes nés d'une connexion Google : Google ne transmet ni date de

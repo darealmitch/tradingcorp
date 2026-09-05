@@ -45,6 +45,15 @@ export const routes: Routes = [
     title: 'TradingCorp — Mot de passe oublié',
   },
   {
+    // Destination du bouton des e-mails de récupération. Aucune garde : la
+    // personne n'est pas encore connectée, c'est précisément ce que fait cet
+    // écran à partir du jeton porté par le lien.
+    path: 'recuperation',
+    loadComponent: () =>
+      import('./features/auth/recuperation/recuperation').then((m) => m.Recuperation),
+    title: 'TradingCorp — Récupération de compte',
+  },
+  {
     path: 'auth/callback',
     loadComponent: () => import('./features/auth/callback/callback').then((m) => m.Callback),
     title: 'TradingCorp — Connexion en cours',

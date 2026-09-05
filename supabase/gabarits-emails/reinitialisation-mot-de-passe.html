@@ -2,11 +2,11 @@
 <!-- Supabase → Authentication → Emails → onglet « Reset Password ».
      L'objet est un champ SÉPARÉ du corps, juste au-dessus. Sans lui,
      le message part avec l'objet anglais par défaut de Supabase.
-     Objet : Ton code de réinitialisation -->
+     Objet : Récupère ton compte TradingCorp -->
 <html lang="fr">
   <body style="margin: 0; padding: 0; background: #f7f8fc">
     <div style="display: none; max-height: 0; overflow: hidden; opacity: 0">
-      Ton code pour choisir un nouveau mot de passe TradingCorp.
+      Choisis un nouveau mot de passe pour ton compte TradingCorp.
     </div>
 
     <table
@@ -74,45 +74,39 @@
                     font-weight: 700;
                   "
                 >
-                  Ton code de réinitialisation
+                  Récupère ton compte
                 </h1>
                 <p style="margin: 0 0 14px 0; font-size: 15px; line-height: 1.65; color: #0e111c">
-                  Tu as demandé à changer le mot de passe de ton compte TradingCorp. Recopie le code
-                  ci-dessous dans la page restée ouverte.
+                  Tu peux reprendre la main sur ton compte TradingCorp. Le bouton ci-dessous ouvre
+                  une page où tu choisiras toi-même ton nouveau mot de passe — nous ne connaissons
+                  pas l'ancien et ne t'en enverrons jamais un par e-mail.
                 </p>
               </td>
             </tr>
 
-            <!-- Le code, et rien d'autre. Pas de lien : le client est en PKCE,
-                 un lien ne vaudrait que dans le navigateur d'où vient la
-                 demande — inutilisable dès qu'on lit ses e-mails sur un autre
-                 appareil. Un code se recopie de n'importe où. -->
+            <!--
+              Le lien mène à TradingCorp, pas au service d'authentification :
+              `{{ .TokenHash }}` est prévu pour cela, et c'est la page
+              /recuperation qui ouvre la session. Le destinataire ne voit donc
+              aucune adresse technique, ni au survol du bouton ni ailleurs.
+            -->
             <tr>
-              <td align="center" style="padding: 14px 32px 6px 32px">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td
-                      align="center"
-                      style="
-                        background: #f2f0ff;
-                        border: 1px solid #d9d3ff;
-                        border-radius: 12px;
-                        padding: 20px 34px;
-                      "
-                    >
-                      <span
-                        style="
-                          font-family: 'Courier New', Courier, monospace;
-                          font-size: 34px;
-                          letter-spacing: 9px;
-                          font-weight: 700;
-                          color: #3d2fb8;
-                        "
-                        >{{ .Token }}</span
-                      >
-                    </td>
-                  </tr>
-                </table>
+              <td align="center" style="padding: 8px 32px 26px 32px">
+                <a
+                  href="{{ .SiteURL }}/recuperation?token_hash={{ .TokenHash }}&type=recovery"
+                  style="
+                    display: inline-block;
+                    padding: 14px 30px;
+                    border-radius: 999px;
+                    background: #5b46e0;
+                    font-family: Helvetica, Arial, sans-serif;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #ffffff;
+                    text-decoration: none;
+                  "
+                  >Récupérer mon compte</a
+                >
               </td>
             </tr>
 
@@ -120,14 +114,19 @@
               <td
                 align="center"
                 style="
-                  padding: 14px 32px 30px 32px;
+                  padding: 0 32px 30px 32px;
                   font-family: Helvetica, Arial, sans-serif;
                   font-size: 13px;
                   line-height: 1.6;
                   color: #5a6480;
                 "
               >
-                Ce code est valable une heure et ne peut servir qu'une fois.
+                Ce lien t'est personnel. Il est valable une heure et ne peut servir qu'une fois.
+                <br />
+                S'il a expiré, demandes-en un nouveau depuis
+                <a href="{{ .SiteURL }}/mot-de-passe-oublie" style="color: #5a6480"
+                  >tradingcorp.fr/mot-de-passe-oublie</a
+                >.
               </td>
             </tr>
 
