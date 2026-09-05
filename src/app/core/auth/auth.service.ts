@@ -353,7 +353,12 @@ export class AuthService {
       return 'Le nouveau mot de passe doit être différent du mot de passe temporaire.';
     }
     if (brut.includes('password should be')) {
-      return 'Le mot de passe doit contenir au moins 8 caractères.';
+      return 'Le mot de passe doit contenir au moins 10 caractères.';
+    }
+    // « Unable to validate email address: invalid format » — exact, mais en
+    // anglais et technique. La personne a simplement mal tapé son adresse.
+    if (brut.includes('validate email address') || brut.includes('invalid format')) {
+      return 'Cette adresse e-mail n’est pas valide.';
     }
     // Code de réinitialisation faux, déjà utilisé ou périmé. Supabase répond
     // « Token has expired or is invalid » : formulé tel quel, l'utilisateur ne

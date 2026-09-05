@@ -224,7 +224,7 @@ describe('AuthService', () => {
         ],
         [
           'Password should be at least 8 characters',
-          'Le mot de passe doit contenir au moins 8 caractères.',
+          'Le mot de passe doit contenir au moins 10 caractères.',
         ],
         ['Email rate limit exceeded', 'Trop de tentatives. Réessaie dans quelques minutes.'],
       ];

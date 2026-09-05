@@ -133,6 +133,25 @@ describe('NouveauMdp — date de naissance', () => {
     );
   });
 
+  it('exige la longueur que le serveur exige, ni plus ni moins', async () => {
+    // Le front en demandait huit quand l'authentification en exigeait dix : la
+    // personne passait la validation, se voyait refuser par le serveur, et
+    // lisait « au moins 8 caractères ». Sans issue, et sans explication.
+    await monter(unProfil({ date_naissance: '1990-01-01' }));
+
+    saisir('mdp', '123456789'); // neuf
+    saisir('confirmation', '123456789');
+    soumettre();
+    await fixture.whenStable();
+    expect(appels).not.toContain('definirNouveauMotDePasse');
+
+    saisir('mdp', '1234567890'); // dix
+    saisir('confirmation', '1234567890');
+    soumettre();
+    await fixture.whenStable();
+    expect(appels).toContain('definirNouveauMotDePasse');
+  });
+
   it('n’appelle pas la date quand elle est déjà connue', async () => {
     await monter(unProfil({ date_naissance: '1990-01-01' }));
 
