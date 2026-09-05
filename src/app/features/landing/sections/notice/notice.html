@@ -22,6 +22,7 @@
                   type="button"
                   class="gallery-card"
                   [attr.tabindex]="copie === 1 ? -1 : null"
+                  [attr.aria-label]="'Agrandir : ' + item.alt"
                   (click)="openAvis(i, $event)"
                 >
                   <img [src]="media.url(item.img)" [alt]="item.alt" loading="lazy" />
