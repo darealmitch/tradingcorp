@@ -39,14 +39,14 @@
       <p class="auth-alt">
         Tu t'en souviens finalement ? <a routerLink="/connexion">Se connecter</a>
       </p>
-    } @else {
+    } @else if (etape() === 'code') {
       <h1 class="auth-title">Saisis ton code</h1>
       <p class="auth-sub">
         Si un compte existe avec cette adresse, un code à six chiffres vient d'y être envoyé. Il est
         valable une heure. Pense à regarder tes courriers indésirables.
       </p>
 
-      <form [formGroup]="formCode" (ngSubmit)="valider()" novalidate>
+      <form [formGroup]="formCode" (ngSubmit)="validerCode()" novalidate>
         <div class="champ">
           <label for="code">Code reçu<span class="champ-requis" aria-hidden="true">*</span></label>
           <!-- inputmode numérique : sur mobile, ouvre le pavé de chiffres plutôt
@@ -60,13 +60,55 @@
             inputmode="numeric"
             maxlength="6"
             autocomplete="one-time-code"
-            [attr.aria-invalid]="invalide('code') || null"
+            [attr.aria-invalid]="codeInvalide() || null"
             placeholder="123456"
           />
-          @if (invalide('code')) {
+          @if (codeInvalide()) {
             <p class="champ-erreur" role="alert">Six chiffres attendus.</p>
           }
         </div>
+
+        <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
+          {{ chargement() ? 'Vérification…' : 'Valider le code' }}
+        </button>
+      </form>
+
+      <p class="auth-alt">
+        Adresse erronée ?
+        <a href="#" (click)="recommencer(); $event.preventDefault()">Recommencer</a>
+      </p>
+    } @else {
+      <h1 class="auth-title">Choisis ton mot de passe</h1>
+      <p class="auth-sub">
+        @if (dateNaissanceRequise()) {
+          Ton compte n'a pas encore de date de naissance : la formation s'adresse à des personnes
+          majeures. Renseigne-la, puis choisis ton nouveau mot de passe.
+        } @else {
+          Dernière étape : choisis le mot de passe avec lequel tu te connecteras.
+        }
+      </p>
+
+      <form [formGroup]="formFinalisation" (ngSubmit)="finaliser()" novalidate>
+        @if (dateNaissanceRequise()) {
+          <div class="champ">
+            <label for="dateNaissance"
+              >Date de naissance<span class="champ-requis" aria-hidden="true">*</span></label
+            >
+            <input
+              id="dateNaissance"
+              type="date"
+              formControlName="dateNaissance"
+              required
+              [min]="minNaissance"
+              [max]="maxNaissance"
+              [attr.aria-invalid]="invalide('dateNaissance') || null"
+              autocomplete="bday"
+            />
+            @if (invalide('dateNaissance')) {
+              <p class="champ-erreur" role="alert">Date de naissance requise.</p>
+            }
+          </div>
+        }
 
         <div class="champ">
           <label for="mdp"
@@ -104,14 +146,9 @@
         </div>
 
         <button class="btn btn-primary auth-submit" type="submit" [disabled]="chargement()">
-          {{ chargement() ? 'Validation…' : 'Changer mon mot de passe' }}
+          {{ chargement() ? 'Finalisation…' : 'Terminer' }}
         </button>
       </form>
-
-      <p class="auth-alt">
-        Adresse erronée ?
-        <a href="#" (click)="recommencer(); $event.preventDefault()">Recommencer</a>
-      </p>
     }
   </div>
 </div>

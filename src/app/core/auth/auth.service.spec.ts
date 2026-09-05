@@ -76,7 +76,12 @@ function clientDouble(options: Options = {}) {
         resetPasswordForEmail: (email: unknown, options: unknown) =>
           tracer('resetPasswordForEmail', { email, options }, { error: erreur }),
         verifyOtp: (params: unknown) =>
-          tracer('verifyOtp', params, { error: options.codeInvalide ?? null }),
+          // `verifyOtp` renvoie la session qu'il vient d'ouvrir : c'est d'elle
+          // que le service tire l'identifiant du profil à charger.
+          tracer('verifyOtp', params, {
+            data: options.codeInvalide ? { session: null, user: null } : { session: SESSION },
+            error: options.codeInvalide ?? null,
+          }),
       },
       from(table: string) {
         appels.push({ nom: `from:${table}` });
@@ -276,43 +281,31 @@ describe('AuthService', () => {
     });
   });
 
-  describe('reinitialiserMotDePasse', () => {
-    it('vérifie le code PUIS change le mot de passe', async () => {
+  describe('verifierCodeReinitialisation', () => {
+    it('vérifie le code sans toucher au mot de passe', async () => {
       const { service, double } = await creerService({ session: SESSION, profil: unProfil() });
 
-      const resultat = await service.reinitialiserMotDePasse(
-        'ada@exemple.fr',
-        '123456',
-        'nouveau-mdp-long',
-      );
+      const resultat = await service.verifierCodeReinitialisation('ada@exemple.fr', '123456');
 
       expect(resultat.ok).toBe(true);
-      const noms = double.appels.map((a) => a.nom);
-      // L'ordre est le fond du sujet : `verifyOtp` ouvre la session, sans
-      // laquelle `updateUser` n'a aucune identité sur qui écrire.
-      expect(noms.indexOf('verifyOtp')).toBeLessThan(noms.indexOf('updateUser'));
       expect(double.appels.find((a) => a.nom === 'verifyOtp')?.params).toEqual({
         email: 'ada@exemple.fr',
         token: '123456',
         type: 'recovery',
       });
+      // Le mot de passe est le geste suivant, jamais celui-ci : entre les deux
+      // s'intercale la date de naissance quand le profil l'ignore.
+      expect(double.appels.some((a) => a.nom === 'updateUser')).toBe(false);
     });
 
-    it('ne change RIEN quand le code est refusé', async () => {
-      // Le point à protéger : un code faux ne doit pas laisser passer le
-      // changement. Sans l'arrêt sur erreur, `updateUser` s'exécuterait sur la
-      // session déjà en place — celle d'un autre onglet, par exemple.
+    it('ne laisse rien passer quand le code est refusé', async () => {
       const { service, double } = await creerService({
         session: SESSION,
         profil: unProfil(),
         codeInvalide: { message: 'Token has expired or is invalid' },
       });
 
-      const resultat = await service.reinitialiserMotDePasse(
-        'ada@exemple.fr',
-        '000000',
-        'peu-importe',
-      );
+      const resultat = await service.verifierCodeReinitialisation('ada@exemple.fr', '000000');
 
       expect(resultat.ok).toBe(false);
       expect(resultat.erreur).toContain('Code incorrect ou expiré');
