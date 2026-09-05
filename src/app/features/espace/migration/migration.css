@@ -117,8 +117,36 @@
 }
 
 .eleve-nom {
-  font-weight: 600;
+  width: 100%;
+  max-width: 260px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
   color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+/* Discret au repos, franc à la saisie : c'est un champ, mais l'écran n'est pas
+   un formulaire — on ne veut pas d'une grille de bordures. */
+.eleve-nom:hover,
+.eleve-nom:focus {
+  border-color: var(--line-strong);
+  background: var(--bg-soft);
+  outline: none;
+}
+
+.eleve-nom::placeholder {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.eleve-indice {
+  font-style: italic;
 }
 
 .eleve-email {
@@ -214,6 +242,14 @@
 }
 
 @media (max-width: 640px) {
+  .eleve-identite {
+    width: 100%;
+  }
+
+  .eleve-nom {
+    max-width: none;
+  }
+
   .eleve-avancement {
     width: 100%;
     justify-content: space-between;
