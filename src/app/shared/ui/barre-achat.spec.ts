@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BarreAchat } from './barre-achat';
-import { CommerceService } from '../../../core/commerce/commerce.service';
-import { Formation } from '../../../core/commerce/formation.model';
+import { CommerceService } from '../../core/commerce/commerce.service';
+import { Formation } from '../../core/commerce/formation.model';
 
 const FORMATION: Formation = {
   id_formation: 'f-1',

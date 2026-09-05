@@ -241,20 +241,19 @@ body {
 }
 
 /*
- * Barre d'achat mobile (`app-barre-achat`) : fixée en bas d'écran, elle
- * recouvrirait les derniers liens du pied de page et le bouton « retour en
- * haut ». Le composant pose la classe quand il paraît ; la variable vaut zéro
- * partout ailleurs, ce qui laisse les calculs inchangés sur le reste du site.
+ * Barre d'achat (`app-barre-achat`) : fixée en bas d'écran sur les pages de
+ * vente, elle recouvrirait les derniers liens du pied de page et le bouton
+ * « retour en haut ». Le composant pose la classe quand il paraît ; la
+ * variable vaut zéro partout ailleurs, ce qui laisse les calculs inchangés sur
+ * le reste du site.
  */
 :root {
   --hauteur-barre-achat: 0px;
 }
 
-@media (max-width: 720px) {
-  body.a-barre-achat {
-    --hauteur-barre-achat: 76px;
-    padding-bottom: calc(var(--hauteur-barre-achat) + env(safe-area-inset-bottom, 0px));
-  }
+body.a-barre-achat {
+  --hauteur-barre-achat: 76px;
+  padding-bottom: calc(var(--hauteur-barre-achat) + env(safe-area-inset-bottom, 0px));
 }
 
 img,

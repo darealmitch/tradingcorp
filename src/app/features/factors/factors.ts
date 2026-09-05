@@ -12,6 +12,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Particles } from '../../shared/particles';
 import { Reveal } from '../../shared/reveal';
+import { BarreAchat } from '../../shared/ui/barre-achat';
 
 /** Un facteur du programme : numéro, titre, description et phrase mise en avant. */
 interface Factor {
@@ -65,7 +66,7 @@ const FACTORS: Factor[] = [
   selector: 'app-factors',
   templateUrl: './factors.html',
   styleUrl: './factors.css',
-  imports: [RouterLink, Particles, Reveal],
+  imports: [RouterLink, Particles, Reveal, BarreAchat],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Factors {
