@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RetourHaut } from './retour-haut';
+import { VerrouDefilement } from '../../core/defilement/verrou-defilement';
 
 /**
  * Le seuil et le comportement de défilement sont la seule logique du composant.
@@ -87,6 +88,19 @@ describe('RetourHaut', () => {
   it('porte un libellé accessible', () => {
     defilerA(700);
     expect(bouton()?.getAttribute('aria-label')).toBe('Revenir en haut de la page');
+  });
+
+  it('ignore le défilement pendant que la page est figée', () => {
+    defilerA(700);
+    expect(bouton()).not.toBeNull();
+
+    // Le menu mobile fige le corps de page : `scrollY` retombe à zéro sans que
+    // rien n'ait bougé, et le bouton disparaîtrait pour rien.
+    TestBed.inject(VerrouDefilement).verrouiller();
+    defilerA(0);
+    expect(bouton()).not.toBeNull();
+
+    TestBed.inject(VerrouDefilement).deverrouiller();
   });
 
   it('retire son écouteur de défilement à la destruction', () => {

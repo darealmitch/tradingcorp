@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommerceService } from '../../core/commerce/commerce.service';
+import { VerrouDefilement } from '../../core/defilement/verrou-defilement';
 
 /**
  * Hauteur défilée au-delà de laquelle la barre paraît. Le hero mesure environ
@@ -138,6 +139,7 @@ const SEUIL_APPARITION = 600;
 })
 export class BarreAchat {
   private readonly commerce = inject(CommerceService);
+  private readonly verrou = inject(VerrouDefilement);
 
   protected readonly visible = signal(false);
   protected readonly prix = signal<string | null>(null);
@@ -157,6 +159,12 @@ export class BarreAchat {
       document.body.classList.add('a-barre-achat');
 
       const surDefilement = (): void => {
+        // Page figée derrière le menu mobile : `scrollY` retombe à zéro sans
+        // que rien n'ait bougé. Sans cette garde, la barre se rétracterait à
+        // l'ouverture du menu pour reparaître en glissant à la fermeture.
+        if (this.verrou.estVerrouille()) {
+          return;
+        }
         const doitParaitre = window.scrollY > SEUIL_APPARITION;
         if (doitParaitre !== this.visible()) {
           this.visible.set(doitParaitre);

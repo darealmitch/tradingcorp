@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { BarreAchat } from './barre-achat';
 import { CommerceService } from '../../core/commerce/commerce.service';
 import { Formation } from '../../core/commerce/formation.model';
+import { VerrouDefilement } from '../../core/defilement/verrou-defilement';
 
 const FORMATION: Formation = {
   id_formation: 'f-1',
@@ -120,6 +121,20 @@ describe('BarreAchat', () => {
     const texte = barre()?.textContent?.replace(/\s/g, ' ') ?? '';
     expect(texte).toContain('997');
     expect(texte).not.toContain('998');
+  });
+
+  it('ignore le défilement pendant que la page est figée', async () => {
+    await monter([FORMATION]);
+    defilerA(700);
+    expect(estVisible()).toBe(true);
+
+    // Ouvrir le menu mobile fige le corps de page : `scrollY` retombe à zéro
+    // et un événement de défilement est émis, alors que rien n'a bougé.
+    TestBed.inject(VerrouDefilement).verrouiller();
+    defilerA(0);
+    expect(estVisible()).toBe(true);
+
+    TestBed.inject(VerrouDefilement).deverrouiller();
   });
 
   it('nettoie derrière elle à la destruction', async () => {
