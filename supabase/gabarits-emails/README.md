@@ -45,8 +45,10 @@ ni la connexion par lien, ni la ré-authentification.
 
 ## Un code, pas un lien, pour la réinitialisation
 
-Ce gabarit-là ne contient **aucun lien** : il affiche `{{ .Token }}`, le code à
-six chiffres, que la personne recopie sur le site.
+Ce gabarit-là ne contient **aucun lien de vérification** : il affiche
+`{{ .Token }}`, le code à six chiffres, que la personne recopie sur le site. Le
+seul lien du message pointe vers la racine du site, dans le pied de page — rien
+qui porte un jeton, rien qui expose l'adresse technique du projet Supabase.
 
 La raison est technique et sans échappatoire. Le client Supabase est configuré
 en `pkce` — nécessaire au retour de la connexion Google. Dans ce mode, la
