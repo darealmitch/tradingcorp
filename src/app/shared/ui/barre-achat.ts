@@ -35,25 +35,37 @@ const SEUIL_APPARITION = 600;
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (visible()) {
-      <aside class="barre-achat" aria-label="Accès à la formation">
-        <div class="barre-achat-contenu">
-          <p class="barre-achat-offre">
-            @if (prix(); as montant) {
-              <span class="barre-achat-prix">{{ montant }}</span>
-            }
-            <span class="barre-achat-mention">Accès à vie</span>
-          </p>
+    <aside class="barre-achat" [class.est-visible]="visible()" aria-label="Accès à la formation">
+      <div class="barre-achat-contenu">
+        <p class="barre-achat-offre">
+          @if (prix(); as montant) {
+            <span class="barre-achat-prix">{{ montant }}</span>
+          }
+          <span class="barre-achat-mention">Accès à vie</span>
+        </p>
 
-          <a class="btn btn-primary barre-achat-action" routerLink="/inscription">Commencer</a>
-        </div>
-      </aside>
-    }
+        <a class="btn btn-primary barre-achat-action" routerLink="/inscription">Commencer</a>
+      </div>
+    </aside>
   `,
   styles: `
+    /*
+     * Masquée, la barre reste dans le DOM : une animation d'entrée n'a pas
+     * d'équivalent en sortie, un élément retiré du DOM disparaissant d'un coup.
+     * « visibility » la retire du parcours de tabulation et de l'arbre
+     * d'accessibilité, et son changement est retardé jusqu'à la fin du
+     * glissement pour ne pas l'escamoter à mi-course.
+     */
     .barre-achat {
       position: fixed;
       inset: auto 0 0 0;
+      transform: translateY(100%);
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        transform 0.34s var(--ease-out),
+        opacity 0.24s ease,
+        visibility 0s linear 0.34s;
       /* Au-dessus du bouton « retour en haut » (40), sous l'en-tête et les
          superpositions du parcours. */
       z-index: 42;
@@ -64,7 +76,16 @@ const SEUIL_APPARITION = 600;
       background: color-mix(in srgb, var(--surface) 92%, transparent);
       backdrop-filter: blur(14px);
       box-shadow: 0 -10px 30px rgb(0 0 0 / 22%);
-      animation: barre-achat-entree 0.28s var(--ease-out) both;
+    }
+
+    .barre-achat.est-visible {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+      transition:
+        transform 0.34s var(--ease-out),
+        opacity 0.2s ease,
+        visibility 0s;
     }
 
     /* Même gabarit que « .container » : sur grand écran, le prix et le bouton
@@ -107,19 +128,10 @@ const SEUIL_APPARITION = 600;
       white-space: nowrap;
     }
 
-    @keyframes barre-achat-entree {
-      from {
-        transform: translateY(100%);
-      }
-
-      to {
-        transform: translateY(0);
-      }
-    }
-
     @media (prefers-reduced-motion: reduce) {
-      .barre-achat {
-        animation: none;
+      .barre-achat,
+      .barre-achat.est-visible {
+        transition: none;
       }
     }
   `,
@@ -136,15 +148,19 @@ export class BarreAchat {
     // `afterNextRender` : aucun accès à `window` ni au `body` avant le rendu,
     // le composant reste inoffensif au prérendu.
     afterNextRender(() => {
+      // La marge basse est posée une fois pour toutes, dès le montage, et non
+      // au moment où la barre paraît : la faire naître et mourir au fil du
+      // défilement déplaçait la page de 76 px sous le doigt, à l'instant même
+      // où la barre glissait — deux mouvements pour un seul geste. Elle ne
+      // coûte rien tant qu'on n'est pas au bas de la page, et le bouton
+      // « retour en haut » partage le même seuil d'apparition.
+      document.body.classList.add('a-barre-achat');
+
       const surDefilement = (): void => {
         const doitParaitre = window.scrollY > SEUIL_APPARITION;
-        if (doitParaitre === this.visible()) {
-          return;
+        if (doitParaitre !== this.visible()) {
+          this.visible.set(doitParaitre);
         }
-        this.visible.set(doitParaitre);
-        // Le drapeau sert au pied de page et au bouton « retour en haut », que
-        // la barre recouvrirait sinon. Voir `--hauteur-barre-achat`.
-        document.body.classList.toggle('a-barre-achat', doitParaitre);
       };
 
       surDefilement();

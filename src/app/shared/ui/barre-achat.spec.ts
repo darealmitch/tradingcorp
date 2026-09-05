@@ -17,6 +17,9 @@ const FORMATION: Formation = {
  * Deux comportements portent tout le composant : la bascule au défilement et
  * l'affichage d'un prix venu de la base. jsdom ne défile pas, mais il expose
  * `scrollY` et l'événement, ce qui suffit — voir `retour-haut.spec.ts`.
+ *
+ * La barre reste dans le DOM en permanence : c'est sa classe qu'on éprouve, et
+ * non sa présence, sans quoi elle disparaîtrait d'un coup au lieu de glisser.
  */
 describe('BarreAchat', () => {
   let fixture: ComponentFixture<BarreAchat>;
@@ -29,6 +32,10 @@ describe('BarreAchat', () => {
 
   function barre(): HTMLElement | null {
     return (fixture.nativeElement as HTMLElement).querySelector('.barre-achat');
+  }
+
+  function estVisible(): boolean {
+    return barre()?.classList.contains('est-visible') ?? false;
   }
 
   async function monter(formations: Formation[]): Promise<void> {
@@ -52,28 +59,37 @@ describe('BarreAchat', () => {
     TestBed.resetTestingModule();
   });
 
-  it('reste absente tant que le hero est à l’écran', async () => {
+  it('reste masquée tant que le hero est à l’écran', async () => {
     await monter([FORMATION]);
-    expect(barre()).toBeNull();
-    expect(document.body.classList.contains('a-barre-achat')).toBe(false);
+    expect(barre()).not.toBeNull();
+    expect(estVisible()).toBe(false);
   });
 
   it('paraît une fois le premier écran défilé', async () => {
     await monter([FORMATION]);
     defilerA(700);
-    expect(barre()).not.toBeNull();
+    expect(estVisible()).toBe(true);
   });
 
-  it('signale sa présence au reste de la page', async () => {
+  it('se retire lorsqu’on remonte au-dessus du seuil', async () => {
     await monter([FORMATION]);
     defilerA(700);
+    defilerA(100);
+    expect(estVisible()).toBe(false);
+  });
 
-    // Sans ce drapeau, la barre recouvrirait les derniers liens du pied de
-    // page et le bouton « retour en haut ».
+  it('réserve sa place dès le montage, et non au défilement', async () => {
+    await monter([FORMATION]);
+
+    // La marge posée au moment de l'apparition déplaçait la page de 76 px sous
+    // le doigt, en même temps que la barre glissait.
+    expect(document.body.classList.contains('a-barre-achat')).toBe(true);
+
+    defilerA(700);
     expect(document.body.classList.contains('a-barre-achat')).toBe(true);
 
     defilerA(100);
-    expect(document.body.classList.contains('a-barre-achat')).toBe(false);
+    expect(document.body.classList.contains('a-barre-achat')).toBe(true);
   });
 
   it('affiche le prix venu de la base, pas une valeur écrite en dur', async () => {
@@ -92,7 +108,7 @@ describe('BarreAchat', () => {
     await monter([]);
     defilerA(700);
 
-    expect(barre()).not.toBeNull();
+    expect(estVisible()).toBe(true);
     expect(barre()?.querySelector('a')?.getAttribute('href')).toBe('/inscription');
     expect(barre()?.textContent).not.toContain('€');
   });
@@ -111,8 +127,7 @@ describe('BarreAchat', () => {
     defilerA(700);
     fixture.destroy();
 
-    // Le drapeau survivrait à la page d'accueil et décalerait le pied de page
-    // de toutes les suivantes.
+    // La marge survivrait à la page de vente et décalerait toutes les suivantes.
     expect(document.body.classList.contains('a-barre-achat')).toBe(false);
     Object.defineProperty(window, 'scrollY', { value: 0, writable: true, configurable: true });
     expect(() => window.dispatchEvent(new Event('scroll'))).not.toThrow();
