@@ -79,7 +79,7 @@ const MILESTONES: Milestone[] = [
   {
     step: 'Transmission',
     title: 'Formateur & cofondateur',
-    desc: '200+ élèves accompagnés, et trois projets cofondés : Million Quest, IMEO et Trading Corp.',
+    desc: '200+ élèves accompagnés, et Trading Corp cofondée pour transmettre cette méthode.',
   },
 ];
 

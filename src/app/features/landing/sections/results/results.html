@@ -24,7 +24,12 @@
         <ul class="results-list" [attr.aria-hidden]="copy === 1 ? true : null">
           @for (result of results; track result.img; let i = $index) {
             <li>
-              <button type="button" class="result-card" (click)="open(i, $event)">
+              <button
+                type="button"
+                class="result-card"
+                [attr.aria-label]="'Agrandir : ' + result.alt"
+                (click)="open(i, $event)"
+              >
                 <img
                   [src]="media.url(result.img)"
                   [alt]="result.alt"

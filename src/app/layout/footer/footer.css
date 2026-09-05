@@ -81,4 +81,43 @@
     flex-direction: column;
     gap: 8px;
   }
+
+  /*
+   * Cibles tactiles. Au doigt, ces liens ne mesuraient que 24 px de haut — la
+   * hauteur de leur seule ligne de texte — pour onze liens serrés les uns sous
+   * les autres : on en visait un et on en atteignait un autre. Les 44 px sont
+   * le minimum retenu par les recommandations d'Apple comme par le critère
+   * 2.5.5 des WCAG.
+   *
+   * L'espacement entre eux vient désormais de leur propre hauteur, d'où la
+   * gouttière ramenée à zéro : sans cela le pied de page doublait de longueur.
+   */
+  .footer-nav,
+  .footer-contact {
+    gap: 0;
+  }
+
+  .footer-nav a,
+  .footer-contact a,
+  .footer-legal a {
+    display: flex;
+    align-items: center;
+    /* Pleine largeur : la zone tactile suit la colonne, pas la longueur du mot. */
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Le libellé de colonne n'est pas un lien : il garde son propre rythme. */
+  .footer-label {
+    margin-bottom: 0;
+    min-height: 32px;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .footer-brand .brand {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
 }
