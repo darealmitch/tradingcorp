@@ -16,13 +16,40 @@
           />
         </div>
         <!--
-          L'information sur le lecteur tiers est portée ICI, à côté du bouton,
-          et non dans une fenêtre ouverte après le clic : le visiteur doit
-          savoir ce qui sera déposé au moment où il décide, pas une fois sa
-          décision prise. Le clic, ainsi éclairé, vaut accord — et ne rien
-          cliquer suffit à ne rien déposer.
+          L'information sur le lecteur tiers est portée ICI, avant le bouton, et
+          non dans une fenêtre ouverte après le clic : le visiteur doit savoir
+          ce qui sera déposé au moment où il décide, pas une fois sa décision
+          prise. Le clic, ainsi éclairé, vaut accord — et ne rien cliquer suffit
+          à ne rien déposer.
+
+          Deux niveaux : l'essentiel tient sur une ligne toujours lisible, le
+          détail se déplie sur demande. Déplier n'engage rien et ne lance pas la
+          vidéo. La note passe AVANT le bouton pour que l'ouverture du détail
+          repousse la zone vers le haut sans déplacer le bouton sous le curseur.
         -->
         <div class="trainer-play-zone">
+          <details class="trainer-play-note">
+            <summary>
+              <span id="note-lecteur-tiers"
+                >Hébergée par <strong>Bunny.net</strong> — deux cookies de lecture, aucun
+                suivi.</span
+              >&nbsp;<!-- l'espace sépare les deux libellés à la lecture vocale -->
+              <span class="trainer-play-note-plus">Détails</span>
+            </summary>
+            <div class="trainer-play-note-detail">
+              <p>
+                La lancer chargera le lecteur de Bunny.net, qui enregistrera deux cookies sur ton
+                appareil : tes préférences de lecture (volume, qualité) et le cache de ses icônes.
+                Aucun cookie publicitaire, aucun suivi entre sites.
+              </p>
+              <p>
+                <a href="https://bunny.net/gdpr/" target="_blank" rel="noopener noreferrer"
+                  >Politique de confidentialité de Bunny.net</a
+                >
+              </p>
+            </div>
+          </details>
+
           <button
             type="button"
             class="trainer-play"
@@ -34,15 +61,6 @@
             </span>
             <span class="trainer-play-label">Voir la présentation</span>
           </button>
-
-          <p class="trainer-play-note" id="note-lecteur-tiers">
-            Vidéo hébergée par <strong>Bunny.net</strong>. La lancer chargera son lecteur, qui
-            enregistrera deux cookies sur ton appareil : tes préférences de lecture (volume,
-            qualité) et le cache de ses icônes. Aucun cookie publicitaire, aucun suivi entre sites.
-            <a href="https://bunny.net/gdpr/" target="_blank" rel="noopener noreferrer"
-              >Politique de confidentialité de Bunny.net</a
-            >
-          </p>
         </div>
       </div>
 
