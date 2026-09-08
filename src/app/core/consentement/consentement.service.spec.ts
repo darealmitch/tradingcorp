@@ -36,11 +36,16 @@ describe('ConsentementService', () => {
       s.src.includes('privacy-center.org'),
     );
 
-  /** Simule l'arrivée du SDK, avec l'état qu'il rendrait pour notre fournisseur. */
+  /**
+   * Simule l'arrivée du SDK avec l'état qu'il rendrait pour notre fournisseur.
+   * `undefined` reproduit un fournisseur absent de la notice.
+   */
   const didomiRepond = (etat: boolean | undefined): void => {
     surChangement = [];
     window.Didomi = {
-      getUserConsentStatusForVendor: () => etat,
+      getCurrentUserStatus: () => ({
+        vendors: etat === undefined ? {} : { [VENDEUR]: { enabled: etat } },
+      }),
       preferences: { show: () => undefined },
       notice: { show: () => undefined },
       on: (_evenement, rappel) => surChangement.push(rappel),
@@ -138,7 +143,7 @@ describe('ConsentementService', () => {
       expect(service.lecteurVideoAutorise()).toBe(false);
 
       // La personne revient sur son choix depuis la fenêtre de préférences.
-      window.Didomi!.getUserConsentStatusForVendor = () => true;
+      window.Didomi!.getCurrentUserStatus = () => ({ vendors: { [VENDEUR]: { enabled: true } } });
       surChangement.forEach((rappel) => rappel());
 
       expect(service.lecteurVideoAutorise()).toBe(true);
