@@ -4,6 +4,8 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  computed,
+  effect,
   inject,
   signal,
   viewChild,
@@ -11,6 +13,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../../environments/environment';
+import { ConsentementService } from '../../../../core/consentement/consentement.service';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 import { Icone } from '../../../../shared/ui/icone';
@@ -138,7 +141,33 @@ export class Trainer {
   /** Élément déclencheur, re-focalisé à la fermeture. */
   private lastTrigger: HTMLElement | null = null;
 
+  private readonly consentement = inject(ConsentementService);
+
+  /**
+   * Quelqu'un a demandé la vidéo sans avoir encore donné son accord. On retient
+   * l'intention : dès que l'accord arrive, la lecture part toute seule, sans
+   * obliger à recliquer.
+   */
+  private readonly attenteAccord = signal(false);
+
+  /**
+   * Le gestionnaire de consentement s'est prononcé et ne répond pas : ni accord
+   * ni refus possible, donc lecture impossible. Distinct d'un simple refus, qui
+   * lui se corrige en rouvrant les préférences.
+   */
+  protected readonly lecteurBloque = computed(
+    () => this.consentement.pret() && !this.consentement.disponible(),
+  );
+
   constructor() {
+    // L'accord arrive après coup : la vidéo demandée s'ouvre alors d'elle-même.
+    effect(() => {
+      if (this.attenteAccord() && this.consentement.lecteurVideoAutorise()) {
+        this.attenteAccord.set(false);
+        this.ouvrirLecteur();
+      }
+    });
+
     afterNextRender(() => {
       const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       this.initCounters(reduced);
@@ -160,17 +189,40 @@ export class Trainer {
    * Contrairement aux témoignages — de simples fichiers lus par `<video>` — le
    * lecteur Bunny dépose deux cookies sur le terminal du visiteur
    * (`plyr--lib-759` pour les préférences de lecture, `cache-sprite-plyr` pour
-   * le cache des icônes). La CNIL demande, pour tout contenu multimédia tiers,
-   * d'informer AVANT l'activation et de recueillir un acte positif.
+   * le cache des icônes). Ils exigent donc un consentement préalable, et c'est
+   * Didomi qui le détient.
    *
-   * L'information est portée par la note qui accompagne le bouton, lisible
-   * sans rien cliquer (`aria-describedby` la rattache au bouton pour les
-   * lecteurs d'écran). Le clic est donc l'acte positif éclairé, et l'iframe
-   * n'est construite qu'à cet instant : tant que personne ne lance la vidéo,
-   * rien n'est chargé et rien n'est déposé.
+   * Trois cas, et un seul ouvre l'iframe :
+   *   • accord donné      → lecture ;
+   *   • accord pas encore donné (refus ou absence de réponse) → on rouvre les
+   *     préférences, et la lecture partira dès que l'accord arrivera ;
+   *   • gestionnaire injoignable → rien, et on le dit.
+   *
+   * Dans les deux derniers cas l'iframe n'est pas construite : rien n'est
+   * chargé, rien n'est déposé.
    */
   protected openPresentation(event: Event): void {
-    this.ouvrir({ type: 'embed', src: this.presentationEmbed }, event);
+    this.lastTrigger = event.currentTarget as HTMLElement;
+    // On va chercher la réponse au lieu d'attendre qu'elle vienne : c'est ici,
+    // et seulement ici, qu'elle décide d'un dépôt.
+    this.consentement.rafraichir();
+
+    if (this.consentement.lecteurVideoAutorise()) {
+      this.ouvrirLecteur();
+      return;
+    }
+    if (this.lecteurBloque()) {
+      return;
+    }
+    this.attenteAccord.set(true);
+    this.consentement.ouvrirPreferences();
+  }
+
+  /** Construit enfin l'iframe — appelé une fois l'accord acquis, jamais avant. */
+  private ouvrirLecteur(): void {
+    this.activeVideo.set({ type: 'embed', src: this.presentationEmbed });
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => this.dialogue()?.nativeElement.focus({ preventScroll: true }));
   }
 
   private ouvrir(video: VideoOuverte, event: Event): void {

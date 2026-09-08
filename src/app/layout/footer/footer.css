@@ -49,7 +49,8 @@
 }
 
 .footer-nav a,
-.footer-contact a {
+.footer-contact a,
+.footer-lien-bouton {
   width: fit-content;
   color: var(--muted);
   font-size: 0.95rem;
@@ -57,8 +58,24 @@
 }
 
 .footer-nav a:hover,
-.footer-contact a:hover {
+.footer-contact a:hover,
+.footer-lien-bouton:hover {
   color: var(--text);
+}
+
+/*
+ * « Gérer mes cookies » ouvre une fenêtre : c'est un bouton, pas un lien — il
+ * ne mène nulle part et n'a pas d'adresse. Il en prend seulement l'apparence,
+ * pour se ranger avec les autres entrées de la colonne.
+ */
+.footer-lien-bouton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
 }
 
 .footer-legal {

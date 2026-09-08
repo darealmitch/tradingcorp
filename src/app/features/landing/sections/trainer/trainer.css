@@ -95,118 +95,23 @@
 }
 
 /*
- * L'information tient sur une ligne : de quoi décider, sans pavé sur le
- * portrait. Le détail complet se déplie juste en dessous, à la demande.
+ * Message d'anomalie, et rien d'autre : l'information sur les traceurs et le
+ * recueil de l'accord appartiennent à Didomi. Il ne s'affiche que si son
+ * gestionnaire n'a pas pu se charger, cas où la vidéo reste fermée.
  */
 .trainer-play-note {
   max-width: 100%;
-  color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.5;
-  text-align: center;
-}
-
-/* `display: block` et `list-style: none` retirent le triangle natif. */
-.trainer-play-note > summary {
-  display: block;
-  list-style: none;
-  padding: 6px 14px;
-  border-radius: 999px;
-  /* Le fond opacifié protège la lisibilité : la ligne se lit par-dessus la
-     photo, dont les zones claires et sombres alternent. */
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  cursor: pointer;
-  text-wrap: pretty;
-}
-
-.trainer-play-note > summary::-webkit-details-marker {
-  display: none;
-}
-
-.trainer-play-note > summary:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.trainer-play-note-plus {
-  margin-left: 6px;
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  white-space: nowrap;
-}
-
-.trainer-play-note-detail {
-  margin-top: 8px;
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  text-align: left;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  text-align: center;
   text-wrap: pretty;
-}
-
-.trainer-play-note-detail p + p {
-  margin-top: 8px;
-}
-
-.trainer-play-note-detail a {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.trainer-play-icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--gradient);
-  color: #04050a;
-}
-
-.trainer-play-icon svg {
-  width: 16px;
-  height: 16px;
-  margin-left: 2px;
-}
-
-.trainer-play-label {
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-/* Halo pulsé autour du bouton play */
-.trainer-play::before {
-  content: '';
-  position: absolute;
-  left: 17px;
-  top: 50%;
-  width: 34px;
-  height: 34px;
-  translate: 0 -50%;
-  border-radius: 50%;
-  background: var(--violet);
-  opacity: 0.5;
-  animation: play-pulse 2.4s ease-out infinite;
-}
-
-@keyframes play-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.5;
-  }
-  70%,
-  100% {
-    transform: scale(2.1);
-    opacity: 0;
-  }
 }
 
 /* ===== Bio ===== */
