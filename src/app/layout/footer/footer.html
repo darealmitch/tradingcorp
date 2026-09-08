@@ -25,6 +25,11 @@
       <a routerLink="/confidentialite">Confidentialité</a>
       <a routerLink="/mentions-legales">Mentions légales</a>
       <a routerLink="/cgv">CGV</a>
+      @if (consentement.disponible()) {
+        <button class="footer-lien-bouton" type="button" (click)="consentement.ouvrirPreferences()">
+          Gérer mes cookies
+        </button>
+      }
     </nav>
 
     <div class="footer-contact">
