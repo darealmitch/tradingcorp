@@ -124,6 +124,14 @@
         {{ chargement() ? 'Un instant…' : 'Vérifier sans rien envoyer' }}
       </button>
       <button
+        class="btn btn-ghost"
+        type="button"
+        (click)="creerSansPrevenir()"
+        [disabled]="chargement() || selection().length === 0 || tropNombreux()"
+      >
+        Créer les comptes sans prévenir
+      </button>
+      <button
         class="btn btn-primary"
         type="button"
         (click)="migrer()"
@@ -135,7 +143,9 @@
 
     <p class="note">
       La vérification ne crée aucun compte et n'envoie aucun e-mail : elle montre ce qui se
-      passerait.
+      passerait. <strong>Créer sans prévenir</strong> reprend les comptes et la progression sans
+      qu'aucun e-mail ne parte — utile pour préparer une reprise et déclencher les liens plus tard,
+      à une heure où ils seront lus : un lien de récupération n'est valable qu'une heure.
     </p>
   </section>
 
