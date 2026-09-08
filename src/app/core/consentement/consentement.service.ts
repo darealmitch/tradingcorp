@@ -9,9 +9,24 @@ import { environment } from '../../../environments/environment';
  */
 export type EtatConsentement = 'accepte' | 'refuse' | 'inconnu';
 
-/** La part de l'API Didomi que ce service utilise, et elle seule. */
+/**
+ * Ce que Didomi rend de l'état d'une personne. Un fournisseur ABSENT de
+ * `vendors` n'a pas été soumis à son choix ; présent avec `enabled: false`, il
+ * a été refusé ou laissé sans réponse. Aucun des deux n'autorise un dépôt.
+ */
+interface StatutDidomi {
+  vendors: Record<string, { enabled: boolean } | undefined>;
+}
+
+/**
+ * La part de l'API Didomi que ce service utilise, et elle seule.
+ *
+ * `getCurrentUserStatus()` et non `getUserConsentStatusForVendor()`, que Didomi
+ * a dépréciée. Elle est SYNCHRONE — la documentation en donne un exemple avec
+ * `.then()`, vérification faite sur le SDK réel c'est une erreur.
+ */
 interface ApiDidomi {
-  getUserConsentStatusForVendor(id: string): boolean | undefined;
+  getCurrentUserStatus(): StatutDidomi;
   preferences: { show(vue?: string): void };
   notice: { show(): void };
   on(evenement: string, rappel: () => void): void;
@@ -103,11 +118,11 @@ export class ConsentementService {
     if (!this.disponible() || !id) {
       return 'inconnu';
     }
-    const etat = window.Didomi?.getUserConsentStatusForVendor(id);
-    if (etat === true) {
-      return 'accepte';
+    const entree = window.Didomi?.getCurrentUserStatus().vendors[id];
+    if (!entree) {
+      return 'inconnu';
     }
-    return etat === false ? 'refuse' : 'inconnu';
+    return entree.enabled ? 'accepte' : 'refuse';
   }
 
   /**
