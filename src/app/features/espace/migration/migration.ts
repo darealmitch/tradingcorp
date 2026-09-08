@@ -228,6 +228,30 @@ export class Migration {
     await this.executer({ simulation: true, envoyerInvitation: false });
   }
 
+  /**
+   * Crée les comptes et la progression SANS prévenir personne.
+   *
+   * Sépare ce qui est réversible de ce qui ne l'est pas. Créer un compte ne se
+   * voit pas de l'extérieur : l'élève n'apprend rien, rien n'arrive dans sa
+   * boîte. L'e-mail, lui, part une fois pour toutes et à une heure qui compte —
+   * un lien de récupération ne vit qu'une heure, l'envoyer la nuit revient à ne
+   * rien envoyer.
+   *
+   * On prépare donc les comptes quand on veut, et on déclenche les liens à
+   * l'heure où les gens les liront.
+   */
+  protected async creerSansPrevenir(): Promise<void> {
+    const nombre = this.selection().length;
+    const message =
+      `Créer ${nombre} compte(s) sans prévenir personne ?\n\n` +
+      'La progression est reprise, mais AUCUN e-mail ne part : les élèves ' +
+      'n’apprendront rien tant que les liens ne seront pas déclenchés.';
+    if (!confirm(message)) {
+      return;
+    }
+    await this.executer({ simulation: false, envoyerInvitation: false });
+  }
+
   protected async migrer(): Promise<void> {
     const nombre = this.selection().length;
     const message =
