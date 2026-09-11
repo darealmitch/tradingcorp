@@ -1,166 +1,133 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { Injectable, InjectionToken, computed, inject, signal } from '@angular/core';
+import type * as CookieConsent from 'vanilla-cookieconsent';
+import { CATEGORIE_VIDEOS, CONFIG_CONSENTEMENT } from './consentement.config';
 
 /**
- * Ce que le site sait du choix d'une personne pour un fournisseur donné.
+ * Ce que le site sait du choix d'une personne pour une catégorie.
  *
  * `inconnu` n'est pas un demi-accord : c'est l'absence de réponse, et elle se
  * traite comme un refus. La seule valeur qui autorise un dépôt est `accepte`.
  */
 export type EtatConsentement = 'accepte' | 'refuse' | 'inconnu';
 
+/** La part de la bibliothèque que ce service emploie, et elle seule. */
+export type ApiConsentement = Pick<
+  typeof CookieConsent,
+  'run' | 'validConsent' | 'acceptedCategory' | 'showPreferences' | 'show'
+>;
+
 /**
- * Ce que Didomi rend de l'état d'une personne. Un fournisseur ABSENT de
- * `vendors` n'a pas été soumis à son choix ; présent avec `enabled: false`, il
- * a été refusé ou laissé sans réponse. Aucun des deux n'autorise un dépôt.
+ * Chargeur de la bibliothèque, fourni par jeton d'injection comme le client
+ * Supabase : les tests passent un double sans intercepter l'import d'un module.
+ *
+ * L'import est DYNAMIQUE : la bibliothèque part dans un fichier à part, chargé
+ * après le démarrage. Importée d'emblée, elle faisait dépasser au chargement
+ * initial son budget de 600 ko — pour un bandeau qui n'a aucune raison de
+ * retarder le premier affichage de la page.
  */
-interface StatutDidomi {
-  vendors: Record<string, { enabled: boolean } | undefined>;
-}
+export const CHARGER_COOKIE_CONSENT = new InjectionToken<() => Promise<ApiConsentement>>(
+  'CHARGER_COOKIE_CONSENT',
+  { providedIn: 'root', factory: () => () => import('vanilla-cookieconsent') },
+);
 
 /**
- * La part de l'API Didomi que ce service utilise, et elle seule.
+ * Recueil du consentement.
  *
- * `getCurrentUserStatus()` et non `getUserConsentStatusForVendor()`, que Didomi
- * a dépréciée. Elle est SYNCHRONE — la documentation en donne un exemple avec
- * `.then()`, vérification faite sur le SDK réel c'est une erreur.
- */
-interface ApiDidomi {
-  getCurrentUserStatus(): StatutDidomi;
-  preferences: { show(vue?: string): void };
-  notice: { show(): void };
-  on(evenement: string, rappel: () => void): void;
-}
-
-declare global {
-  interface Window {
-    Didomi?: ApiDidomi;
-    didomiOnReady?: ((didomi: ApiDidomi) => void)[];
-  }
-}
-
-/**
- * Recueil du consentement, confié à Didomi.
+ * UN SEUL gestionnaire existe sur le site, et c'est celui-ci. Aucune note
+ * maison, aucune case parallèle, aucun accord mémorisé ailleurs : deux
+ * mécanismes concurrents finissent toujours par se contredire, et c'est alors
+ * la personne qui perd — elle refuse à un endroit, le dépôt a lieu à l'autre.
  *
- * UN SEUL gestionnaire de consentement existe sur le site, et c'est celui-ci.
- * Aucune bannière maison, aucune case à cocher parallèle, aucun accord mémorisé
- * dans un coin : deux mécanismes concurrents finissent toujours par se
- * contredire, et c'est alors la personne qui perd — elle refuse quelque part et
- * le dépôt a lieu quand même.
+ * `vanilla-cookieconsent` plutôt que Didomi, payant et sans formule gratuite :
+ * la bibliothèque est libre (MIT) et SERVIE AVEC LE SITE. Elle n'appelle aucun
+ * serveur tiers — un visiteur qui ne lance pas la vidéo ne contacte personne
+ * d'autre que TradingCorp, bandeau compris.
  *
- * LE REPLI EST LE REFUS. Si le SDK n'est pas configuré, s'il est bloqué par une
- * extension, si le réseau le refuse : `disponible` reste faux et tout contenu
- * tiers reste fermé. On ne présume jamais d'un accord qu'on n'a pas pu lire —
- * c'est ce que veut l'article 82 de la loi Informatique et Libertés, qui exige
- * un consentement préalable et non une absence d'opposition.
+ * LE REPLI EST LE REFUS. Si la bibliothèque ne se charge pas ou ne démarre pas,
+ * `disponible` reste faux et tout contenu tiers reste fermé : on ne présume
+ * jamais d'un accord qu'on n'a pas pu lire (article 82 de la loi Informatique
+ * et Libertés).
  */
 @Injectable({ providedIn: 'root' })
 export class ConsentementService {
-  /**
-   * Le gestionnaire a fini de se prononcer : soit il a chargé, soit on sait
-   * qu'il ne chargera pas. Sert à ne pas afficher un message d'erreur pendant
-   * la seconde où le SDK arrive encore.
-   */
+  private readonly charger = inject(CHARGER_COOKIE_CONSENT);
+
+  /** La bibliothèque, une fois chargée ET démarrée — jamais avant. */
+  private bibliotheque: ApiConsentement | null = null;
+
+  /** Le gestionnaire s'est prononcé : démarré, ou en échec. */
   readonly pret = signal(false);
 
-  /** Le gestionnaire répond. Faux s'il n'est pas configuré ou s'il est bloqué. */
+  /** Le gestionnaire répond. Faux tant qu'il démarre, et s'il a échoué. */
   readonly disponible = signal(false);
 
   /**
-   * Compteur de révisions. Les états de consentement vivent dans le SDK, pas
-   * ici : on ne peut pas les « observer » directement. Ce signal est la
-   * dépendance que les `computed` déclarent pour se recalculer à chaque
-   * changement annoncé par Didomi.
+   * Compteur de révisions. L'état du consentement vit dans la bibliothèque, pas
+   * ici : ce signal est la dépendance que les `computed` déclarent pour se
+   * recalculer chaque fois qu'elle annonce un choix.
    */
   private readonly revision = signal(0);
 
   /** Le lecteur vidéo tiers est-il autorisé ? */
   readonly lecteurVideo = computed<EtatConsentement>(() => {
     this.revision();
-    return this.etatFournisseur(environment.didomi.vendeurLecteurVideo);
+    const bibliotheque = this.disponible() ? this.bibliotheque : null;
+    if (!bibliotheque?.validConsent()) {
+      return 'inconnu';
+    }
+    return bibliotheque.acceptedCategory(CATEGORIE_VIDEOS) ? 'accepte' : 'refuse';
   });
 
-  /** Raccourci de lecture : seul `accepte` ouvre la porte. */
+  /** Raccourci : seul `accepte` ouvre la porte. */
   readonly lecteurVideoAutorise = computed(() => this.lecteurVideo() === 'accepte');
 
   constructor() {
-    this.charger();
+    void this.demarrer();
   }
 
   /**
-   * Ouvre la fenêtre de préférences — le « Gérer mes cookies » du pied de page.
+   * Ouvre les préférences — le « Gestion des cookies » du pied de page.
    *
    * Le retrait doit être aussi simple que l'accord (RGPD art. 7.3) : ce point
-   * d'entrée doit rester joignable depuis toutes les pages, à tout moment.
+   * d'entrée reste joignable depuis toutes les pages.
    */
   ouvrirPreferences(): void {
-    window.Didomi?.preferences.show();
+    if (this.disponible()) {
+      this.bibliotheque?.showPreferences();
+    }
   }
 
-  /** Réaffiche la bannière elle-même, pour une personne qui n'a pas encore choisi. */
+  /** Réaffiche le bandeau, pour une personne qui n'a pas encore choisi. */
   ouvrirBanniere(): void {
-    window.Didomi?.notice.show();
+    if (this.disponible()) {
+      this.bibliotheque?.show(true);
+    }
   }
 
   /**
-   * Relit l'état auprès du SDK, sans attendre qu'il signale un changement.
+   * Relit l'état sans attendre d'annonce.
    *
-   * Les événements sont le canal normal, mais on ne bâtit pas une décision de
-   * dépôt sur la certitude d'en recevoir un : observé en essai, un SDK peut
-   * n'émettre aucun `consent.changed`. À l'instant où la réponse commande une
-   * action — ouvrir un lecteur tiers, par exemple — on va donc la chercher.
+   * Les rappels de la bibliothèque sont le canal normal, mais une décision de
+   * dépôt ne se fonde pas sur la certitude d'en avoir reçu un : là où la réponse
+   * commande une action — ouvrir un lecteur tiers —, on va la chercher.
    */
   rafraichir(): void {
     this.revision.update((n) => n + 1);
   }
 
-  private etatFournisseur(id: string): EtatConsentement {
-    if (!this.disponible() || !id) {
-      return 'inconnu';
-    }
-    const entree = window.Didomi?.getCurrentUserStatus().vendors[id];
-    if (!entree) {
-      return 'inconnu';
-    }
-    return entree.enabled ? 'accepte' : 'refuse';
-  }
-
-  /**
-   * Charge le SDK depuis la configuration.
-   *
-   * Le script est injecté par l'application plutôt qu'écrit en dur dans
-   * `index.html` : la clé n'existe alors qu'à un seul endroit, et le site
-   * démarre normalement quand elle n'est pas renseignée. Le retard ainsi pris
-   * — quelques centaines de millisecondes — est sans conséquence, car rien ne
-   * se dépose au chargement : le seul contenu tiers du site attend un clic.
-   */
-  private charger(): void {
-    const { cleApi, idNotice } = environment.didomi;
-    if (!cleApi || !idNotice) {
-      this.pret.set(true);
-      return;
-    }
-
-    window.didomiOnReady = window.didomiOnReady ?? [];
-    window.didomiOnReady.push((didomi) => {
+  private async demarrer(): Promise<void> {
+    const annoncer = (): void => this.revision.update((n) => n + 1);
+    try {
+      const bibliotheque = await this.charger();
+      await bibliotheque.run({ ...CONFIG_CONSENTEMENT, onConsent: annoncer, onChange: annoncer });
+      this.bibliotheque = bibliotheque;
       this.disponible.set(true);
+    } catch {
+      // Chargement ou démarrage impossible : `disponible` reste faux, le refus
+      // tient lieu de réponse, et l'écran concerné le dit.
+    } finally {
       this.pret.set(true);
       this.revision.update((n) => n + 1);
-      // Chaque changement d'avis rouvre ou referme les contenus concernés sans
-      // rechargement. On s'abonne à TROIS événements et non au seul
-      // `consent.changed` : la fermeture des fenêtres est le moment où un choix
-      // vient forcément d'être posé, et elle sert de filet si le signal de
-      // changement manque à l'appel.
-      for (const evenement of ['consent.changed', 'preferences.hidden', 'notice.hidden']) {
-        didomi.on(evenement, () => this.revision.update((n) => n + 1));
-      }
-    });
-
-    const script = document.createElement('script');
-    script.src = `https://sdk.privacy-center.org/${encodeURIComponent(cleApi)}/loader.js?target_type=notice&target=${encodeURIComponent(idNotice)}`;
-    script.async = true;
-    // Bloqué ou injoignable : on l'acte, et le refus reste le repli.
-    script.onerror = () => this.pret.set(true);
-    document.head.appendChild(script);
+    }
   }
 }
