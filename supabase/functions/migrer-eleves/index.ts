@@ -14,7 +14,7 @@ import { enTetesCors, reponsePreflight } from '../_partages/cors.ts';
 //
 // Rien n'est envoyé qui ressemble à un mot de passe : le compte reçoit un mot
 // de passe temporaire aléatoire que personne ne voit, puis un e-mail de
-// récupération dont l'élève tire un code à six chiffres pour choisir le sien.
+// récupération dont le lien lui permet de choisir le sien.
 //
 // TOUT EST IDEMPOTENT : un compte déjà présent est rattaché et non recréé, une
 // inscription existante est laissée telle quelle, une leçon déjà terminée n'est
@@ -129,6 +129,8 @@ Deno.serve(async (req) => {
     }
 
     const bilans: Bilan[] = [];
+    /** Comptes réellement repris — journalisés par identifiant, jamais par adresse. */
+    const profils: string[] = [];
 
     for (const eleve of eleves) {
       const email = eleve.email?.trim().toLowerCase();
@@ -251,6 +253,7 @@ Deno.serve(async (req) => {
         if (error) bilan.probleme = `Invitation non partie : ${error.message}`;
       }
 
+      if (idProfil) profils.push(idProfil);
       bilans.push(bilan);
     }
 
@@ -259,7 +262,9 @@ Deno.serve(async (req) => {
         id_profil: appelant.id,
         action: 'migration_anciens_eleves',
         cible: `${bilans.length} élève(s)`,
-        meta: { emails: bilans.map((b) => b.email), invitations: inviter },
+        // Des identifiants, pas des adresses : une adresse rangée dans une liste
+        // échappait à l'anonymisation qui suit la suppression d'un compte.
+        meta: { profils, invitations: inviter },
       });
     }
 
