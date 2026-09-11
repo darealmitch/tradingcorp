@@ -187,10 +187,11 @@ export class Trainer {
    * Ouvre la vidéo de présentation (lecteur Bunny en iframe).
    *
    * Contrairement aux témoignages — de simples fichiers lus par `<video>` — le
-   * lecteur Bunny dépose deux cookies sur le terminal du visiteur
-   * (`plyr--lib-759` pour les préférences de lecture, `cache-sprite-plyr` pour
-   * le cache des icônes). Ils exigent donc un consentement préalable, et c'est
-   * Didomi qui le détient.
+   * lecteur Bunny écrit dans le stockage du navigateur (`plyr--lib-708929` pour
+   * les préférences de lecture, `cache-sprite-plyr` pour le cache des icônes) et
+   * transmet à Bunny.net des mesures techniques pendant la lecture — relevé sur
+   * le lecteur réel. Il exige donc un consentement préalable, et c'est le
+   * gestionnaire de consentement du site qui le détient.
    *
    * Trois cas, et un seul ouvre l'iframe :
    *   • accord donné      → lecture ;

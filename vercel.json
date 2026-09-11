@@ -14,7 +14,7 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         {
           "key": "Content-Security-Policy-Report-Only",
-          "value": "default-src 'self'; script-src 'self' https://sdk.privacy-center.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com https://sdk.privacy-center.org; font-src 'self'; media-src 'self' blob: https://vz-8e333926-6ea.b-cdn.net; connect-src 'self' https://sdk.privacy-center.org https://api.privacy-center.org https://swzjzwymzjhdatcobibs.supabase.co wss://swzjzwymzjhdatcobibs.supabase.co https://vz-8e333926-6ea.b-cdn.net https://api.cloudinary.com; frame-src https://iframe.mediadelivery.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com; font-src 'self'; media-src 'self' blob: https://vz-8e333926-6ea.b-cdn.net; connect-src 'self' https://swzjzwymzjhdatcobibs.supabase.co wss://swzjzwymzjhdatcobibs.supabase.co https://vz-8e333926-6ea.b-cdn.net https://api.cloudinary.com; frame-src https://iframe.mediadelivery.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         }
       ]
     }

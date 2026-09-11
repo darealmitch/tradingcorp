@@ -16,9 +16,9 @@
           />
         </div>
         <!--
-          Le consentement au lecteur tiers appartient à Didomi, et à lui seul :
-          aucune note ni case maison ici, qui finirait par contredire son
-          registre. Le bouton se contente d'interroger l'état recueilli.
+          Le consentement au lecteur tiers appartient au gestionnaire de consentement
+          du site, et à lui seul : aucune note ni case parallèle ici, qui finirait
+          par contredire le choix enregistré. Le bouton se contente d'interroger l'état recueilli.
         -->
         <div class="trainer-play-zone">
           <button
@@ -35,9 +35,9 @@
 
           @if (lecteurBloque()) {
             <p class="trainer-play-note" id="lecteur-indisponible" role="alert">
-              Le gestionnaire de préférences de confidentialité n'a pas pu se charger — une
-              extension de blocage l'en empêche peut-être. Sans lui, la vidéo ne peut pas être
-              lancée&nbsp;: elle est hébergée par un tiers, et rien n'est déposé sans ton accord.
+              Le gestionnaire de préférences de confidentialité n'a pas pu démarrer. Sans lui, la
+              vidéo ne peut pas être lancée&nbsp;: elle est hébergée par un tiers, et rien n'est
+              déposé sans ton accord. Recharge la page pour réessayer.
             </p>
           }
         </div>
