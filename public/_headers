@@ -49,18 +49,11 @@
   #                              de la page d'accueil, relevées en observant la
   #                              page en marche : `media-src` les refusait
   #   • api.cloudinary.com     — l'envoi de médias depuis l'administration
-  #   • sdk.privacy-center.org — Didomi : le script de la bannière de
-  #                              consentement, ses appels et ses images
-  #   • api.privacy-center.org — Didomi : l'enregistrement des choix
-  #
-  # ⚠️ Sans ces deux dernières origines, la bannière ne se charge pas — et le
-  # site se comporte alors comme si personne n'avait consenti : la vidéo de
-  # présentation reste fermée. Le repli est sûr, mais il est visible.
   #
   # `style-src 'unsafe-inline'` est imposé par Angular, qui pose des styles
   # calculés directement sur les éléments. `script-src` n'a pas cette
   # tolérance : le build de production ne contient aucun script en ligne.
-  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' https://sdk.privacy-center.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com https://sdk.privacy-center.org; font-src 'self'; media-src 'self' blob: https://res.cloudinary.com https://vz-8e333926-6ea.b-cdn.net; connect-src 'self' https://sdk.privacy-center.org https://api.privacy-center.org https://swzjzwymzjhdatcobibs.supabase.co wss://swzjzwymzjhdatcobibs.supabase.co https://vz-8e333926-6ea.b-cdn.net https://api.cloudinary.com; frame-src https://iframe.mediadelivery.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com; font-src 'self'; media-src 'self' blob: https://res.cloudinary.com https://vz-8e333926-6ea.b-cdn.net; connect-src 'self' https://swzjzwymzjhdatcobibs.supabase.co wss://swzjzwymzjhdatcobibs.supabase.co https://vz-8e333926-6ea.b-cdn.net https://api.cloudinary.com; frame-src https://iframe.mediadelivery.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
 
 # Les fichiers versionnés par leur empreinte ne changent jamais de contenu :
 # ils peuvent être gardés un an. index.html, lui, garde le cache par défaut,

@@ -5,6 +5,7 @@
 @import '@fontsource/space-grotesk/600.css';
 @import '@fontsource/space-grotesk/700.css';
 @import '@fontsource/anton/400.css';
+@import 'vanilla-cookieconsent/dist/cookieconsent.css';
 
 /* ===== Fondations ===== */
 
@@ -580,4 +581,74 @@ h3 {
   .section {
     padding-block: 56px;
   }
+}
+
+/* ===========================================================================
+   BANDEAU DE CONSENTEMENT — habillé aux couleurs du site.
+
+   La bibliothèque expose ses couleurs en variables CSS sur `#cc-main`. On les
+   branche sur les jetons de TradingCorp plutôt que de les recopier : ces
+   jetons changeant avec `data-theme`, le bandeau suit le thème clair ou sombre
+   sans la classe `cc--darkmode` de la bibliothèque.
+
+   Refuser pèse autant qu'accepter : les deux boutons partagent le même style
+   (`equalWeightButtons`). C'est une exigence de la CNIL, pas un choix de goût.
+   =========================================================================== */
+#cc-main {
+  --cc-font-family: var(--font-body);
+  --cc-modal-border-radius: 16px;
+  --cc-btn-border-radius: 999px;
+  --cc-pm-toggle-border-radius: 999px;
+
+  --cc-bg: var(--surface);
+  --cc-primary-color: var(--text);
+  --cc-secondary-color: var(--muted);
+  --cc-link-color: var(--accent);
+  --cc-overlay-bg: rgba(3, 4, 8, 0.72);
+  --cc-separator-border-color: var(--line);
+
+  --cc-btn-primary-bg: var(--text);
+  --cc-btn-primary-color: var(--bg);
+  --cc-btn-primary-border-color: var(--text);
+  --cc-btn-primary-hover-bg: transparent;
+  --cc-btn-primary-hover-color: var(--text);
+  --cc-btn-primary-hover-border-color: var(--text);
+
+  --cc-btn-secondary-bg: transparent;
+  --cc-btn-secondary-color: var(--text);
+  --cc-btn-secondary-border-color: var(--line-strong);
+  --cc-btn-secondary-hover-bg: var(--bg-soft);
+  --cc-btn-secondary-hover-color: var(--text);
+  --cc-btn-secondary-hover-border-color: var(--text);
+
+  --cc-toggle-on-bg: var(--violet);
+  --cc-toggle-off-bg: var(--line-strong);
+  --cc-toggle-on-knob-bg: #ffffff;
+  --cc-toggle-off-knob-bg: var(--surface);
+  --cc-toggle-enabled-icon-color: var(--violet);
+  --cc-toggle-disabled-icon-color: var(--muted);
+  --cc-toggle-readonly-bg: var(--line);
+  --cc-toggle-readonly-knob-bg: var(--surface);
+  --cc-toggle-readonly-knob-icon-color: var(--muted);
+
+  --cc-section-category-border: var(--line);
+  --cc-cookie-category-block-bg: var(--bg-soft);
+  --cc-cookie-category-block-border: var(--line);
+  --cc-cookie-category-block-hover-bg: var(--bg-soft);
+  --cc-cookie-category-block-hover-border: var(--line-strong);
+  --cc-cookie-category-expanded-block-bg: var(--bg-soft);
+  --cc-cookie-category-expanded-block-hover-bg: var(--bg-soft);
+
+  --cc-footer-bg: var(--bg-soft);
+  --cc-footer-color: var(--muted);
+  --cc-footer-border-color: var(--line);
+
+  --cc-webkit-scrollbar-bg: var(--line-strong);
+  --cc-webkit-scrollbar-hover-bg: var(--muted);
+}
+
+/* Les titres du bandeau prennent la police d'affichage du site. */
+#cc-main .cm__title,
+#cc-main .pm__title {
+  font-family: var(--font-display);
 }

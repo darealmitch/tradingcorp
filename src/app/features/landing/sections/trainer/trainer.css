@@ -96,8 +96,8 @@
 
 /*
  * Message d'anomalie, et rien d'autre : l'information sur les traceurs et le
- * recueil de l'accord appartiennent à Didomi. Il ne s'affiche que si son
- * gestionnaire n'a pas pu se charger, cas où la vidéo reste fermée.
+ * recueil de l'accord appartiennent au gestionnaire de consentement. Il ne
+ * s'affiche que si celui-ci n'a pas pu démarrer, cas où la vidéo reste fermée.
  */
 .trainer-play-note {
   max-width: 100%;
