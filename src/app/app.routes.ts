@@ -114,6 +114,22 @@ export const routes: Routes = [
     loadComponent: () => import('./features/legal/cgv/cgv').then((m) => m.Cgv),
     title: 'TradingCorp — Conditions générales de vente',
   },
+  {
+    path: 'cookies',
+    loadComponent: () => import('./features/legal/cookies/cookies').then((m) => m.Cookies),
+    title: 'TradingCorp — Politique de cookies',
+  },
+  {
+    path: 'remboursement',
+    loadComponent: () =>
+      import('./features/legal/remboursement/remboursement').then((m) => m.Remboursement),
+    title: 'TradingCorp — Politique de remboursement',
+  },
+  {
+    path: 'cgu',
+    loadComponent: () => import('./features/legal/cgu/cgu').then((m) => m.Cgu),
+    title: "TradingCorp — Conditions générales d'utilisation",
+  },
 
   // Parcours pédagogique : page ENTIÈRE, hors du gabarit espace (pas de
   // sidebar). Accessible depuis le header. Mêmes gardes que l'espace.

@@ -22,12 +22,15 @@
     -->
     <nav class="footer-nav" aria-label="Informations légales">
       <span class="footer-label">Informations</span>
-      <a routerLink="/confidentialite">Confidentialité</a>
       <a routerLink="/mentions-legales">Mentions légales</a>
-      <a routerLink="/cgv">CGV</a>
+      <a routerLink="/cgv">Conditions générales de vente</a>
+      <a routerLink="/cgu">Conditions générales d'utilisation</a>
+      <a routerLink="/confidentialite">Politique de confidentialité</a>
+      <a routerLink="/cookies">Politique de cookies</a>
+      <a routerLink="/remboursement">Politique de remboursement</a>
       @if (consentement.disponible()) {
         <button class="footer-lien-bouton" type="button" (click)="consentement.ouvrirPreferences()">
-          Gérer mes cookies
+          Gestion des cookies
         </button>
       }
     </nav>
