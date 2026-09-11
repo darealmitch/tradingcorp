@@ -132,3 +132,10 @@
   gap: 16px;
   margin-top: 14px;
 }
+
+/* Information au moment de l'achat : sous les offres, lisible sans s'imposer. */
+.mention-achat {
+  max-width: 70ch;
+  margin-top: 16px;
+  line-height: 1.6;
+}

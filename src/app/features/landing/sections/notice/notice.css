@@ -234,3 +234,13 @@
     animation: none;
   }
 }
+
+/* Mention sous les témoignages : sélectionnés, non représentatifs, sans promesse de gain. */
+.notice-mention {
+  max-width: 62ch;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  text-align: center;
+}
