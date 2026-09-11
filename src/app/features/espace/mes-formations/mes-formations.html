@@ -89,6 +89,17 @@
         </article>
       }
     </div>
+    <!-- Information précontractuelle au point de décision : la version des CGV
+         qui s'applique est celle acceptée au moment de l'achat, pas celle
+         de l'inscription. -->
+    @if (inscrites().size < formations().length) {
+      <p class="cellule-discrete mention-achat">
+        En cliquant sur « Acheter », tu acceptes les
+        <a routerLink="/cgv">conditions générales de vente</a> et tu es redirigé vers la page de
+        paiement sécurisée de Stripe. L'accès est ouvert dès le paiement, et tu conserves ton droit
+        de rétractation de 14 jours, même après avoir commencé la formation.
+      </p>
+    }
   }
 
   <!-- L'avis ne se demande qu'à qui suit réellement la formation : la policy

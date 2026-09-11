@@ -1,174 +1,346 @@
 <article class="legal">
   <header class="legal-tete">
     <h1>Conditions générales de vente</h1>
-    <p class="legal-maj">Dernière mise à jour : 6 septembre 2026</p>
+    <p class="legal-maj">Version en vigueur au 11 septembre 2026</p>
   </header>
 
-  <p class="legal-todo">
-    <strong>À faire relire par un juriste avant publication.</strong> Ce document décrit fidèlement
-    le fonctionnement technique de la plateforme, mais la vente à des consommateurs engage
-    l'éditeur. Une seule mention obligatoire manque encore : le médiateur de la consommation,
-    signalé à l'article 10.
-  </p>
+  <nav class="legal-sommaire" aria-label="Sommaire">
+    <p class="legal-sommaire-titre">Sommaire</p>
+    <ol>
+      <li><a [routerLink]="[]" fragment="article-1">Définitions</a></li>
+      <li><a [routerLink]="[]" fragment="article-2">Objet et champ d'application</a></li>
+      <li><a [routerLink]="[]" fragment="article-3">Caractéristiques de la Formation</a></li>
+      <li><a [routerLink]="[]" fragment="article-4">Prix</a></li>
+      <li><a [routerLink]="[]" fragment="article-5">Commande</a></li>
+      <li><a [routerLink]="[]" fragment="article-6">Paiement</a></li>
+      <li><a [routerLink]="[]" fragment="article-7">Accès à la Formation</a></li>
+      <li><a [routerLink]="[]" fragment="article-8">Droit de rétractation</a></li>
+      <li><a [routerLink]="[]" fragment="article-9">Garantie légale de conformité</a></li>
+      <li><a [routerLink]="[]" fragment="article-10">Utilisation personnelle de l'accès</a></li>
+      <li><a [routerLink]="[]" fragment="article-11">Suppression du compte</a></li>
+      <li><a [routerLink]="[]" fragment="article-12">Certificat</a></li>
+      <li><a [routerLink]="[]" fragment="article-13">Responsabilité</a></li>
+      <li><a [routerLink]="[]" fragment="article-14">Propriété intellectuelle</a></li>
+      <li><a [routerLink]="[]" fragment="article-15">Données personnelles</a></li>
+      <li><a [routerLink]="[]" fragment="article-16">Service client et réclamations</a></li>
+      <li><a [routerLink]="[]" fragment="article-17">Médiation de la consommation</a></li>
+      <li><a [routerLink]="[]" fragment="article-18">Droit applicable et juridiction</a></li>
+    </ol>
+    <p><a [routerLink]="[]" fragment="annexe">Annexe – Formulaire de rétractation</a></p>
+  </nav>
 
   <section>
-    <h2>1. Objet</h2>
+    <span class="legal-ancre" id="preambule"></span>
+    <h2>Préambule</h2>
     <p>
-      Les présentes conditions régissent la vente de la formation en ligne proposée par TradingCorp
-      aux personnes physiques majeures.
+      Les présentes conditions générales de vente (les « CGV ») sont conclues entre, d'une part,
+      Keryan André, entrepreneur individuel exerçant sous le nom commercial TradingCorp, immatriculé
+      sous le numéro SIRET 909 608 697 00019, dont l'adresse est
+      <span class="legal-a-completer">à compléter</span>, joignable à l'adresse
+      <a href="mailto:contact&#64;tradingcorp.fr">contact&#64;tradingcorp.fr</a> (« TradingCorp »),
+      et, d'autre part, toute personne physique majeure agissant en qualité de consommateur (le «
+      Client »).
+    </p>
+    <p>
+      Les CGV applicables sont celles en vigueur à la date de la commande. Le Client déclare en
+      avoir pris connaissance et les accepter avant de passer commande.
     </p>
   </section>
 
   <section>
-    <h2>2. La formation</h2>
+    <span class="legal-ancre" id="article-1"></span>
+    <h2>Article 1 – Définitions</h2>
+    <dl class="legal-fiche">
+      <dt>Client</dt>
+      <dd>La personne physique majeure qui achète la Formation à des fins non professionnelles.</dd>
+      <dt>Formation</dt>
+      <dd>La formation en ligne commercialisée par TradingCorp et décrite à l'article 3.</dd>
+      <dt>Plateforme</dt>
+      <dd>Le site tradingcorp.fr, par lequel la Formation est commercialisée et fournie.</dd>
+      <dt>Espace</dt>
+      <dd>L'espace personnel du Client, accessible après connexion à son compte.</dd>
+    </dl>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-2"></span>
+    <h2>Article 2 – Objet et champ d'application</h2>
     <p>
-      <strong>Formation Trader Pro</strong> — 8 modules, 103 chapitres, comprenant des vidéos, des
-      documents téléchargeables et des quiz d'évaluation. Un <strong>certificat</strong> nominatif
-      est délivré à l'achèvement complet du cursus.
-    </p>
-    <p>
-      L'accès est <strong>personnel, non cessible et sans limite de durée</strong> à compter de
-      l'achat, sous réserve du maintien du service. La formation est accessible en ligne, sans
-      installation.
+      Les CGV régissent la vente en ligne de la Formation par TradingCorp au Client. L'utilisation
+      de la Plateforme est par ailleurs régie par les
+      <a routerLink="/cgu">conditions générales d'utilisation</a>.
     </p>
   </section>
 
   <section>
-    <h2>3. Prix et paiement</h2>
+    <span class="legal-ancre" id="article-3"></span>
+    <h2>Article 3 – Caractéristiques de la Formation</h2>
     <p>
-      Le prix est de <strong>997,00 €</strong>, affiché toutes taxes comprises sur la page de vente
-      qui fait foi.
+      La Formation « Trader Pro » comprend 8 modules et 103 chapitres, composés de vidéos, de
+      documents téléchargeables et de quiz d'évaluation. Un certificat nominatif est délivré au
+      Client ayant suivi l'intégralité du parcours.
     </p>
     <p>
-      Le paiement s'effectue via <strong>Stripe</strong>. Les moyens acceptés sont ceux proposés
-      lors du paiement, dont le paiement différé ou fractionné lorsqu'il est disponible.
-      <strong>TradingCorp n'a accès à aucune donnée bancaire</strong> : celles-ci sont traitées
-      exclusivement par Stripe.
+      La Formation est accessible en ligne, sans installation, depuis tout ordinateur, tablette ou
+      téléphone disposant d'une connexion à internet et d'un navigateur récent. Ses caractéristiques
+      essentielles sont présentées sur la Plateforme avant toute commande.
     </p>
-    <p>L'accès à la formation est ouvert dès confirmation du paiement.</p>
-    <p><strong>TVA non applicable, article 293 B du Code général des impôts.</strong></p>
   </section>
 
   <section>
-    <h2>4. Droit de rétractation</h2>
+    <span class="legal-ancre" id="article-4"></span>
+    <h2>Article 4 – Prix</h2>
     <p>
-      Tu disposes d'un délai de <strong>14 jours</strong> à compter de la conclusion du contrat pour
-      exercer ton droit de rétractation, sans avoir à te justifier ni à supporter de frais (art.
-      L221-18 du Code de la consommation).
+      Le prix de la Formation est de <strong>997,00 €</strong> toutes taxes comprises. TVA non
+      applicable, article 293 B du Code général des impôts.
     </p>
     <p>
-      L'accès à la formation t'est ouvert immédiatement après le paiement, et
-      <strong>cela ne te fait pas perdre ce droit</strong> : nous ne demandons pas de renonciation.
-      Tu peux donc commencer la formation et changer d'avis dans les 14 jours.
+      Le prix applicable est celui affiché sur la Plateforme au moment de la commande. TradingCorp
+      peut modifier ses prix à tout moment, sans effet sur les commandes déjà payées.
     </p>
+  </section>
 
-    <h3>Comment l'exercer</h3>
+  <section>
+    <span class="legal-ancre" id="article-5"></span>
+    <h2>Article 5 – Commande</h2>
     <p>
-      Écris à <a href="mailto:contact&#64;tradingcorp.fr">contact&#64;tradingcorp.fr</a> en
-      indiquant ta décision, avant l'expiration du délai. Tu peux reprendre le formulaire
-      ci-dessous, sans y être obligé — toute déclaration dénuée d'ambiguïté suffit.
+      La commande est passée depuis l'Espace du Client, après création d'un compte dans les
+      conditions prévues par les <a routerLink="/cgu">conditions générales d'utilisation</a>.
+    </p>
+    <p>
+      En cliquant sur le bouton « Acheter », le Client accepte les présentes CGV et est redirigé
+      vers la page de paiement sécurisée de Stripe, sur laquelle il vérifie le détail et le prix de
+      sa commande avant de la confirmer par le paiement.
+    </p>
+    <p>
+      Le contrat est conclu à la confirmation du paiement. La confirmation de la commande est
+      notifiée au Client dans son Espace.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-6"></span>
+    <h2>Article 6 – Paiement</h2>
+    <p>
+      Le prix est exigible lors de la commande. Le paiement s'effectue par l'intermédiaire du
+      prestataire de paiement sécurisé Stripe, au moyen des modes de paiement proposés sur la page
+      de paiement, y compris, lorsqu'il est proposé, un paiement en plusieurs fois assuré par un
+      organisme tiers.
+    </p>
+    <p>
+      TradingCorp n'a accès à aucune donnée bancaire du Client, celles-ci étant traitées
+      exclusivement par Stripe. En cas de refus du paiement, la commande n'est pas conclue.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-7"></span>
+    <h2>Article 7 – Accès à la Formation</h2>
+    <p>
+      L'accès à la Formation est ouvert dans l'Espace du Client dès la confirmation du paiement.
+    </p>
+    <p>
+      Il est personnel et incessible, et consenti sans limitation de durée, sous réserve du maintien
+      de la Plateforme par TradingCorp.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-8"></span>
+    <h2>Article 8 – Droit de rétractation</h2>
+    <p>
+      Conformément à l'article L221-18 du Code de la consommation, le Client dispose d'un délai de
+      <strong>14 jours</strong> à compter de la conclusion du contrat pour exercer son droit de
+      rétractation, sans avoir à justifier de motif ni à supporter de frais.
+    </p>
+    <p>
+      L'accès à la Formation étant ouvert dès le paiement, TradingCorp ne demande pas au Client de
+      renoncer à son droit de rétractation : celui-ci est conservé pendant 14 jours, même si le
+      Client a commencé à suivre la Formation.
+    </p>
+    <p>
+      Pour l'exercer, le Client adresse à TradingCorp, avant l'expiration du délai, une déclaration
+      dénuée d'ambiguïté par e-mail à
+      <a href="mailto:contact&#64;tradingcorp.fr">contact&#64;tradingcorp.fr</a>. Il peut utiliser
+      le formulaire de rétractation figurant en <a [routerLink]="[]" fragment="annexe">annexe</a>,
+      sans que cela soit obligatoire.
+    </p>
+    <p>
+      TradingCorp rembourse la totalité des sommes versées au plus tard 14 jours à compter de la
+      réception de la demande, au moyen du même moyen de paiement que celui utilisé pour la
+      commande, sauf accord exprès du Client pour un autre moyen, et sans frais pour celui-ci.
+      L'accès à la Formation prend fin à la date du remboursement.
+    </p>
+    <p>
+      Les modalités pratiques sont précisées dans la
+      <a routerLink="/remboursement">politique de remboursement</a>.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-9"></span>
+    <h2>Article 9 – Garantie légale de conformité</h2>
+    <p>
+      La Formation constitue un contenu numérique au sens du Code de la consommation. TradingCorp
+      est tenu de la fournir conforme au contrat et répond des défauts de conformité dans les
+      conditions des articles L224-25-12 et suivants du Code de la consommation.
+    </p>
+    <p>
+      La Formation étant fournie de manière continue, TradingCorp répond des défauts de conformité
+      apparus pendant toute la durée de sa fourniture. En cas de défaut, le Client peut exiger la
+      mise en conformité de la Formation sans frais ; si celle-ci est impossible ou n'intervient pas
+      dans un délai raisonnable, il peut obtenir une réduction du prix ou la résolution du contrat.
+    </p>
+    <p>
+      Cette garantie s'applique indépendamment du droit de rétractation. Pour la mettre en œuvre, le
+      Client contacte le service client dans les conditions de l'article 16.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-10"></span>
+    <h2>Article 10 – Utilisation personnelle de l'accès</h2>
+    <p>
+      L'accès à la Formation est strictement réservé au Client. Le partage du compte, la revente de
+      l'accès ainsi que la reproduction ou la diffusion des contenus, y compris à titre gratuit,
+      sont interdits.
+    </p>
+    <p>
+      En cas de manquement, TradingCorp peut suspendre l'accès à la Formation après en avoir informé
+      le Client, sans remboursement et sans préjudice de tout recours en réparation du préjudice
+      subi.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-11"></span>
+    <h2>Article 11 – Suppression du compte</h2>
+    <p>
+      Le Client peut supprimer son compte à tout moment depuis son Espace. La suppression est
+      définitive et met fin à l'accès à la Formation. Elle n'ouvre droit à aucun remboursement, sauf
+      exercice du droit de rétractation dans le délai prévu à l'article 8.
+    </p>
+    <p>
+      Les justificatifs de paiement sont conservés pendant dix ans, conformément aux obligations
+      comptables de TradingCorp.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-12"></span>
+    <h2>Article 12 – Certificat</h2>
+    <p>
+      Le certificat atteste que le Client a suivi l'intégralité de la Formation. Il ne constitue ni
+      un diplôme d'État, ni une certification professionnelle reconnue, ni une habilitation à
+      exercer une activité réglementée.
+    </p>
+    <p>
+      Son authenticité peut être vérifiée publiquement à partir de son numéro. Cette vérification
+      affiche uniquement le numéro du certificat, l'intitulé de la Formation, le prénom et
+      l'initiale du nom de son titulaire, ainsi que la date d'obtention.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-13"></span>
+    <h2>Article 13 – Responsabilité</h2>
+    <p>
+      La Formation est un contenu pédagogique. Elle ne constitue ni un conseil en investissement, ni
+      une recommandation personnalisée, ni une garantie de résultat, et aucun gain n'est promis. Le
+      trading comporte un risque de perte en capital pouvant aller jusqu'à la totalité des sommes
+      engagées. Le Client demeure seul responsable de ses décisions d'investissement.
+    </p>
+    <p>
+      TradingCorp est responsable de la bonne exécution des obligations résultant du contrat. Sa
+      responsabilité ne peut être engagée lorsque l'inexécution ou la mauvaise exécution du contrat
+      est imputable au Client, au fait imprévisible et insurmontable d'un tiers au contrat, ou à un
+      cas de force majeure.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-14"></span>
+    <h2>Article 14 – Propriété intellectuelle</h2>
+    <p>
+      L'achat de la Formation confère au Client un droit d'accès personnel, non exclusif et
+      incessible, limité à un usage privé. Il n'emporte aucune cession de droits de propriété
+      intellectuelle sur les contenus, qui demeurent la propriété de TradingCorp ou de ses ayants
+      droit. Les règles applicables sont précisées dans les
+      <a routerLink="/mentions-legales">mentions légales</a>.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-15"></span>
+    <h2>Article 15 – Données personnelles</h2>
+    <p>
+      Les données personnelles du Client sont traitées conformément à la
+      <a routerLink="/confidentialite">politique de confidentialité</a>.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-16"></span>
+    <h2>Article 16 – Service client et réclamations</h2>
+    <p>
+      Pour toute question ou réclamation, le Client peut contacter TradingCorp par e-mail à
+      <a href="mailto:contact&#64;tradingcorp.fr">contact&#64;tradingcorp.fr</a>, ou par courrier à
+      l'adresse figurant dans les <a routerLink="/mentions-legales">mentions légales</a>.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-17"></span>
+    <h2>Article 17 – Médiation de la consommation</h2>
+    <p>
+      Conformément à l'article L612-1 du Code de la consommation, le Client peut recourir
+      gratuitement à un médiateur de la consommation en vue de la résolution amiable d'un litige qui
+      l'oppose à TradingCorp. Le médiateur ne peut être saisi qu'après une réclamation écrite
+      préalable adressée à TradingCorp, et au plus tard un an après celle-ci.
+    </p>
+    <dl class="legal-fiche">
+      <dt>Médiateur</dt>
+      <dd><span class="legal-a-completer">à compléter</span></dd>
+      <dt>Coordonnées</dt>
+      <dd><span class="legal-a-completer">à compléter</span></dd>
+    </dl>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="article-18"></span>
+    <h2>Article 18 – Droit applicable et juridiction</h2>
+    <p>
+      Les présentes CGV sont soumises au droit français. À défaut de résolution amiable, le Client
+      peut saisir, à son choix, la juridiction du lieu où il demeurait au moment de la conclusion du
+      contrat ou de la survenance du fait dommageable, ou toute autre juridiction territorialement
+      compétente.
+    </p>
+  </section>
+
+  <section>
+    <span class="legal-ancre" id="annexe"></span>
+    <h2>Annexe – Formulaire de rétractation</h2>
+    <p>
+      Veuillez compléter et renvoyer le présent formulaire uniquement si vous souhaitez vous
+      rétracter du contrat.
     </p>
     <blockquote class="legal-formulaire">
-      <p>À l'attention de TradingCorp — contact&#64;tradingcorp.fr :</p>
       <p>
-        Je vous notifie par la présente ma rétractation du contrat portant sur la prestation de
-        services ci-dessous :
+        À l'attention de TradingCorp, Keryan André,
+        <span class="legal-a-completer">adresse à compléter</span>, contact&#64;tradingcorp.fr :
       </p>
-      <p>Commandé le : …………… — Nom : …………… — Adresse : ……………</p>
-      <p>Date : …………… — Signature (uniquement en cas de notification papier) : ……………</p>
+      <p>
+        Je vous notifie par la présente ma rétractation du contrat portant sur la fourniture du
+        contenu numérique ci-dessous :
+      </p>
+      <p>Formation TradingCorp, commandée le : ……………</p>
+      <p>Nom du consommateur : ……………</p>
+      <p>Adresse du consommateur : ……………</p>
+      <p>
+        Signature du consommateur (uniquement en cas de notification du présent formulaire sur
+        papier) : ……………
+      </p>
+      <p>Date : ……………</p>
     </blockquote>
-
-    <h3>Remboursement</h3>
-    <p>
-      Le remboursement intervient dans un délai maximal de <strong>14 jours</strong> à compter de la
-      réception de ta demande, par le même moyen de paiement que celui utilisé lors de l'achat, sauf
-      accord contraire. L'accès à la formation est clôturé au moment du remboursement.
-    </p>
-  </section>
-
-  <section>
-    <h2>5. Garantie légale de conformité</h2>
-    <p>
-      La formation est un <strong>contenu numérique</strong> au sens du Code de la consommation.
-      TradingCorp est tenu de la fournir conforme au contrat et répond de ses défauts de conformité
-      (art. L224-25-12 et suivants).
-    </p>
-    <p>
-      L'accès étant fourni de façon continue, cette garantie vaut pendant toute la durée de la
-      fourniture. En cas de défaut, tu peux exiger la mise en conformité sans frais ; si elle est
-      impossible ou n'intervient pas, tu peux obtenir une réduction du prix ou la résolution du
-      contrat. Cette garantie est indépendante du droit de rétractation et ne te coûte rien.
-    </p>
-  </section>
-
-  <section>
-    <h2>6. Compte et accès</h2>
-    <p>
-      L'achat suppose la création d'un compte. Tu es responsable de la confidentialité de ton mot de
-      passe. La formation étant réservée aux personnes majeures, une date de naissance est demandée
-      à l'inscription.
-    </p>
-    <p>
-      Le partage de compte, la revente et la rediffusion des contenus sont interdits et peuvent
-      entraîner la suspension de l'accès sans remboursement.
-    </p>
-  </section>
-
-  <section>
-    <h2>7. Certificat</h2>
-    <p>
-      Le certificat atteste de l'achèvement de la formation. Il ne s'agit ni d'un diplôme d'État, ni
-      d'une certification professionnelle reconnue, ni d'une habilitation à exercer une activité
-      réglementée. Il peut être vérifié publiquement par son numéro ; cette vérification n'affiche
-      que le prénom et l'initiale du nom de son titulaire.
-    </p>
-  </section>
-
-  <section>
-    <h2>8. Suppression du compte</h2>
-    <p>
-      Tu peux supprimer ton compte à tout moment depuis ton profil. La suppression est définitive et
-      entraîne la perte de l'accès à la formation, <strong>sans remboursement</strong> sauf droit de
-      rétractation en cours. Les justificatifs de paiement sont conservés dix ans conformément à la
-      loi.
-    </p>
-  </section>
-
-  <section>
-    <h2>9. Données personnelles</h2>
-    <p>Voir la <a routerLink="/confidentialite">politique de confidentialité</a>.</p>
-  </section>
-
-  <section>
-    <h2>10. Réclamations et litiges</h2>
-    <p>
-      Pour toute réclamation, écris d'abord à
-      <a href="mailto:contact&#64;tradingcorp.fr">contact&#64;tradingcorp.fr</a>. Nous nous
-      efforçons de répondre dans les meilleurs délais.
-    </p>
-    <p>
-      Si notre réponse ne te satisfait pas, ou faute de réponse, tu peux saisir
-      <strong>gratuitement</strong> un médiateur de la consommation (art. L612-1 du Code de la
-      consommation). La saisine doit intervenir dans l'année qui suit ta réclamation écrite, et
-      suppose que tu aies d'abord tenté de résoudre le litige directement avec nous.
-    </p>
-    <p class="legal-todo">
-      <strong>À compléter par l'éditeur :</strong> le nom et les coordonnées du médiateur de la
-      consommation auquel TradingCorp adhère. L'adhésion à un médiateur agréé est obligatoire pour
-      tout professionnel vendant à des consommateurs, et ses coordonnées doivent figurer ici.
-    </p>
-    <p>
-      Le droit français est applicable. À défaut d'accord amiable, les tribunaux français sont
-      compétents.
-    </p>
-  </section>
-
-  <section>
-    <h2>11. Avertissement</h2>
-    <p>
-      Le trading comporte un risque de perte en capital pouvant aller jusqu'à la totalité des sommes
-      engagées. Cette formation est un contenu pédagogique : elle ne constitue ni un conseil en
-      investissement, ni une garantie de résultat. Aucun gain n'est promis ni garanti.
-    </p>
   </section>
 </article>
