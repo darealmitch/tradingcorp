@@ -18,7 +18,11 @@ import { LeconPlayer } from './lecon-player';
 interface Interne {
   lecon: ReturnType<typeof signal<LeconJouable | null>>;
   videoFinie: ReturnType<typeof signal<boolean>>;
+  urlSignee: ReturnType<typeof signal<string | null>>;
+  preparationVideo: ReturnType<typeof signal<boolean>>;
   tempsMax: number;
+  preparerVideo(l: LeconJouable): Promise<void>;
+  videoIndisponible(l: LeconJouable): boolean;
   videoUrl(l: LeconJouable): string | null;
   srcDirect(l: LeconJouable): string | null;
   poster(l: LeconJouable): string;
@@ -58,16 +62,20 @@ describe('LeconPlayer', () => {
   let interne: Interne;
   let estCompteTest: ReturnType<typeof signal<boolean>>;
   let positionsEnregistrees: { id: string; secondes: number }[];
+  /** Ce que rend `video-signee` — null vaut « refusée ou indisponible ». */
+  let urlSigneeRendue: string | null;
 
   beforeEach(async () => {
     estCompteTest = signal(false);
     positionsEnregistrees = [];
+    urlSigneeRendue = null;
 
     const contenuDouble = {
       chargerLeconJouable: () => Promise.resolve(null),
       etatsLecons: () => Promise.resolve([]),
       terminerLecon: () => Promise.resolve(),
       marquerVideoTerminee: () => Promise.resolve(),
+      urlVideoSignee: () => Promise.resolve(urlSigneeRendue),
       enregistrerPosition: (id: string, secondes: number) => {
         positionsEnregistrees.push({ id, secondes });
         return Promise.resolve();
@@ -110,6 +118,15 @@ describe('LeconPlayer', () => {
       expect(interne.videoUrl(lecon())).toBeNull();
     });
 
+    it('préfère l’adresse signée à l’URL stockée', () => {
+      // `video_url` n'est plus servie aux apprenants, mais le staff la reçoit
+      // encore : quand les deux sont là, c'est la signée qui doit jouer.
+      const l = lecon({ video_url: 'https://cdn/nue.m3u8' });
+      interne.urlSignee.set('https://cdn/bcdn_token=abc&expires=1/v/playlist.m3u8');
+
+      expect(interne.videoUrl(l)).toBe('https://cdn/bcdn_token=abc&expires=1/v/playlist.m3u8');
+    });
+
     it('laisse la balise sans src pour un flux HLS — hls.js alimente l’élément', () => {
       const l = lecon({ video_url: 'https://cdn/v/playlist.m3u8' });
       // Un `src` concurrent ferait échouer la lecture par MediaSource.
@@ -119,6 +136,63 @@ describe('LeconPlayer', () => {
     it('pose le src directement pour un MP4', () => {
       const l = lecon({ video_url: 'https://cdn/v/play_720p.mp4' });
       expect(interne.srcDirect(l)).toBe('https://cdn/v/play_720p.mp4');
+    });
+  });
+
+  describe('préparation de l’adresse de lecture', () => {
+    it('pose l’adresse obtenue pour le chapitre affiché', async () => {
+      const l = lecon({ video_provider_id: 'bunny-1' });
+      interne.lecon.set(l);
+      urlSigneeRendue = 'https://cdn/bcdn_token=abc/v/playlist.m3u8';
+
+      await interne.preparerVideo(l);
+
+      expect(interne.videoUrl(l)).toBe('https://cdn/bcdn_token=abc/v/playlist.m3u8');
+      expect(interne.preparationVideo()).toBe(false);
+    });
+
+    it('ignore une adresse revenue après un changement de chapitre', async () => {
+      // L'apprenant enchaîne les étapes plus vite que le réseau ne répond :
+      // sans ce garde, la vidéo du chapitre précédent s'ouvrirait sur le
+      // suivant — ou échouerait, l'adresse ne valant que pour SA vidéo.
+      const demandee = lecon({ id_lecon: 'l-1', video_provider_id: 'bunny-1' });
+      interne.lecon.set(lecon({ id_lecon: 'l-2', video_provider_id: 'bunny-2' }));
+      urlSigneeRendue = 'https://cdn/bcdn_token=abc/l-1/playlist.m3u8';
+
+      await interne.preparerVideo(demandee);
+
+      expect(interne.urlSignee()).toBeNull();
+    });
+
+    it('ne demande aucune adresse pour un chapitre qui n’est pas une vidéo', async () => {
+      urlSigneeRendue = 'https://cdn/ne-doit-pas-servir.m3u8';
+      const l = lecon({ type: 'article' });
+      interne.lecon.set(l);
+
+      await interne.preparerVideo(l);
+
+      expect(interne.urlSignee()).toBeNull();
+      expect(interne.preparationVideo()).toBe(false);
+    });
+
+    it('signale l’indisponibilité quand la signature est refusée', async () => {
+      const l = lecon({ video_provider_id: 'bunny-1' });
+      interne.lecon.set(l);
+      urlSigneeRendue = null;
+
+      await interne.preparerVideo(l);
+
+      expect(interne.videoUrl(l)).toBeNull();
+      expect(interne.videoIndisponible(l)).toBe(true);
+    });
+
+    it('n’annonce pas l’indisponibilité tant que la préparation est en cours', () => {
+      const l = lecon({ video_provider_id: 'bunny-1' });
+      interne.preparationVideo.set(true);
+
+      // Le message « la vidéo n'a pas pu être préparée » à l'ouverture de
+      // chaque chapitre ferait passer un aller-retour réseau pour une panne.
+      expect(interne.videoIndisponible(l)).toBe(false);
     });
   });
 

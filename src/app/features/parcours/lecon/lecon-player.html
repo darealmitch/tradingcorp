@@ -51,11 +51,17 @@
           @if (videoUrl(l); as src) {
             <!-- `src` absent quand hls.js alimente la balise : il pilote alors
                  lui-même la source via MediaSource. -->
+            <!-- `nodownload` retire l'entrée « Télécharger » des contrôles de
+                 Chrome. C'est du confort, pas une protection : ce qui empêche
+                 réellement de récupérer le fichier, c'est que l'adresse
+                 ci-dessus est signée et périssable. -->
             <video
               #lecteur
               [attr.src]="srcDirect(l)"
               [poster]="poster(l)"
               controls
+              controlsList="nodownload"
+              [disablePictureInPicture]="true"
               playsinline
               preload="metadata"
               (loadedmetadata)="reprendre(l)"
@@ -82,9 +88,16 @@
                 </svg>
               </button>
             }
-          } @else if (videoNonSupportee(l)) {
+          } @else if (preparationVideo()) {
+            <!-- L'adresse de lecture se demande au serveur : quelques dizaines
+                 de millisecondes pendant lesquelles il ne faut surtout pas
+                 annoncer « aucune vidéo ». -->
             <div class="lecon-video-fallback">
-              <p>Le lecteur pour ce fournisseur vidéo n'est pas encore intégré.</p>
+              <p class="discret">Préparation de la vidéo…</p>
+            </div>
+          } @else if (videoIndisponible(l)) {
+            <div class="lecon-video-fallback">
+              <p>La vidéo n'a pas pu être préparée. Rechargez la page pour réessayer.</p>
             </div>
           } @else {
             <div class="lecon-video-fallback">
