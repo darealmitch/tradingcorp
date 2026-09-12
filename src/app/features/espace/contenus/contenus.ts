@@ -9,13 +9,6 @@ import {
   TypeRessource,
 } from '../../../core/contenu/apprentissage.model';
 
-/**
- * Hébergeurs officiels du projet. Une vidéo servie depuis un autre domaine est
- * un provisoire — typiquement le `BigBuckBunny.mp4` que `seed_chapitres.sql`
- * pose sur chaque chapitre pour que le parcours soit navigable avant tournage.
- */
-const HEBERGEURS_PROJET = ['b-cdn.net', 'mediadelivery.net', 'res.cloudinary.com'];
-
 /** Libellés compacts : la colonne Médias est étroite. */
 const TYPES_COURTS: Record<TypeRessource, string> = {
   pdf: 'PDF',
@@ -135,10 +128,10 @@ export class Contenus {
    */
   protected mediasPropres(lecon: LeconResume): { libelle: string; provisoire: boolean }[] {
     const items: { libelle: string; provisoire: boolean }[] = [];
-    // Mêmes sources que le lecteur (`videoUrl()`) : `video_url` prime et suffit
-    // à elle seule. Ne tester que `video_provider_id` faisait passer pour vides
-    // les chapitres servis par une URL Bunny directe.
-    if (lecon.video_url || lecon.video_provider_id) {
+    // Une adresse renseignée suffit à elle seule. Ne tester que
+    // `video_provider_id` faisait passer pour vides les chapitres servis par
+    // une URL Bunny directe.
+    if (lecon.a_video_url || lecon.video_provider_id) {
       items.push({ libelle: 'Vidéo', provisoire: !this.videoDefinitive(lecon) });
     }
     if (lecon.pdf_public_id) {
@@ -156,14 +149,19 @@ export class Contenus {
    * Une vidéo n'est définitive que servie par un hébergeur du projet. Sans ce
    * contrôle, le placeholder de démonstration passait pour un contenu en ligne :
    * le tableau affichait « tout est prêt » alors que la formation attendait
-   * encore ses tournages.
+   * encore ses tournages — typiquement le `BigBuckBunny.mp4` que
+   * `seed_chapitres.sql` pose sur chaque chapitre avant tournage.
+   *
+   * Le verdict est rendu en base : l'adresse n'est plus lisible d'ici
+   * (20260912103000), et la liste des hébergeurs officiels vit désormais dans
+   * la définition de `video_hebergee`.
    */
   private videoDefinitive(lecon: LeconResume): boolean {
-    if (!lecon.video_url) {
-      // Pas d'URL : la vidéo vient de Cloudinary via son public_id.
+    if (!lecon.a_video_url) {
+      // Pas d'adresse : la vidéo vient de Cloudinary via son public_id.
       return Boolean(lecon.video_provider_id);
     }
-    return HEBERGEURS_PROJET.some((hote) => lecon.video_url!.includes(hote));
+    return lecon.video_hebergee;
   }
 
   /** Vrai quand l'étape ne porte strictement aucun média, ressources comprises. */

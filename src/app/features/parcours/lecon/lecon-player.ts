@@ -54,6 +54,15 @@ export class LeconPlayer {
   protected readonly avertissement = signal<string | null>(null);
 
   /**
+   * URL de lecture signée, obtenue chapitre par chapitre auprès de
+   * `video-signee`. Nulle tant qu'elle n'est pas revenue — et le lecteur
+   * n'affiche alors rien à lire, ce que `preparationVideo` distingue d'un
+   * chapitre réellement dépourvu de vidéo.
+   */
+  private readonly urlSignee = signal<string | null>(null);
+  protected readonly preparationVideo = signal(false);
+
+  /**
    * Lecteur HLS attaché à la balise <video>. `hls.js` alimente l'élément par
    * MediaSource Extensions : la balise reste la source de vérité, donc
    * `timeupdate`, `ended`, `currentTime` — et avec eux la reprise, l'anti-avance
@@ -146,6 +155,13 @@ export class LeconPlayer {
     this.videoFinie.set(false);
     this.lectureCommencee.set(false);
     this.tempsMax = 0;
+    // Une adresse signée ne vaut que pour SA vidéo : la garder d'un chapitre à
+    // l'autre ferait jouer la précédente, ou échouer la suivante.
+    this.urlSignee.set(null);
+    // Remis à plat ici, et non au retour de `preparerVideo` : une préparation
+    // abandonnée en route (changement de chapitre) rend sans rien toucher, et
+    // laisserait sinon l'indicateur allumé sur un chapitre qui n'attend rien.
+    this.preparationVideo.set(false);
 
     const [lecon, etapes] = await Promise.all([
       this.contenu.chargerLeconJouable(idLecon),
@@ -163,14 +179,27 @@ export class LeconPlayer {
     // La timeline ne montre que les chapitres jouables (l'intro est exclue).
     this.etapes.set(etapes.filter((e) => e.type !== 'intro'));
     this.chargement.set(false);
+
+    // Après la pose de `lecon` : la préparation s'annule si le chapitre change,
+    // et c'est ce signal-là qui le lui dit.
+    if (lecon) {
+      void this.preparerVideo(lecon);
+    }
   }
 
   /**
-   * URL de lecture, hébergeur agnostique : une URL externe (Bunny/MP4/HLS
-   * direct) est prioritaire ; à défaut on retombe sur Cloudinary. Aucune
-   * dépendance à un hébergeur particulier.
+   * URL de lecture, hébergeur agnostique. L'ordre a changé : l'adresse signée,
+   * délivrée à la demande et pour un temps limité, passe AVANT `video_url`.
+   *
+   * `video_url` n'est plus servie aux apprenants — la RPC la masque — mais
+   * reste le repli du staff, et celui de la période où la signature n'est pas
+   * encore armée. Cloudinary ferme la marche, pour les contenus historiques.
    */
   protected videoUrl(l: LeconJouable): string | null {
+    const signee = this.urlSignee();
+    if (signee) {
+      return signee;
+    }
     if (l.video_url) {
       return l.video_url;
     }
@@ -178,6 +207,27 @@ export class LeconPlayer {
       return this.media.videoUrl(l.video_provider_id);
     }
     return null;
+  }
+
+  /**
+   * Demande l'adresse de lecture du chapitre courant.
+   *
+   * Le chapitre peut changer pendant l'appel — l'apprenant enchaîne les étapes
+   * plus vite que le réseau ne répond : on ne pose l'URL que si elle concerne
+   * toujours le chapitre affiché, sans quoi une vidéo s'ouvrirait sur une
+   * autre. Même garde que l'attachement HLS, pour la même raison.
+   */
+  private async preparerVideo(l: LeconJouable): Promise<void> {
+    if (l.type !== 'video') {
+      return;
+    }
+    this.preparationVideo.set(true);
+    const url = await this.contenu.urlVideoSignee(l.id_lecon);
+    if (this.lecon()?.id_lecon !== l.id_lecon) {
+      return;
+    }
+    this.urlSignee.set(url);
+    this.preparationVideo.set(false);
   }
 
   /**
@@ -213,8 +263,13 @@ export class LeconPlayer {
     return this.urlHls(l) ? null : this.videoUrl(l);
   }
 
-  protected videoNonSupportee(l: LeconJouable): boolean {
-    return !this.videoUrl(l) && !!l.video_provider_id;
+  /**
+   * Le chapitre porte bien une vidéo, mais aucune adresse n'a pu être obtenue.
+   * Distingué de « pas de vidéo » : l'un est une panne, l'autre un chapitre
+   * incomplet — et ils n'appellent pas le même message.
+   */
+  protected videoIndisponible(l: LeconJouable): boolean {
+    return !this.videoUrl(l) && !this.preparationVideo() && !!l.video_provider_id;
   }
 
   protected pdfUrl(l: LeconJouable): string | null {

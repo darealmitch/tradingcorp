@@ -94,7 +94,10 @@ export class ContenuService {
         .select(
           'id_section, titre, description, position, est_publiee, ' +
             'lecons(id_lecon, id_section, titre, type, position, duree_s, est_publiee, ' +
-            'video_provider, video_provider_id, video_url, pdf_public_id, ' +
+            // `video_url` a quitté cette liste : le privilège de lecture a été
+            // retiré au client (20260912103000), et la demander ferait échouer
+            // toute la requête. Les deux indicateurs générés la remplacent.
+            'video_provider, video_provider_id, a_video_url, video_hebergee, pdf_public_id, ' +
             'ressources(id_ressource, nom, type, est_active, cloudinary_public_id, url, contenu))',
         )
         .order('position')
@@ -110,6 +113,28 @@ export class ContenuService {
       this.acces.appel('etats_lecons', { p_id_section: idSection }),
       [],
     );
+  }
+
+  /**
+   * URL de lecture d'un chapitre vidéo, signée et datée (Edge Function
+   * `video-signee`).
+   *
+   * L'adresse ne vient plus avec le contenu de l'étape : `lecon_contenu` ne
+   * renvoie plus d'URL exploitable. Une adresse de vidéo est un accès, pas une
+   * donnée d'affichage — elle se demande au moment de lire, pour une durée
+   * limitée, et le serveur la refuse si l'étape n'est pas ouverte.
+   *
+   * Rend null si l'accès est refusé ou la préparation impossible : l'appelant
+   * affiche alors le même repli que pour une vidéo absente, l'incident étant
+   * déjà signalé par `AccesDonnees`.
+   */
+  async urlVideoSignee(idLecon: string): Promise<string | null> {
+    const { donnees } = await this.acces.invoquer<{ url?: string }>(
+      'préparation de la vidéo',
+      'video-signee',
+      { id_lecon: idLecon },
+    );
+    return donnees?.url ?? null;
   }
 
   /**

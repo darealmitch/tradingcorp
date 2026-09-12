@@ -52,8 +52,14 @@ export interface LeconResume {
   video_provider: VideoProvider;
   /** public_id Cloudinary (ou id YouTube/Bunny selon le provider). */
   video_provider_id: string | null;
-  /** URL de lecture directe (Bunny MP4) — suffit à elle seule. */
-  video_url: string | null;
+  /**
+   * Une adresse de lecture est renseignée — sans dire laquelle. L'adresse
+   * elle-même n'est plus lisible par le client (20260912103000) : elle ne
+   * s'obtient que signée, auprès de `video-signee`.
+   */
+  a_video_url: boolean;
+  /** Cette adresse pointe vers un hébergeur du projet, et non un remplissage. */
+  video_hebergee: boolean;
   /** public_id Cloudinary du PDF principal de la leçon. */
   pdf_public_id: string | null;
   /**
