@@ -7,7 +7,7 @@ export const CATEGORIE_VIDEOS = 'videos';
  * Le bandeau de consentement : ce qu'il annonce, et comment il se présente.
  *
  * DEUX catégories, parce que le site ne dépose que deux sortes de choses : ce
- * qui le fait fonctionner, dispensé de consentement, et le lecteur de Bunny.net,
+ * qui le fait fonctionner, dispensé de consentement, et le lecteur vidéo tiers,
  * qui ne l'est pas. Inventer des catégories « statistiques » ou « marketing »
  * pour faire complet reviendrait à annoncer des traceurs qui n'existent pas —
  * et une information inexacte vicie le consentement qu'elle recueille.
@@ -62,9 +62,9 @@ export const CONFIG_CONSENTEMENT: CookieConsentConfig = {
           title: 'Vos préférences en matière de cookies',
           description:
             "TradingCorp n'utilise aucun cookie publicitaire ni outil de mesure d'audience. " +
-            'Seule la <strong>vidéo de présentation</strong>, hébergée par Bunny.net, nécessite ' +
-            'votre accord : son lecteur enregistre vos préférences de lecture sur votre terminal et ' +
-            "transmet à Bunny.net des mesures techniques. Refuser n'affecte pas votre navigation.",
+            'Seule la <strong>vidéo de présentation</strong> nécessite votre accord : son lecteur ' +
+            'enregistre vos préférences de lecture sur votre terminal et transmet des mesures ' +
+            "techniques à notre prestataire de diffusion. Refuser n'affecte pas votre navigation.",
           acceptAllBtn: 'Tout accepter',
           acceptNecessaryBtn: 'Tout refuser',
           showPreferencesBtn: 'Personnaliser',
@@ -90,9 +90,9 @@ export const CONFIG_CONSENTEMENT: CookieConsentConfig = {
               linkedCategory: 'necessaires',
             },
             {
-              title: 'Vidéo de présentation — Bunny.net',
+              title: 'Vidéo de présentation',
               description:
-                "Le lecteur enregistre sur votre terminal vos préférences de lecture et le cache de ses icônes, et transmet à Bunny.net des mesures techniques pendant la lecture. Il n'est chargé qu'avec votre accord.",
+                "Le lecteur enregistre sur votre terminal vos préférences de lecture et le cache de ses icônes, et transmet des mesures techniques à notre prestataire de diffusion pendant la lecture. Il n'est chargé qu'avec votre accord. Ce prestataire est nommé dans la politique de cookies.",
               linkedCategory: CATEGORIE_VIDEOS,
             },
             {
