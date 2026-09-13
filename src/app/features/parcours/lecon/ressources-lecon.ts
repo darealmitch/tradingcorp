@@ -1,6 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChildren,
+} from '@angular/core';
 import { Ressource, TypeRessource } from '../../../core/contenu/apprentissage.model';
+import { ContenuService } from '../../../core/contenu/contenu.service';
 import { MediaService } from '../../../core/media/media.service';
+import { AttachementHls, attacherHls, fluxHls, srcDirect } from '../../../shared/video/lecture-hls';
 import { Icone } from '../../../shared/ui/icone';
 
 /** Présentation d'un type : icône, libellé de catégorie, intitulé de l'action. */
@@ -38,8 +51,94 @@ const PRESENTATIONS: Record<TypeRessource, Presentation> = {
 })
 export class RessourcesLecon {
   private readonly media = inject(MediaService);
+  private readonly contenu = inject(ContenuService);
 
   readonly ressources = input.required<Ressource[]>();
+
+  /**
+   * Vidéos hébergées par le projet : elles se lisent DANS la page, jamais par
+   * un lien. Leur adresse ne figure pas dans `url` — elle est demandée signée,
+   * comme celle d'un chapitre. Auparavant servies par un lien d'embed Bunny,
+   * elles étaient visibles de quiconque avait l'adresse, sans compte.
+   */
+  protected readonly videos = computed(() =>
+    this.ressources().filter((r) => r.type === 'video' && r.a_video_hebergee),
+  );
+
+  /** Adresses signées obtenues, par ressource. */
+  private readonly adresses = signal<Record<string, string>>({});
+  /** Demandes déjà parties — hors signal, pour ne pas relancer l'effet. */
+  private readonly demandees = new Set<string>();
+  private readonly lecteurs = viewChildren<ElementRef<HTMLVideoElement>>('lecteurRessource');
+  private readonly attachements = new Map<string, AttachementHls>();
+
+  constructor() {
+    // Une adresse par vidéo, demandée une seule fois. L'effet ne lit que
+    // `videos()` : lire `adresses()` ici le ferait se redéclencher à chaque
+    // réponse, et boucler.
+    effect(() => {
+      for (const v of this.videos()) {
+        if (!this.demandees.has(v.id_ressource)) {
+          this.demandees.add(v.id_ressource);
+          void this.demander(v.id_ressource);
+        }
+      }
+    });
+
+    // (Ré)attache hls.js dès qu'un élément et son adresse sont tous deux là.
+    effect(() => void this.attacher(this.lecteurs(), this.adresses()));
+    inject(DestroyRef).onDestroy(() => {
+      for (const attachement of this.attachements.values()) {
+        attachement.destroy();
+      }
+      this.attachements.clear();
+    });
+  }
+
+  private async demander(idRessource: string): Promise<void> {
+    const url = await this.contenu.urlVideoRessourceSignee(idRessource);
+    if (url) {
+      this.adresses.update((courantes) => ({ ...courantes, [idRessource]: url }));
+    }
+  }
+
+  /**
+   * L'appariement passe par `data-ressource` plutôt que par l'ordre de la
+   * liste : un `@for` réordonné ferait sinon jouer une vidéo sous le titre
+   * d'une autre.
+   */
+  private async attacher(
+    elements: readonly ElementRef<HTMLVideoElement>[],
+    adresses: Record<string, string>,
+  ): Promise<void> {
+    for (const element of elements) {
+      const id = element.nativeElement.dataset['ressource'];
+      if (!id || this.attachements.has(id)) {
+        continue;
+      }
+      const flux = fluxHls(adresses[id] ?? null);
+      if (!flux) {
+        continue;
+      }
+      // Marqué avant l'await : deux passages de l'effet se chevaucheraient
+      // sinon, et attacheraient deux instances au même élément.
+      this.attachements.set(id, { destroy: () => undefined });
+      const attachement = await attacherHls(flux, element.nativeElement);
+      if (attachement) {
+        this.attachements.set(id, attachement);
+      }
+    }
+  }
+
+  /** Adresse à poser sur l'attribut `src` — null quand hls.js alimente. */
+  protected srcVideo(r: Ressource): string | null {
+    return srcDirect(this.adresses()[r.id_ressource] ?? null);
+  }
+
+  /** La vidéo est-elle prête à être affichée ? */
+  protected videoPrete(r: Ressource): boolean {
+    return Boolean(this.adresses()[r.id_ressource]);
+  }
 
   /** Ressources dont le contenu est le texte lui-même (rendu en bloc). */
   protected readonly embarquees = computed(() =>
@@ -48,7 +147,12 @@ export class RessourcesLecon {
 
   /** Ressources qui pointent vers un média ou une page (rendues en liste). */
   protected readonly liens = computed(() =>
-    this.ressources().filter((r) => r.type !== 'documentation' && r.type !== 'code'),
+    this.ressources().filter(
+      (r) =>
+        r.type !== 'documentation' &&
+        r.type !== 'code' &&
+        !(r.type === 'video' && r.a_video_hebergee),
+    ),
   );
 
   protected presentation(r: Ressource): Presentation {

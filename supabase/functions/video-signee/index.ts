@@ -34,6 +34,8 @@ function json(req: Request, corps: unknown, statut: number): Response {
 
 interface CorpsRequete {
   id_lecon?: string;
+  /** Vidéo portée par une ressource complémentaire, et non par le chapitre. */
+  id_ressource?: string;
 }
 
 Deno.serve(async (req) => {
@@ -54,25 +56,35 @@ Deno.serve(async (req) => {
       return json(req, { erreur: 'Connexion requise.' }, 401);
     }
 
-    const { id_lecon } = (await req.json().catch(() => ({}))) as CorpsRequete;
-    if (!id_lecon) {
+    const { id_lecon, id_ressource } = (await req.json().catch(() => ({}))) as CorpsRequete;
+    // Exactement une cible : deux identifiants rendraient ambigu ce qui est
+    // contrôlé et ce qui est signé.
+    if (!id_lecon === !id_ressource) {
       return json(req, { erreur: 'Requête invalide.' }, 400);
     }
+
+    // Chapitre ou ressource : deux tables, deux policies, un seul traitement.
+    // `lecons_select_gated` et `ressources_select_gated` exigent l'une comme
+    // l'autre une étape déverrouillée (et, pour la seconde, une ressource
+    // active) : c'est la table visée qui porte la règle, pas ce code.
+    const cible = id_lecon
+      ? { table: 'lecons' as const, cle: 'id_lecon', id: id_lecon, indicateur: 'video_hebergee' }
+      : { table: 'ressources' as const, cle: 'id_ressource', id: id_ressource as string, indicateur: 'a_video_hebergee' };
 
     // 1. Le droit. Lecture sous RLS : c'est le contrôle d'accès lui-même, pas
     // une vérification de forme. Une étape verrouillée, un chapitre dépublié ou
     // une inscription expirée ne rendent aucune ligne.
     const { data: autorise } = await porteur
-      .from('lecons')
-      .select('id_lecon, duree_s, video_hebergee')
-      .eq('id_lecon', id_lecon)
+      .from(cible.table)
+      .select(`${cible.cle}, ${cible.indicateur}${cible.table === 'lecons' ? ', duree_s' : ''}`)
+      .eq(cible.cle, cible.id)
       .maybeSingle();
     if (!autorise) {
       // Volontairement indistinct de « le chapitre n'existe pas » : répondre
       // autrement dirait à un curieux quels identifiants sont réels.
       return json(req, { erreur: 'Chapitre indisponible.' }, 403);
     }
-    if (!autorise.video_hebergee) {
+    if (!(autorise as Record<string, unknown>)[cible.indicateur]) {
       return json(req, { erreur: 'Aucune vidéo n’est associée à ce chapitre.' }, 404);
     }
 
@@ -83,9 +95,9 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
     const { data: lecon } = await admin
-      .from('lecons')
+      .from(cible.table)
       .select('video_url')
-      .eq('id_lecon', id_lecon)
+      .eq(cible.cle, cible.id)
       .maybeSingle();
     if (!lecon?.video_url) {
       return json(req, { erreur: 'Aucune vidéo n’est associée à ce chapitre.' }, 404);
@@ -100,7 +112,12 @@ Deno.serve(async (req) => {
       return json(req, { url: lecon.video_url, signee: false, expire_le: null }, 200);
     }
 
-    const duree = dureeJeton(lecon.duree_s);
+    // Une ressource ne porte pas de durée : `dureeJeton` retombe alors sur son
+    // plancher de 45 minutes, très au-delà de ces compléments de quelques
+    // minutes.
+    const duree = dureeJeton(
+      (autorise as { duree_s?: number | null }).duree_s ?? null,
+    );
     const url = await signerUrlVideo(lecon.video_url, cle, duree);
 
     // `expire_le` permet au lecteur de renouveler AVANT la coupure plutôt que

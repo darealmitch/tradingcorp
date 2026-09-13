@@ -14,6 +14,12 @@ import { LeconEtape, LeconJouable } from '../../../core/contenu/apprentissage.mo
 import { AuthService } from '../../../core/auth/auth.service';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { MediaService } from '../../../core/media/media.service';
+import {
+  AttachementHls,
+  attacherHls,
+  fluxHls,
+  srcDirect as sourceDirecte,
+} from '../../../shared/video/lecture-hls';
 import { Icone } from '../../../shared/ui/icone';
 import { QuizLecon } from './quiz-lecon';
 import { CommentairesLecon } from './commentaires-lecon';
@@ -68,7 +74,7 @@ export class LeconPlayer {
    * `timeupdate`, `ended`, `currentTime` — et avec eux la reprise, l'anti-avance
    * et le déverrouillage du PDF/quiz — fonctionnent exactement comme en MP4.
    */
-  private hls: { destroy(): void } | null = null;
+  private hls: AttachementHls | null = null;
   /** Invalide un attachement HLS dont la leçon a changé pendant le chargement. */
   private generationHls = 0;
 
@@ -105,35 +111,24 @@ export class LeconPlayer {
     // (Ré)attache le flux HLS à chaque changement de chapitre. Le composant est
     // réutilisé par le routeur : sans détachement, l'instance précédente
     // continuerait de bufferiser en fond.
-    effect(() => void this.attacherHls(this.lecon(), this.lecteur()?.nativeElement));
+    effect(() => void this.attacherFlux(this.lecon(), this.lecteur()?.nativeElement));
     inject(DestroyRef).onDestroy(() => this.detacherHls());
   }
 
   /**
-   * Charge `hls.js` à la demande — import dynamique, pour que la bibliothèque
-   * (~40 Ko) reste hors du bundle des chapitres servis en MP4.
+   * (Ré)attache le flux au lecteur. La mécanique `hls.js` elle-même vit dans
+   * `shared/video/lecture-hls`, partagée avec les vidéos complémentaires ; ne
+   * reste ici que ce qui est propre au chapitre — la génération, qui invalide
+   * un attachement dont la leçon a changé pendant le chargement du module.
    */
-  private async attacherHls(
+  private async attacherFlux(
     l: LeconJouable | null,
     el: HTMLVideoElement | undefined,
   ): Promise<void> {
     const generation = ++this.generationHls;
     this.detacherHls();
-
-    const source = l ? this.urlHls(l) : null;
-    if (!source || !el) {
-      return;
-    }
-
-    const { default: Hls } = await import('hls.js');
-    // Le chapitre a pu changer pendant le chargement du module.
-    if (generation !== this.generationHls || !Hls.isSupported()) {
-      return;
-    }
-    const hls = new Hls({ enableWorker: true });
-    hls.loadSource(source);
-    hls.attachMedia(el);
-    this.hls = hls;
+    const source = l ? fluxHls(this.videoUrl(l)) : null;
+    this.hls = await attacherHls(source, el, () => generation !== this.generationHls);
   }
 
   private detacherHls(): void {
@@ -231,19 +226,6 @@ export class LeconPlayer {
   }
 
   /**
-   * Flux HLS à confier à `hls.js`, ou null si la lecture native suffit.
-   * Safari lit le HLS nativement : inutile d'y charger la bibliothèque.
-   */
-  private urlHls(l: LeconJouable): string | null {
-    const url = this.videoUrl(l);
-    if (!url?.includes('.m3u8')) {
-      return null;
-    }
-    const natif = document.createElement('video').canPlayType('application/vnd.apple.mpegurl');
-    return natif ? null : url;
-  }
-
-  /**
    * Image de couverture, affichée tant que la première image n'est pas
    * décodée. Une couverture de marque par défaut, surchargeable par vidéo via
    * `video_metadata.poster` — le champ était déjà prévu pour cela, inutile
@@ -260,7 +242,7 @@ export class LeconPlayer {
    * alors l'élément, et un `src` concurrent ferait échouer la lecture.
    */
   protected srcDirect(l: LeconJouable): string | null {
-    return this.urlHls(l) ? null : this.videoUrl(l);
+    return sourceDirecte(this.videoUrl(l));
   }
 
   /**

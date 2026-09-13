@@ -24,9 +24,9 @@
 --     domaine du site aux referers autorisés dans Bunny Stream.
 -- Ni l'URL /play/ (page de partage) ni le HLS ne sont lisibles par <video>.
 --
--- LIENS PARTENAIRES. Les URL ci-dessous sont les adresses PUBLIQUES des
--- plateformes, pas des liens d'affiliation : à remplacer par les vrais liens
--- de parrainage. XTB est livré désactivé (partenariat à confirmer).
+-- LIENS PARTENAIRES. L'URL ci-dessous est l'adresse PUBLIQUE de la plateforme,
+-- pas un lien d'affiliation : à remplacer par le vrai lien de parrainage. XTB
+-- a été retiré, son contrat étant caduc (20260913101000).
 -- =============================================================================
 
 -- Résolution d'une leçon par son module et son titre.
@@ -71,12 +71,6 @@ with donnees(module, lecon, nom, type, description, cloudinary_public_id, url,
    null, 'https://www.tradingview.com/',
    null, null, true, 1, null),
 
-  (5, '5.1 Initiation au graphique - Partie 1',
-   'Ouvrir un compte XTB', 'partenaire',
-   'Courtier partenaire — inscription gratuite.',
-   null, 'https://www.xtb.com/fr',
-   null, null, false, 2, null),
-
   (5, '5.1 Initiation au graphique - Partie 3',
    'Bougies japonaises : anticiper les marchés', 'pdf',
    'Lecture des chandeliers et anticipation des retournements.',
@@ -114,13 +108,14 @@ with donnees(module, lecon, nom, type, description, cloudinary_public_id, url,
    null, null, false, 1,
    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
 
-  -- URL d'EMBED Bunny : la ressource s'ouvre dans un nouvel onglet, donc la
-  -- page du lecteur convient et échappe à la protection referer de la
-  -- bibliothèque (cf. note en tête de fichier).
+  -- Vidéo de formation : `url` reste NULL, l'adresse vit dans `video_url`
+  -- (posée juste après cet insert) et n'est pas lisible par le client. Elle
+  -- était servie par un lien d'embed Bunny, accessible sans compte à qui
+  -- disposait de l'adresse — voir 20260913100000.
   (5, '5.13 Options',
    'Faire une option sur TradingView', 'video',
    'Démonstration pas à pas sur TradingView.',
-   null, 'https://iframe.mediadelivery.net/embed/708929/475152ff-da6c-47ac-8b91-5935798783eb',
+   null, null,
    null, null, true, 1, null)
 )
 insert into ressources (
@@ -142,6 +137,16 @@ on conflict (id_lecon, nom) do update set
   cloudinary_public_id = coalesce(ressources.cloudinary_public_id, excluded.cloudinary_public_id),
   url = coalesce(ressources.url, excluded.url),
   contenu = coalesce(excluded.contenu, ressources.contenu);
+
+-- Adresse de la vidéo complémentaire de la 5.13.
+--
+-- À part du CTE ci-dessus, et volontairement : `video_url` n'est renseignée que
+-- pour cette seule ressource, et l'ajouter au jeu de valeurs obligerait à
+-- porter un `null` sur chacune des autres lignes pour une colonne qui ne les
+-- concerne pas. Elle est lue par `video-signee`, jamais par le client.
+update ressources
+set video_url = 'https://vz-8e333926-6ea.b-cdn.net/475152ff-da6c-47ac-8b91-5935798783eb/playlist.m3u8'
+where nom = 'Faire une option sur TradingView';
 
 -- =============================================================================
 -- Module 8 — Optimisation : documentation et exemples de code

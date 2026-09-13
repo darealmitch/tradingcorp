@@ -138,6 +138,20 @@ export class ContenuService {
   }
 
   /**
+   * Même chose pour la vidéo portée par une RESSOURCE complémentaire. La
+   * fonction attend l'un ou l'autre identifiant, jamais les deux : c'est la
+   * table visée qui porte la règle d'accès.
+   */
+  async urlVideoRessourceSignee(idRessource: string): Promise<string | null> {
+    const { donnees } = await this.acces.invoquer<{ url?: string }>(
+      'préparation de la vidéo',
+      'video-signee',
+      { id_ressource: idRessource },
+    );
+    return donnees?.url ?? null;
+  }
+
+  /**
    * Contenu jouable d'une étape (RPC `lecon_contenu`) : seule voie de lecture.
    * Aucune ligne si l'étape n'est pas déverrouillée ; PDF/quiz redigés tant
    * que la vidéo n'est pas terminée. Les ressources complémentaires suivent
@@ -158,7 +172,7 @@ export class ContenuService {
           .table('ressources')
           .select(
             'id_ressource, nom, type, description, type_mime, cloudinary_public_id, ' +
-              'chemin_storage, url, contenu, langage, taille, position',
+              'chemin_storage, url, contenu, langage, taille, position, a_video_hebergee',
           )
           .eq('id_lecon', idLecon)
           .order('position')
