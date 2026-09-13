@@ -30,8 +30,14 @@ export interface Ressource {
   /** Référence Cloudinary (prioritaire) ou chemin d'un stockage tiers. */
   cloudinary_public_id: string | null;
   chemin_storage: string | null;
-  /** Source externe : lien partenaire, documentation, vidéo Bunny. */
+  /** Source externe : lien partenaire, documentation, page tierce. */
   url: string | null;
+  /**
+   * La ressource porte une vidéo hébergée par le projet : elle se lit DANS la
+   * page, par une adresse signée demandée à `video-signee`. L'adresse
+   * elle-même n'est pas lisible par le client (20260913100000).
+   */
+  a_video_hebergee: boolean;
   /** Texte embarqué des ressources 'documentation' et 'code'. */
   contenu: string | null;
   /** Étiquette du bloc de code (bash, python…). */
