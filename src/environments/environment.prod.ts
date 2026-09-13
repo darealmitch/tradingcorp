@@ -7,10 +7,10 @@ export const environment = {
   supabaseKey: 'sb_publishable_bspPMBm3rYTXcEEsNR1tDQ_dAWwr9gm',
   // Cloudinary — Cloud Name public uniquement (cf. environment.ts).
   cloudinaryCloudName: 'xzqyu82g',
-  // Vidéo de présentation hébergée sur Bunny Stream (bibliothèque 708929),
-  // en URL d'EMBED pour le lecteur iframe (cf. environment.ts).
+  // Vidéo de présentation sur Bunny Stream — bibliothèque 752291, la publique,
+  // distincte de 708929 où le token CDN ferme les chapitres (cf. environment.ts).
   bunnyPresentationVideoUrl:
-    'https://iframe.mediadelivery.net/embed/708929/ac46adc6-1c4c-4e1e-9681-1808d07461fd',
+    'https://iframe.mediadelivery.net/embed/752291/234442b8-b1d8-401f-9e5d-2a9e583d6aa0',
   // Collecteur d'erreurs (P-14). Les incidents du NAVIGATEUR partent vers
   // l'Edge Function `incident`, qui les range dans la table du même nom : ni
   // sous-traitant supplémentaire à déclarer au registre, ni transfert hors UE.
