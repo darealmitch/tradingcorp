@@ -179,3 +179,21 @@
     justify-content: center;
   }
 }
+
+/* Vidéo complémentaire lue dans la page. Même traitement que le lecteur de
+   chapitre — ratio réservé pour que la page ne saute pas au démarrage — mais
+   sans pastille de lecture : ce n'est pas le contenu principal de l'étape. */
+.ressource-video {
+  margin-bottom: 24px;
+}
+
+.ressource-video video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  margin-top: 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}

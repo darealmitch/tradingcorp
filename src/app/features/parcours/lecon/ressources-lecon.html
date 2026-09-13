@@ -2,6 +2,38 @@
   <section class="ressources">
     <h2 class="lecon-sous-titre">Ressources complémentaires</h2>
 
+    <!-- Vidéos hébergées par le projet : lues ICI, comme un chapitre. Elles
+         s'ouvraient auparavant dans un nouvel onglet, sur le lecteur d'embed
+         Bunny — une page accessible sans compte à qui avait l'adresse. -->
+    @for (r of videos(); track r.id_ressource) {
+      <article class="ressource-video">
+        <header class="bloc-tete">
+          <span class="ressource-categorie">{{ presentation(r).categorie }}</span>
+          <h3 class="bloc-titre">{{ r.nom }}</h3>
+          @if (r.description) {
+            <p class="ressource-description">{{ r.description }}</p>
+          }
+        </header>
+
+        @if (videoPrete(r)) {
+          <!-- `src` absent quand hls.js alimente la balise ; `data-ressource`
+               apparie l'élément à son adresse signée. -->
+          <video
+            #lecteurRessource
+            [attr.data-ressource]="r.id_ressource"
+            [attr.src]="srcVideo(r)"
+            controls
+            controlsList="nodownload"
+            [disablePictureInPicture]="true"
+            playsinline
+            preload="metadata"
+          ></video>
+        } @else {
+          <p class="ressource-attente">Préparation de la vidéo…</p>
+        }
+      </article>
+    }
+
     @if (liens().length > 0) {
       <ul class="ressources-liste">
         @for (r of liens(); track r.id_ressource) {
