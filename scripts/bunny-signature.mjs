@@ -46,7 +46,8 @@ if (!CLE) {
 const base64url = (buf) =>
   buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-const signer = (message) => `HS256-${base64url(createHmac('sha256', CLE).update(message).digest())}`;
+const signer = (message) =>
+  `HS256-${base64url(createHmac('sha256', CLE).update(message).digest())}`;
 
 /**
  * Les formules plausibles, du plus probable au moins. Chacune ne diffère que
