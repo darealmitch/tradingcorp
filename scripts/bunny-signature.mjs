@@ -38,7 +38,10 @@ const REFERER = 'https://tradingcorp.fr/';
 
 if (!CLE) {
   console.error('BUNNY_TOKEN_KEY absente.');
-  console.error('Bunny → Stream → bibliothèque → Security, ou pull zone → Security.');
+  console.error('Bunny → CDN → pull zone « vz-8e333926-6ea » → Security → Token');
+  console.error('Authentication. La clé est « URL Token Authentication Key », affichée');
+  console.error('une fois le réglage activé. Ce n’est PAS la clé API de la bibliothèque');
+  console.error('Stream, et le réglage n’est pas dans Stream → Security.');
   console.error('  export BUNNY_TOKEN_KEY="…"');
   process.exit(1);
 }
@@ -116,8 +119,22 @@ for (const variante of VARIANTES) {
 
 console.log('');
 if (!gagnante) {
-  console.log('Aucune variante acceptée. Vérifiez que la clé est bien celle de CETTE');
-  console.log('pull zone (vz-8e333926-6ea), et que le token y est activé.');
+  if (faux === 404) {
+    // 404 et non 403 : le CDN n'a pas reconnu le préfixe `/bcdn_token=…/`, il
+    // l'a pris pour un vrai répertoire. Le réglage n'est donc pas actif — la
+    // clé, juste ou fausse, n'y est pour rien.
+    console.log('Toutes les variantes rendent 404, y compris la signature volontairement');
+    console.log('fausse : le CDN lit « /bcdn_token=… » comme un répertoire ordinaire.');
+    console.log('« Token Authentication » n’est pas activée.');
+    console.log('');
+    console.log('  Bunny → CDN → pull zone « vz-8e333926-6ea » → Security');
+    console.log('  (depuis Stream : bibliothèque → API → Pull Zone → Manage)');
+    console.log('');
+    console.log('Activez le réglage, copiez « URL Token Authentication Key », relancez.');
+  } else {
+    console.log('Aucune variante acceptée alors que le réglage semble actif : la clé');
+    console.log('n’est probablement pas celle de CETTE pull zone (vz-8e333926-6ea).');
+  }
   process.exit(1);
 }
 if (nue === 200 || faux === 200) {
