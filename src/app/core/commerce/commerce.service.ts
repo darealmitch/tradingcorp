@@ -25,15 +25,29 @@ export class CommerceService {
   /**
    * Factures du profil connecté, la plus récente en tête.
    *
-   * La RLS (`factures_select_titulaire`) ne montre que les siennes, et les
-   * privilèges de colonne limitent ce qui sort : inutile de filtrer ici.
+   * LE FILTRE EST EXPLICITE, et ce n'est pas une redondance de la RLS. Pour un
+   * apprenant, `factures_select_titulaire` suffirait — elle ne lui montre que
+   * ses lignes. Mais la même policy ouvre TOUTES les factures à un
+   * administrateur : sans ce `.eq()`, l'écran « Mes factures » lui rendrait
+   * celles du site entier sous un titre qui annonce les siennes. Un
+   * administrateur qui achète la formation est un client comme un autre, et
+   * cette page-ci est celle du client. La comptabilité a son écran
+   * (`/espace/facturation`), qui dit ce qu'il montre.
+   *
+   * Compte introuvable : liste vide plutôt que requête sans filtre — le repli
+   * d'une erreur d'authentification ne doit pas être « tout afficher ».
    */
   async chargerFactures(): Promise<Facture[]> {
+    const idProfil = await this.acces.idUtilisateur();
+    if (!idProfil) {
+      return [];
+    }
     return this.acces.lire<Facture[]>(
       'lecture des factures',
       this.acces
         .table('factures')
         .select('id_facture, numero, designation, montant_centimes, devise, date_emission')
+        .eq('id_profil', idProfil)
         .order('date_emission', { ascending: false }),
       [],
     );
