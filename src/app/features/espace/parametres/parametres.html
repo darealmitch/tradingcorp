@@ -83,10 +83,11 @@
     <h2 class="panneau-titre">Authentification du domaine</h2>
   </div>
   <p class="cellule-discrete">
-    Ce que Brevo attend dans la zone DNS de tradingcorp.fr, lu depuis son API — donc la valeur
-    exacte à recopier chez IONOS, et non une valeur d'exemple. Sans ces enregistrements, les
-    messages partent quand même, mais échouent au contrôle DMARC : ils arrivent aujourd'hui, et
-    finiront en indésirables le jour où le volume augmentera.
+    État de l'authentification du domaine expéditeur, lu depuis l'API de Brevo. S'il manque un
+    enregistrement, sa valeur exacte s'affiche ici — à recopier telle quelle chez le fournisseur
+    indiqué, qui n'est pas forcément celui chez qui le nom de domaine a été acheté. Sans
+    authentification, les messages partent quand même mais échouent au contrôle DMARC : ils arrivent
+    tant que le volume est faible, et finissent en indésirables ensuite.
   </p>
 
   <div class="parametres-action">
@@ -106,40 +107,58 @@
 
   @for (domaine of domaines(); track domaine.domaine) {
     <h3 class="parametres-domaine">
-      {{ domaine.domaine }}
+      {{ domaine.domaine || '—' }}
       @if (domaine.authentifie) {
         <span class="badge-statut est-succes">Authentifié</span>
       } @else {
-        <span class="badge-statut">Non authentifié</span>
+        <span class="badge-statut est-echec">Non authentifié</span>
+      }
+      @if (domaine.fournisseur) {
+        <span class="cellule-discrete">DNS servi par {{ domaine.fournisseur }}</span>
+      }
+      @if (depuis(domaine); as date) {
+        <span class="cellule-discrete">depuis le {{ date }}</span>
       }
     </h3>
-    <div class="tableau-defile">
-      <table class="tableau">
-        <thead>
-          <tr>
-            <th>Nom d'hôte</th>
-            <th>Type</th>
-            <th>Valeur</th>
-            <th>État</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (enregistrement of domaine.enregistrements; track enregistrement.nom) {
+
+    @if (domaine.enregistrements.length === 0) {
+      <p class="cellule-discrete">
+        @if (domaine.authentifie) {
+          Rien à poser : Brevo ne demande aucun enregistrement supplémentaire pour ce domaine.
+        } @else {
+          Brevo ne rend aucun enregistrement pour ce domaine — il n'a probablement pas encore été
+          déclaré chez lui.
+        }
+      </p>
+    } @else {
+      <div class="tableau-defile">
+        <table class="tableau">
+          <thead>
             <tr>
-              <td>{{ enregistrement.nom || '—' }}</td>
-              <td class="cellule-discrete">{{ enregistrement.type }}</td>
-              <td class="valeur-dns">{{ enregistrement.valeur || '—' }}</td>
-              <td>
-                @if (enregistrement.pose) {
-                  <span class="badge-statut est-succes">En place</span>
-                } @else {
-                  <span class="badge-statut est-echec">À poser</span>
-                }
-              </td>
+              <th>Nom d'hôte</th>
+              <th>Type</th>
+              <th>Valeur</th>
+              <th>État</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (enregistrement of domaine.enregistrements; track enregistrement.nom) {
+              <tr>
+                <td>{{ enregistrement.nom || '—' }}</td>
+                <td class="cellule-discrete">{{ enregistrement.type }}</td>
+                <td class="valeur-dns">{{ enregistrement.valeur || '—' }}</td>
+                <td>
+                  @if (enregistrement.pose) {
+                    <span class="badge-statut est-succes">En place</span>
+                  } @else {
+                    <span class="badge-statut est-echec">À poser</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   }
 </div>

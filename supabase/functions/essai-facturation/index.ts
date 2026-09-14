@@ -93,30 +93,43 @@ Deno.serve(async (req) => {
         return json(req, { erreur: `Brevo a répondu ${reponse.status}.` }, 502);
       }
 
-      // Forme tolérante : on ne présume ni du nom des champs ni de leur
-      // présence. Ce qui manque ressort vide plutôt que de faire échouer la
-      // lecture, et le journal garde la réponse entière en cas de surprise.
-      const charge = (await reponse.json()) as {
-        domains?: {
-          domain?: string;
-          authenticated?: boolean;
-          dns_records?: Record<string, unknown>;
-        }[];
-      };
-      const domaines = (charge.domains ?? []).map((d) => ({
-        domaine: d.domain ?? '',
-        authentifie: d.authenticated === true,
-        enregistrements: Object.values(d.dns_records ?? {}).map((brut) => {
-          const r = (brut ?? {}) as Record<string, unknown>;
-          return {
-            nom: typeof r.host_name === 'string' ? r.host_name : '',
-            type: typeof r.type === 'string' ? r.type.toUpperCase() : 'TXT',
-            valeur: typeof r.value === 'string' ? r.value : '',
-            pose: r.status === true,
-          };
-        }),
-      }));
-      if (domaines.every((d) => d.enregistrements.length === 0)) {
+      // NOMS DE CHAMPS RELEVÉS SUR LA VRAIE RÉPONSE, et non devinés : Brevo
+      // rend `domain_name` et `records`, là où la première version de ce code
+      // lisait `domain` et `dns_records`. Les deux graphies sont acceptées,
+      // mais c'est la première qui sert.
+      //
+      // `records` vaut NULL sur un domaine déjà authentifié : Brevo n'a plus
+      // rien à demander. Une liste vide n'est donc pas une anomalie, c'est la
+      // bonne nouvelle — encore faut-il que l'écran le dise, au lieu d'afficher
+      // un tableau sans lignes.
+      const charge = (await reponse.json()) as { domains?: Record<string, unknown>[] };
+      const domaines = (charge.domains ?? []).map((d) => {
+        const auteur = (d.authenticator ?? {}) as Record<string, unknown>;
+        const bruts = (d.records ?? d.dns_records ?? {}) as Record<string, unknown>;
+        const nom = [d.domain_name, d.domain].find((v) => typeof v === 'string') as
+          string | undefined;
+        return {
+          domaine: nom ?? '',
+          authentifie: d.authenticated === true,
+          // Le fournisseur DNS détecté par Brevo. Anodin en apparence, et
+          // pourtant c'est ce qui dit OÙ poser un enregistrement manquant : le
+          // bureau d'enregistrement n'est pas toujours celui qui sert la zone.
+          fournisseur: typeof d.provider === 'string' ? d.provider : null,
+          authentifieLe: typeof auteur.creationDate === 'string' ? auteur.creationDate : null,
+          enregistrements: Object.values(bruts).map((brut) => {
+            const r = (brut ?? {}) as Record<string, unknown>;
+            return {
+              nom: typeof r.host_name === 'string' ? r.host_name : '',
+              type: typeof r.type === 'string' ? r.type.toUpperCase() : 'TXT',
+              valeur: typeof r.value === 'string' ? r.value : '',
+              pose: r.status === true,
+            };
+          }),
+        };
+      });
+      // Journalisé seulement si la lecture n'a rien donné du tout : un domaine
+      // authentifié sans enregistrement à poser est un cas normal.
+      if (domaines.length > 0 && domaines.every((d) => !d.domaine)) {
         console.error(
           '[essai-facturation] forme inattendue',
           JSON.stringify(charge).slice(0, 2000),
