@@ -143,5 +143,17 @@ export interface EnregistrementDns {
 export interface DomaineExpediteur {
   domaine: string;
   authentifie: boolean;
+  /**
+   * Fournisseur DNS détecté par Brevo (« Cloudflare »).
+   *
+   * Affiché parce que c'est l'information qui dit où aller poser un
+   * enregistrement : le bureau d'enregistrement d'un domaine n'est pas
+   * forcément celui qui sert sa zone, et les deux interfaces se ressemblent
+   * assez pour qu'on modifie la mauvaise sans s'en apercevoir.
+   */
+  fournisseur: string | null;
+  /** ISO — date à laquelle le domaine a été authentifié. */
+  authentifieLe: string | null;
+  /** Vide sur un domaine authentifié : Brevo n'a plus rien à demander. */
   enregistrements: EnregistrementDns[];
 }
