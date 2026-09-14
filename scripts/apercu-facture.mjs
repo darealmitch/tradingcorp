@@ -26,7 +26,13 @@ const SOURCES = join(RACINE, 'supabase', 'functions', '_partages');
 const sortie = process.argv[2] ?? join(RACINE, 'apercu-facture.pdf');
 
 const atelier = await mkdtemp(join(tmpdir(), 'apercu-facture-'));
-await copyFile(join(SOURCES, 'vendeur.ts'), join(atelier, 'vendeur.ts'));
+// Les modules que `facture.ts` importe, recopiés tels quels à côté d'elle.
+// `texte-pdf.ts` en fait partie depuis que l'assainissement WinAnsi est
+// partagé avec le certificat : l'oublier fait échouer l'import, pas la
+// composition — l'erreur parle alors d'un module introuvable.
+for (const module of ['vendeur.ts', 'texte-pdf.ts']) {
+  await copyFile(join(SOURCES, module), join(atelier, module));
+}
 const module = (await readFile(join(SOURCES, 'facture.ts'), 'utf8')).replace(
   "from 'npm:pdf-lib@1'",
   // Le bundle d'un seul tenant, et non le dossier ni `es/` : Node refuse
