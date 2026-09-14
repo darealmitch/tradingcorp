@@ -350,6 +350,7 @@ describe('Protection des routes déclarées', () => {
   const ACCES_ESPACE: Record<string, Role[]> = {
     '': ['apprenant', 'formateur', 'admin'],
     formations: ['apprenant', 'formateur', 'admin'],
+    factures: ['apprenant', 'formateur', 'admin'],
     notifications: ['apprenant', 'formateur', 'admin'],
     profil: ['apprenant', 'formateur', 'admin'],
     contenus: ['formateur', 'admin'],

@@ -119,6 +119,147 @@ export type Database = {
         };
         Relationships: [];
       };
+      compteur_factures: {
+        Row: {
+          annee: number;
+          dernier: number;
+        };
+        Insert: {
+          annee: number;
+          dernier?: number;
+        };
+        Update: {
+          annee?: number;
+          dernier?: number;
+        };
+        Relationships: [];
+      };
+      factures: {
+        Row: {
+          chemin_storage: string | null;
+          client_email: string | null;
+          client_nom: string | null;
+          date_emission: string;
+          designation: string;
+          devise: string;
+          id_facture: string;
+          id_paiement: string | null;
+          id_profil: string | null;
+          mode_test: boolean;
+          montant_centimes: number;
+          numero: string;
+        };
+        Insert: {
+          chemin_storage?: string | null;
+          client_email?: string | null;
+          client_nom?: string | null;
+          date_emission?: string;
+          designation: string;
+          devise?: string;
+          id_facture?: string;
+          id_paiement?: string | null;
+          id_profil?: string | null;
+          mode_test?: boolean;
+          montant_centimes: number;
+          numero: string;
+        };
+        Update: {
+          chemin_storage?: string | null;
+          client_email?: string | null;
+          client_nom?: string | null;
+          date_emission?: string;
+          designation?: string;
+          devise?: string;
+          id_facture?: string;
+          id_paiement?: string | null;
+          id_profil?: string | null;
+          mode_test?: boolean;
+          montant_centimes?: number;
+          numero?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'factures_id_paiement_fkey';
+            columns: ['id_paiement'];
+            isOneToOne: false;
+            referencedRelation: 'paiements';
+            referencedColumns: ['id_paiement'];
+          },
+          {
+            foreignKeyName: 'factures_id_profil_fkey';
+            columns: ['id_profil'];
+            isOneToOne: false;
+            referencedRelation: 'profils';
+            referencedColumns: ['id_profil'];
+          },
+        ];
+      };
+      incidents: {
+        Row: {
+          agent: string | null;
+          code: string | null;
+          date_client: string | null;
+          id_incident: string;
+          operation: string;
+          page: string | null;
+          recu_le: string;
+          session: string;
+        };
+        Insert: {
+          agent?: string | null;
+          code?: string | null;
+          date_client?: string | null;
+          id_incident?: string;
+          operation: string;
+          page?: string | null;
+          recu_le?: string;
+          session: string;
+        };
+        Update: {
+          agent?: string | null;
+          code?: string | null;
+          date_client?: string | null;
+          id_incident?: string;
+          operation?: string;
+          page?: string | null;
+          recu_le?: string;
+          session?: string;
+        };
+        Relationships: [];
+      };
+      politique_conservation: {
+        Row: {
+          action: string;
+          categorie: string;
+          commentaire: string | null;
+          duree: string;
+          fondement: string;
+          mis_a_jour_le: string;
+          nature: string;
+          reference: string | null;
+        };
+        Insert: {
+          action: string;
+          categorie: string;
+          commentaire?: string | null;
+          duree: string;
+          fondement: string;
+          mis_a_jour_le?: string;
+          nature: string;
+          reference?: string | null;
+        };
+        Update: {
+          action?: string;
+          categorie?: string;
+          commentaire?: string | null;
+          duree?: string;
+          fondement?: string;
+          mis_a_jour_le?: string;
+          nature?: string;
+          reference?: string | null;
+        };
+        Relationships: [];
+      };
       formations: {
         Row: {
           date_creation: string;
@@ -223,6 +364,7 @@ export type Database = {
       };
       lecons: {
         Row: {
+          a_video_url: boolean | null;
           contenu: string | null;
           date_creation: string;
           date_modification: string;
@@ -235,12 +377,14 @@ export type Database = {
           position: number;
           titre: string;
           type: string;
+          video_hebergee: boolean | null;
           video_metadata: Json;
           video_provider: string;
           video_provider_id: string | null;
           video_url: string | null;
         };
         Insert: {
+          a_video_url?: boolean | null;
           contenu?: string | null;
           date_creation?: string;
           date_modification?: string;
@@ -253,12 +397,14 @@ export type Database = {
           position?: number;
           titre: string;
           type?: string;
+          video_hebergee?: boolean | null;
           video_metadata?: Json;
           video_provider?: string;
           video_provider_id?: string | null;
           video_url?: string | null;
         };
         Update: {
+          a_video_url?: boolean | null;
           contenu?: string | null;
           date_creation?: string;
           date_modification?: string;
@@ -271,6 +417,7 @@ export type Database = {
           position?: number;
           titre?: string;
           type?: string;
+          video_hebergee?: boolean | null;
           video_metadata?: Json;
           video_provider?: string;
           video_provider_id?: string | null;
@@ -529,6 +676,7 @@ export type Database = {
       };
       ressources: {
         Row: {
+          a_video_hebergee: boolean | null;
           chemin_storage: string | null;
           cloudinary_public_id: string | null;
           contenu: string | null;
@@ -545,8 +693,10 @@ export type Database = {
           type: string;
           type_mime: string | null;
           url: string | null;
+          video_url: string | null;
         };
         Insert: {
+          a_video_hebergee?: boolean | null;
           chemin_storage?: string | null;
           cloudinary_public_id?: string | null;
           contenu?: string | null;
@@ -563,8 +713,10 @@ export type Database = {
           type?: string;
           type_mime?: string | null;
           url?: string | null;
+          video_url?: string | null;
         };
         Update: {
+          a_video_hebergee?: boolean | null;
           chemin_storage?: string | null;
           cloudinary_public_id?: string | null;
           contenu?: string | null;
@@ -581,6 +733,7 @@ export type Database = {
           type?: string;
           type_mime?: string | null;
           url?: string | null;
+          video_url?: string | null;
         };
         Relationships: [];
       };
@@ -788,6 +941,7 @@ export type Database = {
         Returns: undefined;
       };
       numero_certificat: { Args: never; Returns: string };
+      numero_facture: { Args: never; Returns: string };
       prochaines_lecons: {
         Args: { p_limite?: number };
         Returns: {
