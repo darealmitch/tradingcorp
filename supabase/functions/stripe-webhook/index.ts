@@ -137,6 +137,11 @@ Deno.serve(async (req) => {
 
   // Idempotence : reference_transaction est UNIQUE — une relance de Stripe
   // (timeout, réessai automatique…) retombe sur le paiement déjà enregistré.
+  //
+  // C'EST ICI, et nulle part ailleurs, que se décide « cet encaissement est-il
+  // nouveau ». `ignoreDuplicates` fait un ON CONFLICT DO NOTHING : l'upsert ne
+  // rend une ligne QUE la première fois. Ce booléen commande ensuite les deux
+  // gestes qui ne doivent avoir lieu qu'une fois — notifier et facturer.
   let { data: paiement } = await admin
     .from('paiements')
     .upsert(
@@ -156,6 +161,7 @@ Deno.serve(async (req) => {
     .select('id_paiement')
     .maybeSingle();
 
+  const encaissementNouveau = paiement !== null;
   if (!paiement) {
     ({ data: paiement } = await admin
       .from('paiements')
@@ -168,27 +174,34 @@ Deno.serve(async (req) => {
     return new Response("Échec d'enregistrement du paiement", { status: 500 });
   }
 
-  const { data: inscription, error } = await admin
-    .from('inscriptions')
-    .upsert(
-      {
-        id_profil,
-        id_formation,
-        id_paiement: paiement.id_paiement,
-        statut: 'active',
-        source: 'paiement',
-      },
-      { onConflict: 'id_profil,id_formation', ignoreDuplicates: true },
-    )
-    .select('id_inscription')
-    .maybeSingle();
+  // L'accès, qu'il existe déjà ou non. `ignoreDuplicates` évite de réécrire
+  // une inscription en place ; ce que l'upsert rend n'est plus lu, précisément
+  // parce qu'il ne disait pas ce qu'on lui faisait dire (voir plus bas).
+  const { error } = await admin.from('inscriptions').upsert(
+    {
+      id_profil,
+      id_formation,
+      id_paiement: paiement.id_paiement,
+      statut: 'active',
+      source: 'paiement',
+    },
+    { onConflict: 'id_profil,id_formation', ignoreDuplicates: true },
+  );
   if (error) {
     return new Response("Échec de création de l'inscription", { status: 500 });
   }
 
-  // Notification à l'apprenant — uniquement quand l'inscription vient d'être
-  // créée (une relance Stripe retombe sur le doublon et n'en renvoie pas).
-  if (inscription) {
+  // Notification et facture : une fois par ENCAISSEMENT, jamais par inscription.
+  //
+  // Cette condition portait sur l'inscription, et c'était un défaut : un élève
+  // déjà inscrit — repris de Wix, ou à qui l'accès avait été ouvert à la main —
+  // retombait sur le doublon, `inscription` valait null, et son achat ne
+  // donnait lieu à AUCUNE facture. On encaissait sans facturer. L'obligation de
+  // facturation ne dépend pas de l'existence préalable d'un accès.
+  //
+  // Le paiement, lui, est unique par `reference_transaction` : une relance de
+  // Stripe sur le même événement ne rentre pas ici, et rien n'est émis deux fois.
+  if (encaissementNouveau) {
     const { data: formation } = await admin
       .from('formations')
       .select('titre')
@@ -202,9 +215,8 @@ Deno.serve(async (req) => {
       lien: '/espace/formations',
     });
 
-    // Facture et confirmation de commande. Dans ce `if` et pas ailleurs : une
-    // relance de Stripe retombe sur l'inscription en doublon, `inscription`
-    // vaut alors null, et aucun second document n'est émis.
+    // Facture et confirmation de commande, émises une seule fois par
+    // encaissement (voir la condition ci-dessus).
     //
     // Awaité plutôt que détaché : la composition du PDF et l'envoi prennent
     // quelques secondes, loin des vingt que Stripe accorde. `emettreFacture`
