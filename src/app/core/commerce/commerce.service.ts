@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
+import { Facture } from './facture.model';
 import { Formation, FormationStaff, Inscription } from './formation.model';
 
 const ERREUR_GENERIQUE = 'Le paiement est indisponible pour le moment. Réessaie plus tard.';
@@ -19,6 +20,41 @@ export class CommerceService {
         .order('prix_centimes'),
       [],
     );
+  }
+
+  /**
+   * Factures du profil connecté, la plus récente en tête.
+   *
+   * La RLS (`factures_select_titulaire`) ne montre que les siennes, et les
+   * privilèges de colonne limitent ce qui sort : inutile de filtrer ici.
+   */
+  async chargerFactures(): Promise<Facture[]> {
+    return this.acces.lire<Facture[]>(
+      'lecture des factures',
+      this.acces
+        .table('factures')
+        .select('id_facture, numero, designation, montant_centimes, devise, date_emission')
+        .order('date_emission', { ascending: false }),
+      [],
+    );
+  }
+
+  /**
+   * Lien de téléchargement d'une facture.
+   *
+   * Le PDF a déjà été produit au moment du paiement et joint à la confirmation
+   * de commande : cette méthode ne fabrique rien, elle rend le document
+   * conservé. Le lien est une URL SIGNÉE de dix minutes — le fichier n'est pas
+   * public, et l'adresse ne se partage pas durablement.
+   */
+  async lienFacture(idFacture: string): Promise<{ url?: string; erreur?: string }> {
+    const { donnees, erreur } = await this.acces.invoquer<{ url: string }>(
+      'téléchargement de la facture',
+      'generer-facture',
+      { id_facture: idFacture },
+      'La facture n’a pas pu être préparée. Réessaie.',
+    );
+    return { url: donnees?.url, erreur };
   }
 
   /** Inscriptions actives du profil connecté (RLS : ses lignes uniquement). */
