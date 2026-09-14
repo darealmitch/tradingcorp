@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { EssaiFacturation, FactureEmise, PaiementLigne } from './finance.model';
+import { DomaineExpediteur, EssaiFacturation, FactureEmise, PaiementLigne } from './finance.model';
 
 /**
  * Historique des paiements encaissés.
@@ -67,5 +67,25 @@ export class FinanceService {
       'L’essai n’a pas pu être mené. Réessaie.',
     );
     return { resultat: donnees, erreur };
+  }
+
+  /**
+   * Les enregistrements DNS que Brevo attend, lus par son API.
+   *
+   * Lus plutôt que recopiés d'une documentation : la valeur d'une clé DKIM est
+   * propre au compte, et l'état de chaque enregistrement dit ce qui manque
+   * vraiment — ce qu'aucune capture d'écran ne peut donner de façon fiable.
+   */
+  async enregistrementsExpediteur(): Promise<{
+    domaines?: DomaineExpediteur[];
+    erreur?: string;
+  }> {
+    const { donnees, erreur } = await this.acces.invoquer<{ domaines: DomaineExpediteur[] }>(
+      'lecture des domaines expéditeurs',
+      'essai-facturation',
+      { mode: 'dns' },
+      'Les enregistrements n’ont pas pu être lus. Réessaie.',
+    );
+    return { domaines: donnees?.domaines, erreur };
   }
 }

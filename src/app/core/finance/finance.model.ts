@@ -129,3 +129,19 @@ export interface EssaiFacturation {
   brevo_configure: boolean;
   envoye: boolean;
 }
+
+/** Un enregistrement DNS attendu par Brevo pour authentifier le domaine. */
+export interface EnregistrementDns {
+  /** Nom d'hôte à créer, tel que Brevo l'écrit (« brevo._domainkey »). */
+  nom: string;
+  type: string;
+  valeur: string;
+  /** Vrai si Brevo constate qu'il est déjà en place. */
+  pose: boolean;
+}
+
+export interface DomaineExpediteur {
+  domaine: string;
+  authentifie: boolean;
+  enregistrements: EnregistrementDns[];
+}

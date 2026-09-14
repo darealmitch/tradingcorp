@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { EssaiFacturation } from '../../../core/finance/finance.model';
+import { DomaineExpediteur, EssaiFacturation } from '../../../core/finance/finance.model';
 import { FinanceService } from '../../../core/finance/finance.service';
 import { Parametres } from './parametres';
 
@@ -13,6 +13,9 @@ import { Parametres } from './parametres';
  */
 
 interface Interne {
+  domaines: () => DomaineExpediteur[] | null;
+  erreurDns: () => string | null;
+  lireEnregistrementsDns(): Promise<void>;
   essai: () => EssaiFacturation | null;
   erreurEssai: () => string | null;
   envoiEnCours: () => boolean;
@@ -34,6 +37,7 @@ describe('Parametres — essai de facturation', () => {
   let fixture: ComponentFixture<Parametres>;
   let interne: Interne;
   let reponse: { resultat?: EssaiFacturation; erreur?: string };
+  let reponseDns: { domaines?: DomaineExpediteur[]; erreur?: string };
   let destinatairesDemandes: (string | undefined)[];
 
   async function creer(): Promise<void> {
@@ -47,6 +51,7 @@ describe('Parametres — essai de facturation', () => {
               destinatairesDemandes.push(destinataire);
               return Promise.resolve(reponse);
             },
+            enregistrementsExpediteur: () => Promise.resolve(reponseDns),
           },
         },
       ],
@@ -58,6 +63,18 @@ describe('Parametres — essai de facturation', () => {
 
   beforeEach(() => {
     reponse = { resultat: resultat() };
+    reponseDns = {
+      domaines: [
+        {
+          domaine: 'tradingcorp.fr',
+          authentifie: true,
+          enregistrements: [
+            { nom: 'brevo._domainkey', type: 'TXT', valeur: 'k=rsa; p=MIGf…', pose: false },
+            { nom: 'tradingcorp.fr', type: 'TXT', valeur: 'brevo-code:abc', pose: true },
+          ],
+        },
+      ],
+    };
     destinatairesDemandes = [];
   });
 
@@ -123,5 +140,29 @@ describe('Parametres — essai de facturation', () => {
     await interne.essayerFacturation();
 
     expect(destinatairesDemandes).toEqual(['client@exemple.fr']);
+  });
+
+  it('montre la valeur exacte à recopier et ce qui manque', async () => {
+    // Tout l'intérêt de cet écran : distinguer ce qui est en place de ce qui
+    // reste à poser. Un tableau qui afficherait tout pareil ne servirait à rien.
+    await creer();
+
+    await interne.lireEnregistrementsDns();
+    fixture.detectChanges();
+
+    const texte = fixture.nativeElement.textContent;
+    expect(texte).toContain('brevo._domainkey');
+    expect(texte).toContain('À poser');
+    expect(texte).toContain('En place');
+  });
+
+  it('signale un domaine absent plutôt qu’un tableau vide', async () => {
+    reponseDns = { erreur: 'Brevo a répondu 401.' };
+    await creer();
+
+    await interne.lireEnregistrementsDns();
+
+    expect(interne.domaines()).toBeNull();
+    expect(interne.erreurDns()).toContain('401');
   });
 });
