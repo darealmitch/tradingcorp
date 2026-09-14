@@ -174,9 +174,20 @@ Deno.serve(async (req) => {
     return new Response("Échec d'enregistrement du paiement", { status: 500 });
   }
 
-  // L'accès, qu'il existe déjà ou non. `ignoreDuplicates` évite de réécrire
-  // une inscription en place ; ce que l'upsert rend n'est plus lu, précisément
-  // parce qu'il ne disait pas ce qu'on lui faisait dire (voir plus bas).
+  // L'accès. Mise à jour SUR CONFLIT, et non « ignorer le doublon ».
+  //
+  // `ignoreDuplicates: true` laissait la ligne existante intacte, quel que soit
+  // son état. Un apprenant remboursé — donc `revoquee` par
+  // `revoquer_pour_remboursement` — qui rachetait voyait son paiement encaissé
+  // et son accès rester fermé. La contrainte unique (id_profil, id_formation)
+  // empêche d'en créer une seconde : rien ne l'aurait rouvert.
+  //
+  // La mise à jour ne touche que les quatre colonnes ci-dessous : la date
+  // d'inscription d'origine est conservée. Écraser `source` est voulu — un
+  // accès ouvert à la main puis payé EST un accès payé, et c'est ce qui permet
+  // de retrouver la vente derrière l'inscription.
+  //
+  // Idempotent : une relance de Stripe réécrit les mêmes valeurs.
   const { error } = await admin.from('inscriptions').upsert(
     {
       id_profil,
@@ -185,7 +196,7 @@ Deno.serve(async (req) => {
       statut: 'active',
       source: 'paiement',
     },
-    { onConflict: 'id_profil,id_formation', ignoreDuplicates: true },
+    { onConflict: 'id_profil,id_formation' },
   );
   if (error) {
     return new Response("Échec de création de l'inscription", { status: 500 });
