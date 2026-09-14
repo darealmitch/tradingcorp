@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { GOOGLE_OAUTH_ACTIF } from '../../../core/auth/auth.service';
-import { EssaiFacturation } from '../../../core/finance/finance.model';
+import { DomaineExpediteur, EssaiFacturation } from '../../../core/finance/finance.model';
 import { FinanceService } from '../../../core/finance/finance.service';
 
 /**
@@ -35,6 +35,10 @@ export class Parametres {
   protected readonly essai = signal<EssaiFacturation | null>(null);
   protected readonly erreurEssai = signal<string | null>(null);
 
+  protected readonly lectureDns = signal(false);
+  protected readonly domaines = signal<DomaineExpediteur[] | null>(null);
+  protected readonly erreurDns = signal<string | null>(null);
+
   /**
    * Déclenche un envoi de bout en bout, sans vente.
    *
@@ -46,6 +50,28 @@ export class Parametres {
    * réellement, chez lui : une remise dépend autant du fournisseur qui la
    * reçoit (Gmail, iCloud, Outlook) que de celui qui l'émet.
    */
+  /**
+   * Demande à Brevo ce qu'il attend dans la zone DNS du domaine.
+   *
+   * Sans authentification du domaine, les messages partent tout de même mais
+   * échouent au contrôle DMARC : ils arrivent, jusqu'au jour où le volume
+   * augmente et où un fournisseur strict cesse de les laisser passer.
+   */
+  protected async lireEnregistrementsDns(): Promise<void> {
+    this.lectureDns.set(true);
+    this.domaines.set(null);
+    this.erreurDns.set(null);
+
+    const { domaines, erreur } = await this.finance.enregistrementsExpediteur();
+
+    this.lectureDns.set(false);
+    if (erreur || !domaines) {
+      this.erreurDns.set(erreur ?? 'Aucun domaine expéditeur n’est déclaré chez Brevo.');
+      return;
+    }
+    this.domaines.set(domaines);
+  }
+
   protected saisirDestinataire(evenement: Event): void {
     this.destinataire.set((evenement.target as HTMLInputElement).value);
   }
