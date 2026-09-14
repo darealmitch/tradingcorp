@@ -27,5 +27,30 @@
 }
 
 .parametres-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
   padding: 14px 0 4px;
+}
+
+.parametres-champ {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 320px;
+}
+
+.parametres-champ label {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.parametres-champ input {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
 }

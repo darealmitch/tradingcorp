@@ -58,6 +58,42 @@ function montant(centimes: number, devise: string): string {
   return `${(centimes / 100).toFixed(2).replace('.', ',')} ${symbole}`;
 }
 
+/**
+ * Caractères que WinAnsi accepte au-delà du latin-1 — la part « haute » de
+ * CP1252 : guillemets typographiques, tirets, euro, œ, ligatures.
+ */
+const WINANSI_EN_PLUS = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ'.split(''));
+
+/**
+ * Rend un texte écrivable par une police standard de PDF.
+ *
+ * LES POLICES STANDARD ÉCRIVENT EN WINANSI (CP1252), et pdf-lib refuse le
+ * document entier plutôt que d'écrire un caractère qu'il ne sait pas encoder.
+ * Un seul suffit : « WinAnsi cannot encode "‎" (0x200e) » — une marque
+ * gauche-à-droite invisible, arrivée par copier-coller dans un champ « nom ».
+ *
+ * Ce n'est pas une précaution théorique. Le nom du client est FIGÉ sur la
+ * facture, tel qu'il a été saisi : un emoji, un prénom en arabe ou en
+ * mandarin, une espace insécable exotique — et la composition échoue. Comme
+ * `emettreFacture` avale ses erreurs pour ne jamais faire rejouer le webhook,
+ * l'échec serait silencieux : paiement encaissé, accès ouvert, aucune facture.
+ *
+ * Le parti pris est donc d'écrire un document RÉGULIER plutôt que rien. Les
+ * caractères inconnus sont retirés, la normalisation NFC recompose au passage
+ * les accents décomposés (« e » + accent combinant devient « é », que WinAnsi
+ * connaît). Si le nom disparaît entièrement, l'appelant retombe sur « Client »
+ * — une facture au nom générique reste une facture, et l'adresse électronique
+ * du client y figure juste en dessous.
+ */
+function lisible(contenu: string): string {
+  return contenu
+    .normalize('NFC')
+    .replace(/[^\u0020-\u007e\u00a0-\u00ff]/gu, (caractere) =>
+      WINANSI_EN_PLUS.has(caractere) ? caractere : '',
+    )
+    .trim();
+}
+
 function texte(
   page: PDFPage,
   contenu: string,
@@ -67,7 +103,7 @@ function texte(
   taille: number,
   couleur = ENCRE,
 ): void {
-  page.drawText(contenu, { x, y, size: taille, font: police, color: couleur });
+  page.drawText(lisible(contenu), { x, y, size: taille, font: police, color: couleur });
 }
 
 /** Texte aligné à droite sur l'axe `x`. */
@@ -80,7 +116,10 @@ function aDroite(
   taille: number,
   couleur = ENCRE,
 ): void {
-  const largeur = police.widthOfTextAtSize(contenu, taille);
+  // Mesuré sur le texte assaini, et pas sur l'original : `widthOfTextAtSize`
+  // lève sur les mêmes caractères que `drawText`, et une largeur calculée sur
+  // une chaîne plus longue décalerait l'alignement à droite.
+  const largeur = police.widthOfTextAtSize(lisible(contenu), taille);
   texte(page, contenu, x - largeur, y, police, taille, couleur);
 }
 
