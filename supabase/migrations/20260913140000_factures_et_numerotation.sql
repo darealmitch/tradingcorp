@@ -32,8 +32,27 @@ comment on table public.compteur_factures is
   'garantit une numérotation continue, ce qu''une séquence ne peut pas faire.';
 
 alter table public.compteur_factures enable row level security;
--- Aucune policy : la table n'est jamais lue ni écrite par un client. Seul
--- `numero_facture()` y touche, en SECURITY DEFINER.
+
+-- Une policy qui n'autorise RIEN, plutôt qu'aucune policy.
+--
+-- Le résultat est le même — la table reste hermétique, seul `numero_facture()`
+-- y touche en SECURITY DEFINER — mais l'intention est écrite. Une table sous
+-- RLS sans aucune policy se lit comme un oubli, et le socle de sécurité du
+-- projet la refuse pour cette raison (00_socle_securite : « une table protégée
+-- mais sans policy est hermétique : c'est un oubli, pas une protection »).
+drop policy if exists "compteur_factures_ferme" on public.compteur_factures;
+create policy "compteur_factures_ferme" on public.compteur_factures for all
+  to authenticated, anon
+  using (false)
+  with check (false);
+
+-- ⚠️ LA POLICY NE SUFFIT PAS. Supabase accorde par défaut tous les privilèges
+-- aux rôles de l'API sur chaque table créée — `TRUNCATE` compris. Or TRUNCATE
+-- n'est PAS soumis à la RLS : un compte authentifié aurait pu vider ce
+-- compteur, faire repartir la numérotation à 0001 et produire des numéros de
+-- facture en double. La révocation est donc la vraie protection ; la policy
+-- ci-dessus n'exprime que l'intention.
+revoke all on public.compteur_factures from authenticated, anon;
 
 create or replace function public.numero_facture()
 returns text
