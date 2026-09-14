@@ -1,4 +1,4 @@
-import { PaiementLigne, compteDansCa } from './finance.model';
+import { FactureEmise, PaiementLigne, compteDansCa, compteEnFacturation } from './finance.model';
 
 /**
  * `compteDansCa` définit à elle seule ce qu'est le chiffre d'affaires affiché.
@@ -71,5 +71,43 @@ describe('compteDansCa', () => {
   it('écarte un compte supprimé dont le paiement était en mode test', () => {
     // Le mode test prime : il ne s'agissait pas d'un vrai encaissement.
     expect(compteDansCa(paiement({ profils: null, mode_test: true }))).toBe(false);
+  });
+});
+
+/**
+ * `compteEnFacturation` est le pendant de `compteDansCa` pour les factures, et
+ * son critère est nécessairement plus pauvre : une facture fige une identité,
+ * elle ne porte pas le rôle de l'acheteur. Impossible d'y écarter un compte de
+ * démonstration comme on le fait sur un paiement — seul le mode Stripe reste.
+ */
+function factureEmise(partiel: Partial<FactureEmise> = {}): FactureEmise {
+  return {
+    id_facture: 'f-1',
+    numero: 'F2026-0001',
+    designation: 'Formation TradingCorp',
+    montant_centimes: 99700,
+    devise: 'eur',
+    date_emission: '2026-09-14T10:00:00Z',
+    id_profil: 'profil-1',
+    client_nom: 'Client Exemple',
+    client_email: 'client@exemple.fr',
+    mode_test: false,
+    ...partiel,
+  };
+}
+
+describe('compteEnFacturation', () => {
+  it('compte une vente réelle', () => {
+    expect(compteEnFacturation(factureEmise())).toBe(true);
+  });
+
+  it('écarte une vente passée avec les clés de test Stripe', () => {
+    expect(compteEnFacturation(factureEmise({ mode_test: true }))).toBe(false);
+  });
+
+  it('conserve la facture d’un compte supprimé', () => {
+    // `factures.id_profil` est en ON DELETE SET NULL : la pièce comptable
+    // survit au compte, l'obligation de conservation primant l'effacement.
+    expect(compteEnFacturation(factureEmise({ id_profil: null }))).toBe(true);
   });
 });

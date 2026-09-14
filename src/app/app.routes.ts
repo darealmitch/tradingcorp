@@ -226,6 +226,16 @@ export const routes: Routes = [
         canActivate: [roleGuard('admin')],
         title: 'TradingCorp — Paiements',
       },
+      // Pendant administrateur de `factures` : les mêmes lignes, mais toutes,
+      // avec l'identité de l'acheteur. Les deux écrans sont distincts parce que
+      // les confondre faisait mentir le premier.
+      {
+        path: 'facturation',
+        loadComponent: () =>
+          import('./features/espace/facturation/facturation').then((m) => m.Facturation),
+        canActivate: [roleGuard('admin')],
+        title: 'TradingCorp — Facturation',
+      },
       {
         path: 'journal',
         loadComponent: () => import('./features/espace/journal/journal').then((m) => m.Journal),

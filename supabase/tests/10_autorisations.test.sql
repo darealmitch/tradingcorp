@@ -17,7 +17,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(36);
+select plan(41);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Outils : exécuter sous une identité, sans jamais laisser le rôle simulé
@@ -149,6 +149,15 @@ insert into public.notifications (id_profil, titre) values
 
 insert into public.journal_admin (id_profil, action) values
   ('11111111-1111-1111-1111-111111111111', 'essai-autorisations');
+
+-- Une facture pour l'apprenant, une pour le tiers : c'est la seule façon de
+-- distinguer « je vois les miennes » de « je vois celles de tout le monde ».
+-- Un jeu à une seule ligne aurait laissé passer les deux.
+insert into public.factures (numero, id_profil, designation, montant_centimes, chemin_storage) values
+  ('ESSAI-0001', '33333333-3333-3333-3333-333333333333',
+   'Formation publiée', 99700, 'essai/0001.pdf'),
+  ('ESSAI-0002', '44444444-4444-4444-4444-444444444444',
+   'Formation publiée', 99700, 'essai/0002.pdf');
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Visiteur anonyme
@@ -379,6 +388,30 @@ select is(
   'apprenant — ne peut pas se promouvoir administrateur'
 );
 
+-- Factures : l'écran « Mes factures » doit dire vrai. Deux factures existent,
+-- l'apprenant n'en voit qu'une — la sienne.
+select is(
+  pg_temp.observer('33333333-3333-3333-3333-333333333333',
+    $q$select count(*) from public.factures where numero like 'ESSAI-%'$q$),
+  1::bigint,
+  'apprenant — ne voit que sa propre facture'
+);
+
+-- L'adresse du fichier n'est lisible par personne côté client : le PDF s'obtient
+-- par URL signée (generer-facture), jamais en devinant un chemin de stockage.
+select ok(
+  not has_column_privilege('authenticated', 'public.factures', 'chemin_storage', 'SELECT'),
+  'factures — l''adresse du fichier reste hors de portée du client'
+);
+
+-- Contre-épreuve du filtre applicatif : `id_profil` DOIT rester lisible. Sans
+-- ce privilège, le « where id_profil = auth.uid() » de l'écran client échoue —
+-- une colonne citée dans un WHERE est une colonne lue.
+select ok(
+  has_column_privilege('authenticated', 'public.factures', 'id_profil', 'SELECT'),
+  'factures — id_profil reste lisible, sans quoi l''écran client ne peut pas filtrer'
+);
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Compte de démonstration : accès élargi au contenu, jamais aux droits
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -461,6 +494,16 @@ select is(
   'formateur — ne peut pas inscrire un utilisateur (réservé aux administrateurs)'
 );
 
+-- Depuis 20260914100000, une facture est une pièce comptable : le formateur en
+-- est écarté, comme il l'est déjà des paiements. Il n'a aucune facture à lui,
+-- donc il ne voit rien.
+select is(
+  pg_temp.observer('22222222-2222-2222-2222-222222222222',
+    $q$select count(*) from public.factures where numero like 'ESSAI-%'$q$),
+  0::bigint,
+  'formateur — les factures des autres lui sont fermées'
+);
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Administrateur
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -488,6 +531,15 @@ select is(
   $q$),
   null::text,
   'admin — inscrit un utilisateur à une formation'
+);
+
+-- Contre-épreuve des deux assertions ci-dessus : les factures existent bel et
+-- bien, et quelqu'un les voit toutes — c'est l'écran de facturation.
+select is(
+  pg_temp.observer('11111111-1111-1111-1111-111111111111',
+    $q$select count(*) from public.factures where numero like 'ESSAI-%'$q$),
+  2::bigint,
+  'admin — voit toutes les factures émises'
 );
 
 select * from finish();
