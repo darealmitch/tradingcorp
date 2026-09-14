@@ -25,3 +25,7 @@
 .parametres-ligne dd {
   font-weight: 500;
 }
+
+.parametres-action {
+  padding: 14px 0 4px;
+}
