@@ -54,3 +54,20 @@
   color: var(--text);
   font: inherit;
 }
+
+.parametres-domaine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 10px;
+  font-size: 0.95rem;
+}
+
+/* Une clé DKIM fait plusieurs centaines de caractères : elle doit pouvoir être
+   sélectionnée en entier, donc se replier au lieu d'étirer le tableau. */
+.valeur-dns {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  word-break: break-all;
+  max-width: 420px;
+}

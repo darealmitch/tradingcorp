@@ -68,10 +68,66 @@ Deno.serve(async (req) => {
       return json(req, { erreur: 'Réservé aux administrateurs.' }, 403);
     }
 
+    const { destinataire, mode } = (await req.json().catch(() => ({}))) as {
+      destinataire?: string;
+      mode?: string;
+    };
+
+    // MODE « DNS » — ce que Brevo attend dans la zone du domaine.
+    //
+    // Lu par l'API plutôt que relevé dans l'interface : les écrans changent, et
+    // guider quelqu'un de mémoire dans des menus qu'on ne voit pas est le plus
+    // sûr moyen de lui faire perdre une demi-heure. L'API, elle, rend la valeur
+    // exacte à recopier — et l'état de chaque enregistrement, donc ce qui
+    // manque réellement.
+    if (mode === 'dns') {
+      const cle = Deno.env.get('BREVO_API_KEY');
+      if (!cle) {
+        return json(req, { erreur: 'BREVO_API_KEY absente des secrets.' }, 503);
+      }
+      const reponse = await fetch('https://api.brevo.com/v3/senders/domains', {
+        headers: { 'api-key': cle, accept: 'application/json' },
+      });
+      if (!reponse.ok) {
+        console.error('[essai-facturation] domaines', reponse.status, await reponse.text());
+        return json(req, { erreur: `Brevo a répondu ${reponse.status}.` }, 502);
+      }
+
+      // Forme tolérante : on ne présume ni du nom des champs ni de leur
+      // présence. Ce qui manque ressort vide plutôt que de faire échouer la
+      // lecture, et le journal garde la réponse entière en cas de surprise.
+      const charge = (await reponse.json()) as {
+        domains?: {
+          domain?: string;
+          authenticated?: boolean;
+          dns_records?: Record<string, unknown>;
+        }[];
+      };
+      const domaines = (charge.domains ?? []).map((d) => ({
+        domaine: d.domain ?? '',
+        authentifie: d.authenticated === true,
+        enregistrements: Object.values(d.dns_records ?? {}).map((brut) => {
+          const r = (brut ?? {}) as Record<string, unknown>;
+          return {
+            nom: typeof r.host_name === 'string' ? r.host_name : '',
+            type: typeof r.type === 'string' ? r.type.toUpperCase() : 'TXT',
+            valeur: typeof r.value === 'string' ? r.value : '',
+            pose: r.status === true,
+          };
+        }),
+      }));
+      if (domaines.every((d) => d.enregistrements.length === 0)) {
+        console.error(
+          '[essai-facturation] forme inattendue',
+          JSON.stringify(charge).slice(0, 2000),
+        );
+      }
+      return json(req, { domaines }, 200);
+    }
+
     // Adresse demandée, ou la sienne. Le format est vérifié ici : une adresse
     // mal formée part quand même chez Brevo, qui la refuse — autant rendre un
     // message qui dise ce qui ne va pas.
-    const { destinataire } = (await req.json().catch(() => ({}))) as { destinataire?: string };
     const adresse = destinataire?.trim() || user.email;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adresse)) {
       return json(req, { erreur: 'Cette adresse électronique n’est pas valide.' }, 400);
