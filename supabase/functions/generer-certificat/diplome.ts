@@ -1,4 +1,8 @@
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from 'npm:pdf-lib@1';
+// Un diplôme porte le nom que son titulaire a saisi lui-même : un emoji ou une
+// espace invisible y suffirait à empêcher la délivrance du document, sans que
+// rien ne le signale (voir _partages/texte-pdf.ts).
+import { lisible } from '../_partages/texte-pdf.ts';
 
 /**
  * Diplôme TradingCorp — composé NATIVEMENT en PDF.
@@ -56,8 +60,12 @@ function centre(
   taille: number,
   couleur = ENCRE,
 ) {
-  const largeur = police.widthOfTextAtSize(texte, taille);
-  page.drawText(texte, { x: x - largeur / 2, y, size: taille, font: police, color: couleur });
+  // Assaini AVANT la mesure : `widthOfTextAtSize` lève sur les mêmes
+  // caractères que `drawText`, et une largeur calculée sur une chaîne plus
+  // longue décentrerait le texte.
+  const ecrit = lisible(texte);
+  const largeur = police.widthOfTextAtSize(ecrit, taille);
+  page.drawText(ecrit, { x: x - largeur / 2, y, size: taille, font: police, color: couleur });
 }
 
 /**
@@ -77,11 +85,12 @@ function centreAjuste(
   largeurMax: number,
   couleur = ENCRE,
 ) {
+  const ecrit = lisible(texte);
   let t = taille;
-  while (police.widthOfTextAtSize(texte, t) > largeurMax && t > 9) {
+  while (police.widthOfTextAtSize(ecrit, t) > largeurMax && t > 9) {
     t -= 0.5;
   }
-  centre(page, texte, x, y, police, t, couleur);
+  centre(page, ecrit, x, y, police, t, couleur);
 }
 
 /** Capitales espacées — le lettrage des mentions et du logo. */
@@ -95,7 +104,7 @@ function centreEspace(
   interlettre: number,
   couleur = ENCRE,
 ) {
-  const lettres = [...texte];
+  const lettres = [...lisible(texte)];
   const largeur =
     lettres.reduce((total, l) => total + police.widthOfTextAtSize(l, taille), 0) +
     interlettre * (lettres.length - 1);
