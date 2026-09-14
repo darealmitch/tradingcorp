@@ -72,6 +72,10 @@ export function compteEnFacturation(facture: FactureEmise): boolean {
  * L'année civile et non les douze derniers mois : c'est l'unité de la
  * numérotation (« F2026-0001 » repart à 1 le 1er janvier) et celle sur laquelle
  * se juge le chiffre d'affaires d'une entreprise individuelle.
+ *
+ * Ne filtre PAS les ventes de test : c'est à l'appelant de composer avec
+ * `compteEnFacturation`, pour que « quelles factures » et « quel exercice »
+ * restent deux questions distinctes.
  */
 export function cumulAnnee(factures: FactureEmise[], annee: number): number {
   return factures
@@ -79,12 +83,31 @@ export function cumulAnnee(factures: FactureEmise[], annee: number): number {
     .reduce((somme, facture) => somme + facture.montant_centimes, 0);
 }
 
+/** « F2026-0001 » — l'année que le compteur a effectivement attribuée. */
+const EXERCICE_DANS_NUMERO = /^F(\d{4})-\d+$/;
+
 /**
  * L'exercice comptable auquel une facture se rattache.
  *
- * TODO(human) — la date d'émission est un instant UTC, le numéro porte
- * l'année du compteur : ces deux sources peuvent diverger d'une facture.
+ * LE NUMÉRO FAIT FOI, pas la date. Les deux sources sont pourtant d'accord
+ * presque toujours : `numero_facture()` tire son année de `extract(year from
+ * now())` et `date_emission` vaut `now()`, la base tournant en UTC. Elles ne
+ * peuvent diverger qu'à cheval sur minuit du 31 décembre, entre l'attribution
+ * du numéro et l'insertion de la ligne.
+ *
+ * Dans ce cas-là, suivre le numéro est le seul choix qui garde l'écran
+ * cohérent avec lui-même : il affiche côte à côte un cumul d'exercice et le
+ * dernier numéro attribué. Une facture « F2026-0042 » comptée dans le total
+ * 2027 ferait apparaître une série 2026 trouée, exactement ce que la
+ * numérotation continue est censée rendre constatable (art. 242 nonies A,
+ * annexe II du CGI).
+ *
+ * Le repli sur la date lit l'année en UTC, et non dans le fuseau du
+ * navigateur : le total d'un administrateur ne doit pas dépendre d'où il se
+ * connecte. Il ne sert qu'aux factures d'avant cette numérotation, ou saisies
+ * à la main — il n'en existe pas à ce jour.
  */
 function exerciceDe(facture: FactureEmise): number {
-  return new Date(facture.date_emission).getFullYear();
+  const exercice = EXERCICE_DANS_NUMERO.exec(facture.numero)?.[1];
+  return exercice ? Number(exercice) : new Date(facture.date_emission).getUTCFullYear();
 }
