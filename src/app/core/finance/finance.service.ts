@@ -52,15 +52,18 @@ export class FinanceService {
   /**
    * Éprouve la chaîne de facturation à vide.
    *
-   * Le document part à l'adresse de l'administrateur connecté — la fonction
-   * n'accepte aucun destinataire, précisément pour ne pas devenir un relais
-   * d'envoi. Rien n'est écrit : ni facture, ni numéro, ni fichier.
+   * Le document part à l'adresse demandée, ou à celle du compte si aucune
+   * n'est donnée. Ce qui est envoyé, en revanche, n'est pas paramétrable : le
+   * contenu est écrit dans la fonction, et porte la mention « document de
+   * test ». Rien n'est écrit en base : ni facture, ni numéro, ni fichier.
    */
-  async envoyerFactureEssai(): Promise<{ resultat?: EssaiFacturation; erreur?: string }> {
+  async envoyerFactureEssai(
+    destinataire?: string,
+  ): Promise<{ resultat?: EssaiFacturation; erreur?: string }> {
     const { donnees, erreur } = await this.acces.invoquer<EssaiFacturation>(
       'essai de facturation',
       'essai-facturation',
-      {},
+      destinataire ? { destinataire } : {},
       'L’essai n’a pas pu être mené. Réessaie.',
     );
     return { resultat: donnees, erreur };

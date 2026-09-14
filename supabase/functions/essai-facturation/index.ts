@@ -18,9 +18,15 @@ import { vendeur } from '../_partages/vendeur.ts';
 //   • elle n'appelle JAMAIS `numero_facture()` — la série réelle est intacte,
 //     le document porte un numéro « ESSAI-… » qu'aucune vente ne peut produire ;
 //   • elle n'écrit rien dans `factures`, ni dans le stockage ;
-//   • elle n'envoie qu'à l'adresse de CELUI QUI L'APPELLE. Pas de destinataire
-//     en paramètre : une fonction qui expédie des pièces jointes à une adresse
-//     libre est un relais ouvert, quand bien même elle serait réservée au staff.
+//   • elle n'écrit rien non plus dans le journal d'administration : c'est un
+//     outil de diagnostic, pas un acte de gestion.
+//
+// LE DESTINATAIRE EST LIBRE, mais le CONTENU ne l'est pas — et c'est là que se
+// joue la sûreté, pas sur l'adresse. Objet, corps et pièce jointe sont écrits
+// ici, en dur : quoi qu'on demande, ce qui part est un document d'essai
+// TradingCorp portant « DOCUMENT DE TEST ». Il n'y a donc rien à composer pour
+// qui voudrait détourner la fonction, et il lui faudrait de toute façon un
+// jeton d'administrateur. À défaut d'adresse, c'est celle de l'appelant.
 //
 // Elle éprouve en revanche tout le reste, dans le vrai runtime : `VENDEUR_ADRESSE`,
 // la composition pdf-lib, la clé Brevo, l'expéditeur vérifié, la remise.
@@ -62,6 +68,15 @@ Deno.serve(async (req) => {
       return json(req, { erreur: 'Réservé aux administrateurs.' }, 403);
     }
 
+    // Adresse demandée, ou la sienne. Le format est vérifié ici : une adresse
+    // mal formée part quand même chez Brevo, qui la refuse — autant rendre un
+    // message qui dise ce qui ne va pas.
+    const { destinataire } = (await req.json().catch(() => ({}))) as { destinataire?: string };
+    const adresse = destinataire?.trim() || user.email;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adresse)) {
+      return json(req, { erreur: 'Cette adresse électronique n’est pas valide.' }, 400);
+    }
+
     const identite = vendeur();
     if (!identite) {
       // Le diagnostic le plus utile de tous : c'est ce silence-là qui, en
@@ -87,8 +102,11 @@ Deno.serve(async (req) => {
       designation: 'Formation TradingCorp — document d’essai',
       montantCentimes: 99700,
       devise: 'eur',
-      clientNom: [profil.prenom, profil.nom].filter(Boolean).join(' ').trim() || null,
-      clientEmail: user.email,
+      clientNom:
+        adresse === user.email
+          ? [profil.prenom, profil.nom].filter(Boolean).join(' ').trim() || null
+          : null,
+      clientEmail: adresse,
       moyenPaiement: 'card',
       datePaiement: new Date().toISOString(),
       // Porte la mention « DOCUMENT DE TEST — aucun paiement réel » en clair
@@ -98,8 +116,9 @@ Deno.serve(async (req) => {
 
     const cleBrevo = Boolean(Deno.env.get('BREVO_API_KEY'));
     const parti = await envoyer({
-      destinataire: user.email,
-      destinataireNom: profil.prenom ?? null,
+      destinataire: adresse,
+      // Le nom n'a de sens que si le document part à l'appelant lui-même.
+      destinataireNom: adresse === user.email ? (profil.prenom ?? null) : null,
       objet: `Essai de facturation TradingCorp — ${numero}`,
       html: `
 <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#1f2233;max-width:620px">
@@ -119,7 +138,7 @@ Deno.serve(async (req) => {
     return json(
       req,
       {
-        destinataire: user.email,
+        destinataire: adresse,
         numero,
         vendeur: true,
         // `envoyer` avale ses erreurs et journalise : ces deux drapeaux

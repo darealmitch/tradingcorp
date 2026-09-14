@@ -47,6 +47,17 @@
   </p>
 
   <div class="parametres-action">
+    <div class="parametres-champ">
+      <label for="essai-destinataire">Destinataire</label>
+      <input
+        id="essai-destinataire"
+        type="email"
+        autocomplete="off"
+        placeholder="Laisser vide pour l’adresse de votre compte"
+        [value]="destinataire()"
+        (input)="saisirDestinataire($event)"
+      />
+    </div>
     <button
       class="btn btn-secondaire"
       type="button"
