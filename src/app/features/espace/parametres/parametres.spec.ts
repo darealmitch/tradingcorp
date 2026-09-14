@@ -34,6 +34,7 @@ describe('Parametres — essai de facturation', () => {
   let fixture: ComponentFixture<Parametres>;
   let interne: Interne;
   let reponse: { resultat?: EssaiFacturation; erreur?: string };
+  let destinatairesDemandes: (string | undefined)[];
 
   async function creer(): Promise<void> {
     await TestBed.configureTestingModule({
@@ -41,7 +42,12 @@ describe('Parametres — essai de facturation', () => {
       providers: [
         {
           provide: FinanceService,
-          useValue: { envoyerFactureEssai: () => Promise.resolve(reponse) },
+          useValue: {
+            envoyerFactureEssai: (destinataire?: string) => {
+              destinatairesDemandes.push(destinataire);
+              return Promise.resolve(reponse);
+            },
+          },
         },
       ],
     }).compileComponents();
@@ -52,6 +58,7 @@ describe('Parametres — essai de facturation', () => {
 
   beforeEach(() => {
     reponse = { resultat: resultat() };
+    destinatairesDemandes = [];
   });
 
   afterEach(() => TestBed.resetTestingModule());
@@ -95,5 +102,26 @@ describe('Parametres — essai de facturation', () => {
     await interne.essayerFacturation();
 
     expect(interne.envoiEnCours()).toBe(false);
+  });
+
+  it('laisse la fonction choisir l’adresse quand le champ est vide', async () => {
+    // Le composant ne connaît pas l'adresse du compte — seule la fonction la
+    // lit, depuis le jeton. Envoyer une chaîne vide plutôt qu'inventer.
+    await creer();
+
+    await interne.essayerFacturation();
+
+    expect(destinatairesDemandes).toEqual(['']);
+  });
+
+  it('transmet le destinataire saisi', async () => {
+    await creer();
+    const champ = fixture.nativeElement.querySelector('#essai-destinataire') as HTMLInputElement;
+    champ.value = 'client@exemple.fr';
+    champ.dispatchEvent(new Event('input'));
+
+    await interne.essayerFacturation();
+
+    expect(destinatairesDemandes).toEqual(['client@exemple.fr']);
   });
 });

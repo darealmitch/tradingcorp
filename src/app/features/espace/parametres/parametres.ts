@@ -29,6 +29,8 @@ export class Parametres {
   /** Source unique : la constante qui commande l'affichage du bouton Google. */
   protected readonly googleActif = GOOGLE_OAUTH_ACTIF;
 
+  /** Vide = l'adresse du compte connecté, que seule la fonction connaît. */
+  protected readonly destinataire = signal('');
   protected readonly envoiEnCours = signal(false);
   protected readonly essai = signal<EssaiFacturation | null>(null);
   protected readonly erreurEssai = signal<string | null>(null);
@@ -39,13 +41,21 @@ export class Parametres {
    * Éprouve ce qui ne se relit pas dans le code : l'adresse du vendeur, la
    * composition du PDF, la clé Brevo, l'expéditeur vérifié, la remise. Aucun
    * numéro de facture n'est consommé — la série réelle reste intacte.
+   *
+   * Le destinataire est libre pour pouvoir vérifier ce qu'un client reçoit
+   * réellement, chez lui : une remise dépend autant du fournisseur qui la
+   * reçoit (Gmail, iCloud, Outlook) que de celui qui l'émet.
    */
+  protected saisirDestinataire(evenement: Event): void {
+    this.destinataire.set((evenement.target as HTMLInputElement).value);
+  }
+
   protected async essayerFacturation(): Promise<void> {
     this.envoiEnCours.set(true);
     this.essai.set(null);
     this.erreurEssai.set(null);
 
-    const { resultat, erreur } = await this.finance.envoyerFactureEssai();
+    const { resultat, erreur } = await this.finance.envoyerFactureEssai(this.destinataire());
 
     this.envoiEnCours.set(false);
     if (erreur || !resultat?.envoye) {
