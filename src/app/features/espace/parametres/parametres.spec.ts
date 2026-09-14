@@ -68,6 +68,8 @@ describe('Parametres — essai de facturation', () => {
         {
           domaine: 'tradingcorp.fr',
           authentifie: true,
+          fournisseur: 'Cloudflare',
+          authentifieLe: '2026-09-02T01:35:01+00:00',
           enregistrements: [
             { nom: 'brevo._domainkey', type: 'TXT', valeur: 'k=rsa; p=MIGf…', pose: false },
             { nom: 'tradingcorp.fr', type: 'TXT', valeur: 'brevo-code:abc', pose: true },
@@ -164,5 +166,40 @@ describe('Parametres — essai de facturation', () => {
 
     expect(interne.domaines()).toBeNull();
     expect(interne.erreurDns()).toContain('401');
+  });
+
+  it('dit « rien à poser » sur un domaine déjà authentifié', async () => {
+    // Le cas réel : Brevo rend `records: null` quand il n'attend plus rien.
+    // Un tableau sans lignes laisserait croire à une panne de lecture.
+    reponseDns = {
+      domaines: [
+        {
+          domaine: 'tradingcorp.fr',
+          authentifie: true,
+          fournisseur: 'Cloudflare',
+          authentifieLe: '2026-09-02T01:35:01+00:00',
+          enregistrements: [],
+        },
+      ],
+    };
+    await creer();
+
+    await interne.lireEnregistrementsDns();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Rien à poser');
+  });
+
+  it('nomme le fournisseur DNS, qui dit où poser un enregistrement', async () => {
+    // L'information qui manquait : le nom de domaine est acheté chez l'un, la
+    // zone servie par l'autre, et modifier la mauvaise ne produit aucun effet.
+    await creer();
+
+    await interne.lireEnregistrementsDns();
+    fixture.detectChanges();
+
+    const texte = fixture.nativeElement.textContent;
+    expect(texte).toContain('Cloudflare');
+    expect(texte).toContain('2 septembre 2026');
   });
 });

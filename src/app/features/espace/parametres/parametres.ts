@@ -72,6 +72,18 @@ export class Parametres {
     this.domaines.set(domaines);
   }
 
+  /** « 2 septembre 2026 », ou rien si Brevo ne donne pas la date. */
+  protected depuis(domaine: DomaineExpediteur): string | null {
+    if (!domaine.authentifieLe) {
+      return null;
+    }
+    return new Date(domaine.authentifieLe).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
   protected saisirDestinataire(evenement: Event): void {
     this.destinataire.set((evenement.target as HTMLInputElement).value);
   }
