@@ -111,3 +111,21 @@ function exerciceDe(facture: FactureEmise): number {
   const exercice = EXERCICE_DANS_NUMERO.exec(facture.numero)?.[1];
   return exercice ? Number(exercice) : new Date(facture.date_emission).getUTCFullYear();
 }
+
+/**
+ * Résultat d'un essai de facturation — ce que la chaîne répond quand on la
+ * sollicite à vide, sans vente ni numéro consommé.
+ *
+ * Trois drapeaux plutôt qu'un booléen : « ça n'a pas marché » n'aide personne,
+ * alors que « l'adresse du vendeur manque » et « Brevo a refusé » appellent des
+ * gestes opposés.
+ */
+export interface EssaiFacturation {
+  destinataire: string;
+  /** « ESSAI-2026-09-14 » — hors de la série réelle, par construction. */
+  numero: string;
+  /** VENDEUR_ADRESSE présente : sans elle, aucune facture ne serait émise. */
+  vendeur: boolean;
+  brevo_configure: boolean;
+  envoye: boolean;
+}

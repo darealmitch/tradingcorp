@@ -34,3 +34,35 @@
     </div>
   </dl>
 </div>
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Facturation</h2>
+  </div>
+  <p class="cellule-discrete">
+    Envoie une facture d'essai à votre propre adresse, en empruntant exactement le chemin d'une
+    vraie vente : composition du PDF, expéditeur, envoi. Aucune vente n'est enregistrée et aucun
+    numéro n'est consommé — le document porte un numéro « ESSAI » et la mention « document de test
+    ». À relancer après tout changement d'adresse d'expédition.
+  </p>
+
+  <div class="parametres-action">
+    <button
+      class="btn btn-secondaire"
+      type="button"
+      [disabled]="envoiEnCours()"
+      (click)="essayerFacturation()"
+    >
+      {{ envoiEnCours() ? 'Envoi…' : 'Envoyer une facture d’essai' }}
+    </button>
+  </div>
+
+  @if (essai(); as resultat) {
+    <p class="alerte est-succes" role="status">
+      Envoyé à {{ resultat.destinataire }} — facture {{ resultat.numero }}.
+    </p>
+  }
+  @if (erreurEssai(); as message) {
+    <p class="alerte" role="status">{{ message }}</p>
+  }
+</div>
