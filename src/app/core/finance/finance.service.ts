@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { FactureEmise, PaiementLigne } from './finance.model';
+import { EssaiFacturation, FactureEmise, PaiementLigne } from './finance.model';
 
 /**
  * Historique des paiements encaissés.
@@ -47,5 +47,22 @@ export class FinanceService {
         .order('date_emission', { ascending: false }),
       [],
     );
+  }
+
+  /**
+   * Éprouve la chaîne de facturation à vide.
+   *
+   * Le document part à l'adresse de l'administrateur connecté — la fonction
+   * n'accepte aucun destinataire, précisément pour ne pas devenir un relais
+   * d'envoi. Rien n'est écrit : ni facture, ni numéro, ni fichier.
+   */
+  async envoyerFactureEssai(): Promise<{ resultat?: EssaiFacturation; erreur?: string }> {
+    const { donnees, erreur } = await this.acces.invoquer<EssaiFacturation>(
+      'essai de facturation',
+      'essai-facturation',
+      {},
+      'L’essai n’a pas pu être mené. Réessaie.',
+    );
+    return { resultat: donnees, erreur };
   }
 }
