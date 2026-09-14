@@ -2,6 +2,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@18';
+import { emettreFacture } from '../_partages/facturation.ts';
 
 // Webhook appelé par Stripe (jamais par le navigateur) : à déployer avec
 // verify_jwt désactivé ; l'authenticité est garantie par la signature Stripe.
@@ -200,6 +201,30 @@ Deno.serve(async (req) => {
       type: 'succes',
       lien: '/espace/formations',
     });
+
+    // Facture et confirmation de commande. Dans ce `if` et pas ailleurs : une
+    // relance de Stripe retombe sur l'inscription en doublon, `inscription`
+    // vaut alors null, et aucun second document n'est émis.
+    //
+    // Awaité plutôt que détaché : la composition du PDF et l'envoi prennent
+    // quelques secondes, loin des vingt que Stripe accorde. `emettreFacture`
+    // n'échoue jamais — elle journalise — donc rien ici ne peut provoquer un
+    // rejeu de l'événement.
+    await emettreFacture(
+      {
+        idProfil: id_profil,
+        idPaiement: paiement.id_paiement,
+        designation: formation?.titre ?? 'Formation TradingCorp',
+        montantCentimes: session.amount_total ?? 0,
+        devise: session.currency ?? 'eur',
+        clientNom: session.customer_details?.name ?? null,
+        clientEmail: session.customer_details?.email ?? null,
+        moyenPaiement: session.payment_method_types?.[0] ?? null,
+        datePaiement: new Date().toISOString(),
+        modeTest: !evenement.livemode,
+      },
+      Deno.env.get('SITE_URL')?.replace(/\/+$/, '') || 'https://tradingcorp.fr',
+    );
   }
 
   return new Response('OK', { status: 200 });
