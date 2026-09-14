@@ -1,0 +1,78 @@
+<header class="page-tete">
+  <h1 class="page-titre">Facturation</h1>
+  <p class="page-sous">
+    Toutes les factures émises, du plus récent au plus ancien. La numérotation est continue et
+    repart à 1 chaque année civile ; les ventes en mode test Stripe sont signalées et exclues des
+    totaux.
+  </p>
+</header>
+
+<div class="grille-stats">
+  <app-stat-card icone="paiements" [libelle]="'Facturé en ' + annee" [valeur]="cumul()" />
+  <app-stat-card
+    icone="coche"
+    libelle="Factures comptabilisées"
+    [valeur]="comptabilisees()"
+    [detail]="exclues() > 0 ? exclues() + ' exclue(s) : mode test' : null"
+  />
+  <app-stat-card icone="liste" libelle="Dernier numéro" [valeur]="dernierNumero()" />
+</div>
+
+@if (erreur(); as message) {
+  <p class="alerte" role="status">{{ message }}</p>
+}
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Factures émises</h2>
+  </div>
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (factures().length === 0) {
+    <p class="cellule-discrete">Aucune facture émise pour l'instant.</p>
+  } @else {
+    <div class="tableau-defile">
+      <table class="tableau">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Numéro</th>
+            <th>Client</th>
+            <th>Désignation</th>
+            <th>Montant</th>
+            <th>Mode</th>
+            <th><span class="lecteur-ecran">Document</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (facture of factures(); track facture.id_facture) {
+            <tr>
+              <td class="cellule-discrete">{{ date(facture) }}</td>
+              <td>{{ facture.numero }}</td>
+              <td>{{ client(facture) }}</td>
+              <td class="cellule-discrete">{{ facture.designation }}</td>
+              <td>{{ montant(facture) }}</td>
+              <td>
+                @if (estReelle(facture)) {
+                  <span class="badge-statut est-succes">Réelle</span>
+                } @else {
+                  <span class="badge-statut">Test Stripe</span>
+                }
+              </td>
+              <td>
+                <button
+                  class="btn btn-ghost btn-compact"
+                  type="button"
+                  [disabled]="preparation() === facture.id_facture"
+                  (click)="telecharger(facture)"
+                >
+                  {{ preparation() === facture.id_facture ? 'Préparation…' : 'Télécharger' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
