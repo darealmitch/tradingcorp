@@ -1,4 +1,10 @@
-import { FactureEmise, PaiementLigne, compteDansCa, compteEnFacturation } from './finance.model';
+import {
+  FactureEmise,
+  PaiementLigne,
+  compteDansCa,
+  compteEnFacturation,
+  cumulAnnee,
+} from './finance.model';
 
 /**
  * `compteDansCa` définit à elle seule ce qu'est le chiffre d'affaires affiché.
@@ -109,5 +115,54 @@ describe('compteEnFacturation', () => {
     // `factures.id_profil` est en ON DELETE SET NULL : la pièce comptable
     // survit au compte, l'obligation de conservation primant l'effacement.
     expect(compteEnFacturation(factureEmise({ id_profil: null }))).toBe(true);
+  });
+});
+
+describe('cumulAnnee', () => {
+  it('additionne les factures de l’exercice demandé', () => {
+    const factures = [
+      factureEmise({ numero: 'F2026-0001', montant_centimes: 99700 }),
+      factureEmise({ id_facture: 'f-2', numero: 'F2026-0002', montant_centimes: 49900 }),
+    ];
+
+    expect(cumulAnnee(factures, 2026)).toBe(149600);
+  });
+
+  it('écarte les factures des autres exercices', () => {
+    const factures = [
+      factureEmise({ numero: 'F2025-0009', date_emission: '2025-12-31T10:00:00Z' }),
+      factureEmise({ id_facture: 'f-2', numero: 'F2026-0001' }),
+    ];
+
+    expect(cumulAnnee(factures, 2026)).toBe(99700);
+    expect(cumulAnnee(factures, 2025)).toBe(99700);
+  });
+
+  it('suit le numéro plutôt que la date au passage du nouvel an', () => {
+    // Le compteur a attribué un numéro 2026 ; l'insertion, quelques
+    // millisecondes plus tard, a franchi minuit UTC. Compter cette facture en
+    // 2027 laisserait un trou visible dans la série 2026.
+    const tardive = factureEmise({
+      numero: 'F2026-0042',
+      date_emission: '2027-01-01T00:00:00Z',
+    });
+
+    expect(cumulAnnee([tardive], 2026)).toBe(99700);
+    expect(cumulAnnee([tardive], 2027)).toBe(0);
+  });
+
+  it('retombe sur l’année UTC quand le numéro n’a pas le format attendu', () => {
+    // Aucune facture de cette forme n'existe à ce jour ; le repli existe pour
+    // ne pas perdre silencieusement un montant si l'on en saisissait une.
+    const horsFormat = factureEmise({
+      numero: 'ANCIENNE-7',
+      date_emission: '2026-03-02T08:00:00Z',
+    });
+
+    expect(cumulAnnee([horsFormat], 2026)).toBe(99700);
+  });
+
+  it('rend zéro sur une liste vide', () => {
+    expect(cumulAnnee([], 2026)).toBe(0);
   });
 });
