@@ -2,34 +2,28 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { enTetesCors, reponsePreflight } from '../_partages/cors.ts';
-import { composer } from '../_partages/facture.ts';
-import { envoyer } from '../_partages/courriel.ts';
-import { vendeur } from '../_partages/vendeur.ts';
+import { envoyerConfirmation } from '../_partages/confirmation.ts';
 
-// Éprouve la chaîne de facturation SANS vente.
+// Éprouve l'envoi de la confirmation de commande SANS vente.
 //
-// POURQUOI ELLE EXISTE. La composition du PDF et l'envoi Brevo ne se vérifient
-// qu'à l'exécution, et jusqu'ici le seul moyen de les déclencher était un achat
-// Stripe réel : un numéro consommé à jamais, une pièce comptable, un e-mail à
-// un client. Trois effets définitifs pour répondre à « est-ce que l'envoi
-// part ? ». Cette fonction pose la même question sans aucun d'eux.
+// Le nom date du temps où TradingCorp composait ses propres factures ; il est
+// conservé pour ne pas laisser une fonction déployée orpheline. La facture est
+// désormais émise et envoyée par Stripe — elle s'éprouve par un achat en mode
+// test. Ce qui reste à TradingCorp, et que cette fonction éprouve, c'est la
+// confirmation de commande (L221-13) : le gabarit, l'expéditeur, la clé Brevo,
+// la remise.
 //
-// CE QU'ELLE NE FAIT PAS, et c'est l'essentiel :
-//   • elle n'appelle JAMAIS `numero_facture()` — la série réelle est intacte,
-//     le document porte un numéro « ESSAI-… » qu'aucune vente ne peut produire ;
-//   • elle n'écrit rien dans `factures`, ni dans le stockage ;
-//   • elle n'écrit rien non plus dans le journal d'administration : c'est un
-//     outil de diagnostic, pas un acte de gestion.
+// CE QU'ELLE NE FAIT PAS : elle n'écrit rien — ni paiement, ni facture, ni
+// ligne de journal. C'est un outil de diagnostic, pas un acte de gestion.
 //
-// LE DESTINATAIRE EST LIBRE, mais le CONTENU ne l'est pas — et c'est là que se
-// joue la sûreté, pas sur l'adresse. Objet, corps et pièce jointe sont écrits
-// ici, en dur : quoi qu'on demande, ce qui part est un document d'essai
-// TradingCorp portant « DOCUMENT DE TEST ». Il n'y a donc rien à composer pour
-// qui voudrait détourner la fonction, et il lui faudrait de toute façon un
-// jeton d'administrateur. À défaut d'adresse, c'est celle de l'appelant.
+// LE DESTINATAIRE EST LIBRE, mais le CONTENU ne l'est pas, et c'est là que se
+// joue la sûreté. Le message est la vraie confirmation, avec des données
+// fictives et un bandeau d'essai en tête : il n'y a rien à composer pour qui
+// voudrait détourner la fonction, et il lui faudrait de toute façon un jeton
+// d'administrateur. À défaut d'adresse, c'est celle de l'appelant.
 //
-// Elle éprouve en revanche tout le reste, dans le vrai runtime : `VENDEUR_ADRESSE`,
-// la composition pdf-lib, la clé Brevo, l'expéditeur vérifié, la remise.
+// Le mode « dns » lit en outre, par l'API Brevo, l'état d'authentification du
+// domaine expéditeur.
 
 function json(req: Request, corps: unknown, statut: number): Response {
   return new Response(JSON.stringify(corps), {
@@ -146,70 +140,34 @@ Deno.serve(async (req) => {
       return json(req, { erreur: 'Cette adresse électronique n’est pas valide.' }, 400);
     }
 
-    const identite = vendeur();
-    if (!identite) {
-      // Le diagnostic le plus utile de tous : c'est ce silence-là qui, en
-      // production, empêcherait toute facture d'être émise sans rien casser
-      // d'autre. Le dire ici évite de le découvrir sur une vraie vente.
-      return json(
-        req,
-        {
-          erreur:
-            'VENDEUR_ADRESSE absente des secrets — aucune facture ne serait émise lors d’une vente.',
-          vendeur: false,
-        },
-        503,
-      );
-    }
-
-    // Un numéro qui ne peut appartenir à aucune série : la vraie numérotation
-    // est « F2026-0001 », celle-ci porte la date du jour et le mot ESSAI.
+    // Une référence qui ne peut appartenir à aucune série de Stripe : la date du
+    // jour et le mot ESSAI.
     const numero = `ESSAI-${new Date().toISOString().slice(0, 10)}`;
-    const pdf = await composer(identite, {
-      numero,
-      dateEmission: new Date().toISOString(),
-      designation: 'Formation TradingCorp — document d’essai',
-      montantCentimes: 99700,
-      devise: 'eur',
-      clientNom:
-        adresse === user.email
-          ? [profil.prenom, profil.nom].filter(Boolean).join(' ').trim() || null
-          : null,
-      clientEmail: adresse,
-      moyenPaiement: 'card',
-      datePaiement: new Date().toISOString(),
-      // Porte la mention « DOCUMENT DE TEST — aucun paiement réel » en clair
-      // sur le PDF : personne ne peut le prendre pour une facture.
-      modeTest: true,
-    });
+    const adresseSite = Deno.env.get('SITE_URL')?.replace(/\/+$/, '') || 'https://tradingcorp.fr';
 
     const cleBrevo = Boolean(Deno.env.get('BREVO_API_KEY'));
-    const parti = await envoyer({
-      destinataire: adresse,
-      // Le nom n'a de sens que si le document part à l'appelant lui-même.
-      destinataireNom: adresse === user.email ? (profil.prenom ?? null) : null,
-      objet: `Essai de facturation TradingCorp — ${numero}`,
-      html: `
-<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#1f2233;max-width:620px">
-  <p>Ce message est un essai déclenché depuis l’écran Paramètres.</p>
-  <p>
-    Il emprunte exactement le chemin d’une vraie confirmation de commande :
-    même composition du PDF, même expéditeur, même envoi. Seules diffèrent les
-    données, qui sont fictives, et la pièce jointe, qui porte un numéro
-    « ESSAI » et la mention « document de test ».
-  </p>
-  <p>Aucune vente n’a été enregistrée et aucun numéro de facture n’a été consommé.</p>
-  <p style="margin-top:26px;color:#6b6f80;font-size:13px">TradingCorp</p>
-</div>`.trim(),
-      piecesJointes: [{ nom: `${numero}.pdf`, contenu: pdf }],
-    });
+    const parti = await envoyerConfirmation(
+      {
+        designation: 'Formation TradingCorp',
+        montantCentimes: 99700,
+        devise: 'eur',
+        // Le nom n'a de sens que si le message part à l'appelant lui-même.
+        clientNom:
+          adresse === user.email
+            ? [profil.prenom, profil.nom].filter(Boolean).join(' ').trim() || null
+            : null,
+        clientEmail: adresse,
+        numeroFacture: numero,
+        essai: true,
+      },
+      adresseSite,
+    );
 
     return json(
       req,
       {
         destinataire: adresse,
         numero,
-        vendeur: true,
         // `envoyer` avale ses erreurs et journalise : ces deux drapeaux
         // permettent de distinguer « clé absente » de « Brevo a refusé », sans
         // quoi l'écran ne pourrait dire que « ça n'a pas marché ».

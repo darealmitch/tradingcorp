@@ -153,11 +153,11 @@ insert into public.journal_admin (id_profil, action) values
 -- Une facture pour l'apprenant, une pour le tiers : c'est la seule façon de
 -- distinguer « je vois les miennes » de « je vois celles de tout le monde ».
 -- Un jeu à une seule ligne aurait laissé passer les deux.
-insert into public.factures (numero, id_profil, designation, montant_centimes, chemin_storage) values
+insert into public.factures (numero, id_profil, designation, montant_centimes, stripe_invoice_id) values
   ('ESSAI-0001', '33333333-3333-3333-3333-333333333333',
-   'Formation publiée', 99700, 'essai/0001.pdf'),
+   'Formation publiée', 99700, 'in_essai_0001'),
   ('ESSAI-0002', '44444444-4444-4444-4444-444444444444',
-   'Formation publiée', 99700, 'essai/0002.pdf');
+   'Formation publiée', 99700, 'in_essai_0002');
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Visiteur anonyme
@@ -397,11 +397,12 @@ select is(
   'apprenant — ne voit que sa propre facture'
 );
 
--- L'adresse du fichier n'est lisible par personne côté client : le PDF s'obtient
--- par URL signée (generer-facture), jamais en devinant un chemin de stockage.
+-- L'identifiant Stripe reste côté serveur : le client obtient son PDF par
+-- `generer-facture`, qui établit le droit sous RLS avant de demander un lien à
+-- Stripe. La liste des colonnes lisibles est exclusive — celle-ci n'y entre pas.
 select ok(
-  not has_column_privilege('authenticated', 'public.factures', 'chemin_storage', 'SELECT'),
-  'factures — l''adresse du fichier reste hors de portée du client'
+  not has_column_privilege('authenticated', 'public.factures', 'stripe_invoice_id', 'SELECT'),
+  'factures — l''identifiant Stripe reste hors de portée du client'
 );
 
 -- Contre-épreuve du filtre applicatif : `id_profil` DOIT rester lisible. Sans

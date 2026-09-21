@@ -89,7 +89,7 @@ describe('compteDansCa', () => {
 function factureEmise(partiel: Partial<FactureEmise> = {}): FactureEmise {
   return {
     id_facture: 'f-1',
-    numero: 'F2026-0001',
+    numero: 'TRADINGCORP-0001',
     designation: 'Formation TradingCorp',
     montant_centimes: 99700,
     devise: 'eur',
@@ -121,8 +121,8 @@ describe('compteEnFacturation', () => {
 describe('cumulAnnee', () => {
   it('additionne les factures de l’exercice demandé', () => {
     const factures = [
-      factureEmise({ numero: 'F2026-0001', montant_centimes: 99700 }),
-      factureEmise({ id_facture: 'f-2', numero: 'F2026-0002', montant_centimes: 49900 }),
+      factureEmise({ numero: 'TRADINGCORP-0001', montant_centimes: 99700 }),
+      factureEmise({ id_facture: 'f-2', numero: 'TRADINGCORP-0002', montant_centimes: 49900 }),
     ];
 
     expect(cumulAnnee(factures, 2026)).toBe(149600);
@@ -130,36 +130,28 @@ describe('cumulAnnee', () => {
 
   it('écarte les factures des autres exercices', () => {
     const factures = [
-      factureEmise({ numero: 'F2025-0009', date_emission: '2025-12-31T10:00:00Z' }),
-      factureEmise({ id_facture: 'f-2', numero: 'F2026-0001' }),
+      factureEmise({ numero: 'TRADINGCORP-0001', date_emission: '2025-12-31T10:00:00Z' }),
+      factureEmise({ id_facture: 'f-2', numero: 'TRADINGCORP-0002' }),
     ];
 
     expect(cumulAnnee(factures, 2026)).toBe(99700);
     expect(cumulAnnee(factures, 2025)).toBe(99700);
   });
 
-  it('suit le numéro plutôt que la date au passage du nouvel an', () => {
-    // Le compteur a attribué un numéro 2026 ; l'insertion, quelques
-    // millisecondes plus tard, a franchi minuit UTC. Compter cette facture en
-    // 2027 laisserait un trou visible dans la série 2026.
-    const tardive = factureEmise({
-      numero: 'F2026-0042',
-      date_emission: '2027-01-01T00:00:00Z',
-    });
+  it('rattache une vente du 1er janvier à 0 h 30, heure de Paris, à l’année qui commence', () => {
+    // 23 h 30 UTC le 31 décembre, c'est 0 h 30 le 1er janvier à Paris (UTC+1
+    // en hiver). Lue en UTC, cette vente tomberait dans l'exercice précédent.
+    const nouvelAn = factureEmise({ date_emission: '2026-12-31T23:30:00Z' });
 
-    expect(cumulAnnee([tardive], 2026)).toBe(99700);
-    expect(cumulAnnee([tardive], 2027)).toBe(0);
+    expect(cumulAnnee([nouvelAn], 2027)).toBe(99700);
+    expect(cumulAnnee([nouvelAn], 2026)).toBe(0);
   });
 
-  it('retombe sur l’année UTC quand le numéro n’a pas le format attendu', () => {
-    // Aucune facture de cette forme n'existe à ce jour ; le repli existe pour
-    // ne pas perdre silencieusement un montant si l'on en saisissait une.
-    const horsFormat = factureEmise({
-      numero: 'ANCIENNE-7',
-      date_emission: '2026-03-02T08:00:00Z',
-    });
+  it('garde au 31 décembre une vente de la soirée, heure de Paris', () => {
+    // 22 h 30 UTC, soit 23 h 30 à Paris : toujours le 31 décembre.
+    const soiree = factureEmise({ date_emission: '2026-12-31T22:30:00Z' });
 
-    expect(cumulAnnee([horsFormat], 2026)).toBe(99700);
+    expect(cumulAnnee([soiree], 2026)).toBe(99700);
   });
 
   it('rend zéro sur une liste vide', () => {

@@ -56,10 +56,10 @@ export class CommerceService {
   /**
    * Lien de téléchargement d'une facture.
    *
-   * Le PDF a déjà été produit au moment du paiement et joint à la confirmation
-   * de commande : cette méthode ne fabrique rien, elle rend le document
-   * conservé. Le lien est une URL SIGNÉE de dix minutes — le fichier n'est pas
-   * public, et l'adresse ne se partage pas durablement.
+   * La facture a été émise et envoyée par Stripe au moment du paiement : cette
+   * méthode ne fabrique rien, elle rend le PDF de Stripe. Le lien est redemandé
+   * à chaque clic, parce que ceux de Stripe expirent — un lien conservé serait
+   * mort bien avant que l'élève ne revienne chercher sa facture.
    */
   async lienFacture(idFacture: string): Promise<{ url?: string; erreur?: string }> {
     const { donnees, erreur } = await this.acces.invoquer<{ url: string }>(

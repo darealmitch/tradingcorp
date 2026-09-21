@@ -50,12 +50,12 @@ export class FinanceService {
   }
 
   /**
-   * Éprouve la chaîne de facturation à vide.
+   * Envoie une confirmation de commande d'essai, sans vente.
    *
-   * Le document part à l'adresse demandée, ou à celle du compte si aucune
-   * n'est donnée. Ce qui est envoyé, en revanche, n'est pas paramétrable : le
-   * contenu est écrit dans la fonction, et porte la mention « document de
-   * test ». Rien n'est écrit en base : ni facture, ni numéro, ni fichier.
+   * Le message part à l'adresse demandée, ou à celle du compte si aucune
+   * n'est donnée. Ce qui est envoyé, en revanche, n'est pas paramétrable : la
+   * vraie confirmation, avec des données fictives et un bandeau d'essai. Rien
+   * n'est écrit en base.
    */
   async envoyerFactureEssai(
     destinataire?: string,

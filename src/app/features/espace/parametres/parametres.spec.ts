@@ -26,7 +26,6 @@ function resultat(partiel: Partial<EssaiFacturation> = {}): EssaiFacturation {
   return {
     destinataire: 'admin@tradingcorp.fr',
     numero: 'ESSAI-2026-09-14',
-    vendeur: true,
     brevo_configure: true,
     envoye: true,
     ...partiel,
