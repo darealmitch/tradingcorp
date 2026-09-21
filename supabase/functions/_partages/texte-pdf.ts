@@ -8,15 +8,15 @@
  * C'est exactement ce qui est survenu en production le 14 septembre 2026, sur
  * une facture.
  *
- * Le danger tient à ce que l'échec est SILENCIEUX là où il compte : les deux
- * appelants — facture et certificat — sont invoqués depuis des chaînes qui
- * avalent leurs erreurs pour ne pas faire rejouer un webhook ou perdre un
- * paiement. Un nom impossible à écrire ne casse donc rien de visible : il
- * produit simplement un document qui n'existe jamais.
+ * Le danger tient à ce que l'échec est SILENCIEUX là où il compte : le
+ * certificat est délivré par une chaîne qui avale ses erreurs, comme le
+ * faisait la facture. Un nom impossible à écrire ne casse donc rien de
+ * visible : il produit simplement un document qui n'existe jamais.
  *
- * Partagé entre `facture.ts` et `generer-certificat/diplome.ts` : les deux
- * dessinent un nom saisi par un utilisateur, et il ne doit pas exister deux
- * définitions de ce qui est écrivable.
+ * Seul `generer-certificat/diplome.ts` s'en sert aujourd'hui — la facture, qui
+ * l'utilisait aussi, est désormais émise par Stripe. Le module reste dans
+ * `_partages` : tout futur document PDF portant un nom saisi par un
+ * utilisateur devra passer par la même définition de ce qui est écrivable.
  */
 
 /**
@@ -34,9 +34,7 @@ const WINANSI_EN_PLUS = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”�
  *
  * Le parti pris est d'écrire un document RÉGULIER plutôt que rien. Ce qui
  * reste inconnu est retiré ; un nom entièrement hors latin — en cyrillique, en
- * japonais — disparaît alors, et c'est à l'appelant de prévoir ce cas (la
- * facture retombe sur « Client », l'adresse électronique figurant juste en
- * dessous).
+ * japonais — disparaît alors, et c'est à l'appelant de prévoir ce cas.
  */
 export function lisible(contenu: string): string {
   return contenu

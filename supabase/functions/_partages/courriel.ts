@@ -30,8 +30,17 @@ export interface Message {
   destinataire: string;
   destinataireNom?: string | null;
   objet: string;
-  /** Corps en HTML. Brevo génère seul la version texte. */
+  /** Corps en HTML. */
   html: string;
+  /**
+   * Version texte du même message.
+   *
+   * Brevo NE LA GÉNÈRE PAS : un envoi sans elle part en `text/html` seul
+   * (règle MIME_HTML_ONLY de SpamAssassin, relevée par mail-tester le
+   * 21/09/2026). Elle sert aussi les lecteurs d'écran et les clients de
+   * messagerie qui n'affichent pas le HTML.
+   */
+  texte?: string;
   piecesJointes?: PieceJointe[];
 }
 
@@ -63,6 +72,7 @@ export async function envoyer(message: Message): Promise<boolean> {
     to: [{ email: message.destinataire, name: message.destinataireNom ?? undefined }],
     subject: message.objet,
     htmlContent: message.html,
+    textContent: message.texte,
     attachment: message.piecesJointes?.map((p) => ({
       name: p.nom,
       content: base64(p.contenu),

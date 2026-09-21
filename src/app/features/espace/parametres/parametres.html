@@ -37,13 +37,13 @@
 
 <div class="panneau">
   <div class="panneau-tete">
-    <h2 class="panneau-titre">Facturation</h2>
+    <h2 class="panneau-titre">Confirmation de commande</h2>
   </div>
   <p class="cellule-discrete">
-    Envoie une facture d'essai à votre propre adresse, en empruntant exactement le chemin d'une
-    vraie vente : composition du PDF, expéditeur, envoi. Aucune vente n'est enregistrée et aucun
-    numéro n'est consommé — le document porte un numéro « ESSAI » et la mention « document de test
-    ». À relancer après tout changement d'adresse d'expédition.
+    Envoie la confirmation de commande qu'un acheteur reçoit après son paiement, avec des données
+    fictives et un bandeau d'essai en tête. Aucune vente n'est enregistrée. Les factures, elles,
+    sont émises et envoyées par Stripe au moment du paiement. À relancer après tout changement
+    d'adresse d'expédition.
   </p>
 
   <div class="parametres-action">
@@ -64,13 +64,13 @@
       [disabled]="envoiEnCours()"
       (click)="essayerFacturation()"
     >
-      {{ envoiEnCours() ? 'Envoi…' : 'Envoyer une facture d’essai' }}
+      {{ envoiEnCours() ? 'Envoi…' : 'Envoyer une confirmation d’essai' }}
     </button>
   </div>
 
   @if (essai(); as resultat) {
     <p class="alerte est-succes" role="status">
-      Envoyé à {{ resultat.destinataire }} — facture {{ resultat.numero }}.
+      Envoyé à {{ resultat.destinataire }} — confirmation {{ resultat.numero }}.
     </p>
   }
   @if (erreurEssai(); as message) {

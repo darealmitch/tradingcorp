@@ -130,6 +130,37 @@ Deno.serve(async (req) => {
       metadata: { id_profil: user.id, id_formation: formation.id_formation },
       success_url: `${base}/espace?achat=succes`,
       cancel_url: `${base}/espace?achat=annule`,
+      // Le français, et pas la langue du navigateur : la page de paiement,
+      // l'e-mail de Stripe ET la facture en héritent — et une facture émise
+      // par une entreprise française se rédige en français.
+      locale: 'fr',
+      // LA FACTURE EST ÉMISE PAR STRIPE. Checkout la crée au paiement, avec sa
+      // numérotation séquentielle à l'échelle du compte, et l'envoie à
+      // l'acheteur si les reçus automatiques sont activés (Paramètres →
+      // E-mails aux clients → Paiements réussis). Coût : 0,4 % par facture,
+      // plafonné à 2 $ — soit environ 2 € sur une vente à 997 €.
+      //
+      // Ce que Stripe ne sait pas et qu'on lui dit ici : les mentions propres
+      // à une entreprise individuelle en franchise de TVA. Le nom et l'adresse
+      // du vendeur viennent, eux, des informations publiques du compte Stripe
+      // — c'est là qu'il faut les tenir à jour, pas dans le code.
+      invoice_creation: {
+        enabled: true,
+        invoice_data: {
+          custom_fields: [
+            { name: 'SIRET', value: '909 608 697 00019' },
+            // Obligatoire sur tout document professionnel d'un entrepreneur
+            // individuel depuis 2022 (art. L526-22 du Code de commerce).
+            { name: 'Statut', value: 'Entrepreneur individuel (EI)' },
+          ],
+          // Sans cette mention, l'absence de TVA sur la facture exposerait à
+          // un rappel : la franchise en base doit être revendiquée.
+          footer: 'TVA non applicable — article 293 B du Code général des impôts',
+          // Le webhook rattache la facture par la session ; ces métadonnées
+          // servent au rapprochement si un reflet venait à manquer.
+          metadata: { id_profil: user.id, id_formation: formation.id_formation },
+        },
+      },
     });
 
     return json(req, { url: session.url }, 200);

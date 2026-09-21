@@ -69,9 +69,8 @@ export function compteEnFacturation(facture: FactureEmise): boolean {
 /**
  * Montant facturé sur une année civile, en centimes.
  *
- * L'année civile et non les douze derniers mois : c'est l'unité de la
- * numérotation (« F2026-0001 » repart à 1 le 1er janvier) et celle sur laquelle
- * se juge le chiffre d'affaires d'une entreprise individuelle.
+ * L'année civile et non les douze derniers mois : c'est celle sur laquelle se
+ * juge le chiffre d'affaires d'une entreprise individuelle.
  *
  * Ne filtre PAS les ventes de test : c'est à l'appelant de composer avec
  * `compteEnFacturation`, pour que « quelles factures » et « quel exercice »
@@ -83,49 +82,39 @@ export function cumulAnnee(factures: FactureEmise[], annee: number): number {
     .reduce((somme, facture) => somme + facture.montant_centimes, 0);
 }
 
-/** « F2026-0001 » — l'année que le compteur a effectivement attribuée. */
-const EXERCICE_DANS_NUMERO = /^F(\d{4})-\d+$/;
+const ANNEE_A_PARIS = new Intl.DateTimeFormat('fr-FR', {
+  timeZone: 'Europe/Paris',
+  year: 'numeric',
+});
 
 /**
- * L'exercice comptable auquel une facture se rattache.
+ * L'exercice auquel une facture se rattache : l'année civile de sa date
+ * d'émission, LUE À L'HEURE DE PARIS.
  *
- * LE NUMÉRO FAIT FOI, pas la date. Les deux sources sont pourtant d'accord
- * presque toujours : `numero_facture()` tire son année de `extract(year from
- * now())` et `date_emission` vaut `now()`, la base tournant en UTC. Elles ne
- * peuvent diverger qu'à cheval sur minuit du 31 décembre, entre l'attribution
- * du numéro et l'insertion de la ligne.
- *
- * Dans ce cas-là, suivre le numéro est le seul choix qui garde l'écran
- * cohérent avec lui-même : il affiche côte à côte un cumul d'exercice et le
- * dernier numéro attribué. Une facture « F2026-0042 » comptée dans le total
- * 2027 ferait apparaître une série 2026 trouée, exactement ce que la
- * numérotation continue est censée rendre constatable (art. 242 nonies A,
- * annexe II du CGI).
- *
- * Le repli sur la date lit l'année en UTC, et non dans le fuseau du
- * navigateur : le total d'un administrateur ne doit pas dépendre d'où il se
- * connecte. Il ne sert qu'aux factures d'avant cette numérotation, ou saisies
- * à la main — il n'en existe pas à ce jour.
+ * La date est la seule source : la numérotation de Stripe ne porte pas l'année
+ * et ne repart pas à zéro au 1er janvier. Et l'heure de Paris — ni celle du
+ * navigateur, ni UTC. Une vente conclue le 1er janvier à 0 h 30 à Paris est
+ * datée du 31 décembre en UTC ; elle appartient pourtant à l'exercice qui
+ * commence, celui où l'entreprise l'a réalisée. Le total d'un administrateur
+ * ne dépend ainsi ni de l'endroit d'où il se connecte, ni du fuseau des
+ * serveurs.
  */
 function exerciceDe(facture: FactureEmise): number {
-  const exercice = EXERCICE_DANS_NUMERO.exec(facture.numero)?.[1];
-  return exercice ? Number(exercice) : new Date(facture.date_emission).getUTCFullYear();
+  return Number(ANNEE_A_PARIS.format(new Date(facture.date_emission)));
 }
 
 /**
- * Résultat d'un essai de facturation — ce que la chaîne répond quand on la
- * sollicite à vide, sans vente ni numéro consommé.
+ * Résultat d'un essai de confirmation de commande — ce que la chaîne d'envoi
+ * répond quand on la sollicite à vide, sans vente.
  *
- * Trois drapeaux plutôt qu'un booléen : « ça n'a pas marché » n'aide personne,
- * alors que « l'adresse du vendeur manque » et « Brevo a refusé » appellent des
- * gestes opposés.
+ * Deux drapeaux plutôt qu'un booléen : « ça n'a pas marché » n'aide personne,
+ * alors que « la clé Brevo manque » et « Brevo a refusé » appellent des gestes
+ * différents.
  */
 export interface EssaiFacturation {
   destinataire: string;
-  /** « ESSAI-2026-09-14 » — hors de la série réelle, par construction. */
+  /** « ESSAI-2026-09-21 » — une référence qu'aucune vente ne peut porter. */
   numero: string;
-  /** VENDEUR_ADRESSE présente : sans elle, aucune facture ne serait émise. */
-  vendeur: boolean;
   brevo_configure: boolean;
   envoye: boolean;
 }

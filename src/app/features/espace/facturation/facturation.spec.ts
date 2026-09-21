@@ -17,7 +17,7 @@ interface Interne {
 function facture(partiel: Partial<FactureEmise> = {}): FactureEmise {
   return {
     id_facture: 'f-1',
-    numero: 'F2026-0002',
+    numero: 'TRADINGCORP-0002',
     designation: 'Formation TradingCorp',
     montant_centimes: 99700,
     devise: 'eur',
@@ -89,7 +89,7 @@ describe('Facturation', () => {
   it('écarte les ventes de test des totaux sans les masquer', async () => {
     listeRendue = [
       facture(),
-      facture({ id_facture: 'f-2', numero: 'F2026-0003', mode_test: true }),
+      facture({ id_facture: 'f-2', numero: 'TRADINGCORP-0003', mode_test: true }),
     ];
     await creer();
 
@@ -106,7 +106,7 @@ describe('Facturation', () => {
     // premier élément.
     await creer();
 
-    expect(interne.dernierNumero()).toBe('F2026-0002');
+    expect(interne.dernierNumero()).toBe('TRADINGCORP-0002');
   });
 
   it('ouvre le lien signé dans un nouvel onglet', async () => {

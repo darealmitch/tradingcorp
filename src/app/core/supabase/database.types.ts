@@ -119,24 +119,8 @@ export type Database = {
         };
         Relationships: [];
       };
-      compteur_factures: {
-        Row: {
-          annee: number;
-          dernier: number;
-        };
-        Insert: {
-          annee: number;
-          dernier?: number;
-        };
-        Update: {
-          annee?: number;
-          dernier?: number;
-        };
-        Relationships: [];
-      };
       factures: {
         Row: {
-          chemin_storage: string | null;
           client_email: string | null;
           client_nom: string | null;
           date_emission: string;
@@ -148,9 +132,9 @@ export type Database = {
           mode_test: boolean;
           montant_centimes: number;
           numero: string;
+          stripe_invoice_id: string;
         };
         Insert: {
-          chemin_storage?: string | null;
           client_email?: string | null;
           client_nom?: string | null;
           date_emission?: string;
@@ -162,9 +146,9 @@ export type Database = {
           mode_test?: boolean;
           montant_centimes: number;
           numero: string;
+          stripe_invoice_id: string;
         };
         Update: {
-          chemin_storage?: string | null;
           client_email?: string | null;
           client_nom?: string | null;
           date_emission?: string;
@@ -176,6 +160,7 @@ export type Database = {
           mode_test?: boolean;
           montant_centimes?: number;
           numero?: string;
+          stripe_invoice_id?: string;
         };
         Relationships: [
           {
@@ -941,7 +926,6 @@ export type Database = {
         Returns: undefined;
       };
       numero_certificat: { Args: never; Returns: string };
-      numero_facture: { Args: never; Returns: string };
       prochaines_lecons: {
         Args: { p_limite?: number };
         Returns: {

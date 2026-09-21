@@ -15,7 +15,7 @@ interface Interne {
 function facture(partiel: Partial<Facture> = {}): Facture {
   return {
     id_facture: 'f-1',
-    numero: 'F2026-0001',
+    numero: 'TRADINGCORP-0001',
     designation: 'Formation TradingCorp',
     montant_centimes: 99700,
     devise: 'eur',
@@ -71,7 +71,7 @@ describe('MesFactures', () => {
 
   it('affiche les factures du compte', async () => {
     await creer();
-    expect(interne.factures().map((f) => f.numero)).toEqual(['F2026-0001']);
+    expect(interne.factures().map((f) => f.numero)).toEqual(['TRADINGCORP-0001']);
   });
 
   it('ouvre le lien signé dans un nouvel onglet', async () => {

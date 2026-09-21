@@ -40,17 +40,6 @@ export class Parametres {
   protected readonly erreurDns = signal<string | null>(null);
 
   /**
-   * Déclenche un envoi de bout en bout, sans vente.
-   *
-   * Éprouve ce qui ne se relit pas dans le code : l'adresse du vendeur, la
-   * composition du PDF, la clé Brevo, l'expéditeur vérifié, la remise. Aucun
-   * numéro de facture n'est consommé — la série réelle reste intacte.
-   *
-   * Le destinataire est libre pour pouvoir vérifier ce qu'un client reçoit
-   * réellement, chez lui : une remise dépend autant du fournisseur qui la
-   * reçoit (Gmail, iCloud, Outlook) que de celui qui l'émet.
-   */
-  /**
    * Demande à Brevo ce qu'il attend dans la zone DNS du domaine.
    *
    * Sans authentification du domaine, les messages partent tout de même mais
@@ -88,6 +77,17 @@ export class Parametres {
     this.destinataire.set((evenement.target as HTMLInputElement).value);
   }
 
+  /**
+   * Envoie une confirmation de commande d'essai, de bout en bout, sans vente.
+   *
+   * Éprouve ce qui ne se relit pas dans le code : le gabarit, la clé Brevo,
+   * l'expéditeur vérifié, la remise. La facture, elle, est émise par Stripe et
+   * s'éprouve par un achat en mode test.
+   *
+   * Le destinataire est libre pour pouvoir vérifier ce qu'un client reçoit
+   * réellement, chez lui : une remise dépend autant du fournisseur qui la
+   * reçoit (Gmail, iCloud, Outlook) que de celui qui l'émet.
+   */
   protected async essayerFacturation(): Promise<void> {
     this.envoiEnCours.set(true);
     this.essai.set(null);

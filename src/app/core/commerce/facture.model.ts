@@ -7,12 +7,13 @@
  * n'apprend rien. Elles servent à la comptabilité, qui a son modèle à elle
  * (`FactureEmise`, core/finance).
  *
- * `chemin_storage`, lui, n'est lisible par personne côté client : le fichier
- * s'obtient par URL signée, jamais en devinant un chemin (20260913140000).
+ * La facture est émise par Stripe. Son identifiant Stripe reste côté serveur :
+ * le PDF s'obtient par `generer-facture`, qui établit le droit sous RLS avant
+ * de demander un lien frais à Stripe (20260921100000).
  */
 export interface Facture {
   id_facture: string;
-  /** Numéro continu, de la forme « F2026-0001 ». */
+  /** Numéro attribué par Stripe, continu à l'échelle du compte. */
   numero: string;
   designation: string;
   montant_centimes: number;

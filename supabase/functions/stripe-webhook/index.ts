@@ -2,7 +2,8 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@18';
-import { emettreFacture } from '../_partages/facturation.ts';
+import { envoyerConfirmation } from '../_partages/confirmation.ts';
+import { enregistrerFacture } from './facture-stripe.ts';
 
 // Webhook appelé par Stripe (jamais par le navigateur) : à déployer avec
 // verify_jwt désactivé ; l'authenticité est garantie par la signature Stripe.
@@ -226,27 +227,37 @@ Deno.serve(async (req) => {
       lien: '/espace/formations',
     });
 
-    // Facture et confirmation de commande, émises une seule fois par
-    // encaissement (voir la condition ci-dessus).
+    const designation = formation?.titre ?? 'Formation TradingCorp';
+    const adresseSite = Deno.env.get('SITE_URL')?.replace(/\/+$/, '') || 'https://tradingcorp.fr';
+
+    // La facture : ÉMISE PAR STRIPE, pas ici. Checkout l'a créée au paiement
+    // (`invoice_creation`, paramétré dans `checkout`) et l'envoie lui-même à
+    // l'acheteur. On n'en garde que le reflet, pour l'espace de l'élève et
+    // l'écran de facturation.
+    const numeroFacture = await enregistrerFacture(stripe, admin, session, {
+      idProfil: id_profil,
+      idPaiement: paiement.id_paiement,
+      designation,
+    });
+
+    // La confirmation de commande : une obligation DISTINCTE de la facture
+    // (L221-13 — le contrat confirmé sur support durable, avec le droit de
+    // rétractation), que l'e-mail de Stripe ne remplit pas. Envoyée même si
+    // le reflet de la facture a échoué : l'une ne dépend pas de l'autre.
     //
-    // Awaité plutôt que détaché : la composition du PDF et l'envoi prennent
-    // quelques secondes, loin des vingt que Stripe accorde. `emettreFacture`
-    // n'échoue jamais — elle journalise — donc rien ici ne peut provoquer un
-    // rejeu de l'événement.
-    await emettreFacture(
+    // Awaitée plutôt que détachée : l'envoi prend une seconde, loin des vingt
+    // que Stripe accorde. Aucune des deux fonctions n'échoue jamais — elles
+    // journalisent —, donc rien ici ne peut provoquer un rejeu de l'événement.
+    await envoyerConfirmation(
       {
-        idProfil: id_profil,
-        idPaiement: paiement.id_paiement,
-        designation: formation?.titre ?? 'Formation TradingCorp',
+        designation,
         montantCentimes: session.amount_total ?? 0,
         devise: session.currency ?? 'eur',
         clientNom: session.customer_details?.name ?? null,
         clientEmail: session.customer_details?.email ?? null,
-        moyenPaiement: session.payment_method_types?.[0] ?? null,
-        datePaiement: new Date().toISOString(),
-        modeTest: !evenement.livemode,
+        numeroFacture,
       },
-      Deno.env.get('SITE_URL')?.replace(/\/+$/, '') || 'https://tradingcorp.fr',
+      adresseSite,
     );
   }
 

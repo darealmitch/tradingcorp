@@ -6,11 +6,11 @@ import { Icone } from '../../../shared/ui/icone';
 /**
  * Les factures de l'apprenant.
  *
- * Cet écran ne remplit aucune obligation : la facture est envoyée par e-mail au
- * moment du paiement, avec la confirmation de commande, et c'est cet envoi qui
- * satisfait l'article L221-13 du Code de la consommation. Ce qu'on ajoute ici,
- * c'est de pouvoir la retrouver sans fouiller sa boîte mail — un an plus tard,
- * le message aura disparu, pas le document.
+ * Cet écran ne remplit aucune obligation : Stripe envoie la facture par e-mail
+ * au moment du paiement, et la confirmation de commande qui satisfait l'article
+ * L221-13 part séparément. Ce qu'on ajoute ici, c'est de pouvoir la retrouver
+ * sans fouiller sa boîte mail — un an plus tard, le message aura disparu, pas
+ * le document.
  */
 @Component({
   selector: 'app-mes-factures',
@@ -40,9 +40,9 @@ export class MesFactures {
   /**
    * Ouvre la facture dans un nouvel onglet.
    *
-   * Nouvel onglet et non téléchargement forcé : le lien signé expire au bout de
-   * dix minutes, et un onglet laisse à l'apprenant le choix de lire ou
-   * d'enregistrer.
+   * Nouvel onglet et non téléchargement forcé : le PDF est servi par Stripe,
+   * sur un lien redemandé à l'instant, et un onglet laisse à l'apprenant le
+   * choix de lire ou d'enregistrer.
    */
   protected async telecharger(facture: Facture): Promise<void> {
     this.preparation.set(facture.id_facture);
