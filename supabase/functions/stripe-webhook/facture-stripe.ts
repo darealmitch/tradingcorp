@@ -1,12 +1,5 @@
 import Stripe from 'npm:stripe@18';
-import type { createClient } from 'npm:@supabase/supabase-js@2';
-
-/**
- * Le client tel que `createClient` le rend dans le webhook. Plus sûr qu'un
- * `SupabaseClient` nu, dont les paramètres génériques par défaut ne
- * s'accordent pas toujours avec ceux d'un client créé sans schéma typé.
- */
-type ClientSupabase = ReturnType<typeof createClient>;
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 /**
  * Reflet, dans `factures`, de la facture que Stripe a émise au paiement.
@@ -34,11 +27,20 @@ export interface Contexte {
 /** Rend le numéro Stripe de la facture, ou `null` si elle n'a pas pu être lue. */
 export async function enregistrerFacture(
   stripe: Stripe,
-  admin: ClientSupabase,
   session: Stripe.Checkout.Session,
   contexte: Contexte,
 ): Promise<string | null> {
   try {
+    // Un client à soi plutôt que celui du webhook passé en paramètre. Typer ce
+    // paramètre est un piège : `ReturnType<typeof createClient>` instancie les
+    // génériques à leurs valeurs par défaut (`never` pour le schéma), et la CI
+    // l'a refusé — la table `factures` n'existait plus pour le vérificateur.
+    // L'ancien module de facturation procédait déjà ainsi.
+    const admin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+
     // L'identifiant arrive normalement avec l'événement. S'il manque, on relit
     // la session : c'est elle qui fait foi. S'il manque encore, on le dit
     // dans le journal — la facture existe peut-être, elle n'est simplement pas

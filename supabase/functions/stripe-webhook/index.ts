@@ -234,7 +234,7 @@ Deno.serve(async (req) => {
     // (`invoice_creation`, paramétré dans `checkout`) et l'envoie lui-même à
     // l'acheteur. On n'en garde que le reflet, pour l'espace de l'élève et
     // l'écran de facturation.
-    const numeroFacture = await enregistrerFacture(stripe, admin, session, {
+    const numeroFacture = await enregistrerFacture(stripe, session, {
       idProfil: id_profil,
       idPaiement: paiement.id_paiement,
       designation,
