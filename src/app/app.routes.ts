@@ -175,12 +175,6 @@ export const routes: Routes = [
         title: 'TradingCorp — Ma formation',
       },
       {
-        path: 'factures',
-        loadComponent: () =>
-          import('./features/espace/mes-factures/mes-factures').then((m) => m.MesFactures),
-        title: 'TradingCorp — Mes factures',
-      },
-      {
         path: 'notifications',
         loadComponent: () =>
           import('./features/espace/notifications/notifications').then((m) => m.Notifications),

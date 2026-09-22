@@ -929,6 +929,7 @@ export type Database = {
       prochaines_lecons: {
         Args: { p_limite?: number };
         Returns: {
+          a_video_url: boolean;
           duree_s: number;
           est_publiee: boolean;
           id_lecon: string;
@@ -937,9 +938,9 @@ export type Database = {
           position: number;
           titre: string;
           type: string;
+          video_hebergee: boolean;
           video_provider: string;
           video_provider_id: string;
-          video_url: string;
         }[];
       };
       reponses_publiques: {
