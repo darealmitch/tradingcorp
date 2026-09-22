@@ -1,4 +1,3 @@
-import { Facture } from '../commerce/facture.model';
 import { Role } from '../auth/profil.model';
 
 /** Une ligne de l'historique des paiements, avec le profil du payeur. */
@@ -32,75 +31,6 @@ export function compteDansCa(paiement: PaiementLigne): boolean {
   }
   const profil = paiement.profils;
   return !profil || (profil.role === 'apprenant' && !profil.est_test);
-}
-
-/**
- * Une facture vue depuis la comptabilité, et non depuis le compte de l'acheteur.
- *
- * Même ligne en base que `Facture` (core/commerce), trois champs de plus : ceux
- * qui n'ont de sens que lorsqu'on regarde l'ensemble des ventes plutôt que les
- * siennes. L'identité est celle FIGÉE au jour de la vente — elle ne suit pas les
- * corrections de profil, et survit à la suppression du compte, l'obligation de
- * conservation comptable primant le droit à l'effacement (RGPD art. 17.3.b).
- */
-export interface FactureEmise extends Facture {
-  /** Null si le compte a été supprimé : la pièce comptable, elle, demeure. */
-  id_profil: string | null;
-  client_nom: string | null;
-  client_email: string | null;
-  /** Vente réalisée avec les clés de test Stripe — hors comptabilité réelle. */
-  mode_test: boolean;
-}
-
-/**
- * Une facture entre dans les totaux si elle constate une vente réelle.
- *
- * Le critère est plus étroit que pour les paiements : là où `compteDansCa`
- * écarte aussi les comptes de démonstration, une facture ne porte pas le rôle
- * de son acheteur — elle porte une identité figée. Le seul discriminant fiable
- * qu'elle contienne est le mode Stripe.
- *
- * Règle de domaine, volontairement hors du service : elle se teste sans base.
- */
-export function compteEnFacturation(facture: FactureEmise): boolean {
-  return !facture.mode_test;
-}
-
-/**
- * Montant facturé sur une année civile, en centimes.
- *
- * L'année civile et non les douze derniers mois : c'est celle sur laquelle se
- * juge le chiffre d'affaires d'une entreprise individuelle.
- *
- * Ne filtre PAS les ventes de test : c'est à l'appelant de composer avec
- * `compteEnFacturation`, pour que « quelles factures » et « quel exercice »
- * restent deux questions distinctes.
- */
-export function cumulAnnee(factures: FactureEmise[], annee: number): number {
-  return factures
-    .filter((facture) => exerciceDe(facture) === annee)
-    .reduce((somme, facture) => somme + facture.montant_centimes, 0);
-}
-
-const ANNEE_A_PARIS = new Intl.DateTimeFormat('fr-FR', {
-  timeZone: 'Europe/Paris',
-  year: 'numeric',
-});
-
-/**
- * L'exercice auquel une facture se rattache : l'année civile de sa date
- * d'émission, LUE À L'HEURE DE PARIS.
- *
- * La date est la seule source : la numérotation de Stripe ne porte pas l'année
- * et ne repart pas à zéro au 1er janvier. Et l'heure de Paris — ni celle du
- * navigateur, ni UTC. Une vente conclue le 1er janvier à 0 h 30 à Paris est
- * datée du 31 décembre en UTC ; elle appartient pourtant à l'exercice qui
- * commence, celui où l'entreprise l'a réalisée. Le total d'un administrateur
- * ne dépend ainsi ni de l'endroit d'où il se connecte, ni du fuseau des
- * serveurs.
- */
-function exerciceDe(facture: FactureEmise): number {
-  return Number(ANNEE_A_PARIS.format(new Date(facture.date_emission)));
 }
 
 /**

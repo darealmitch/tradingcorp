@@ -357,7 +357,6 @@ describe('Protection des routes déclarées', () => {
     moderation: ['formateur', 'admin'],
     utilisateurs: ['admin'],
     paiements: ['admin'],
-    facturation: ['admin'],
     journal: ['admin'],
     parametres: ['admin'],
     migration: ['admin'],

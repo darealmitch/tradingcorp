@@ -1,0 +1,24 @@
+-- =============================================================================
+-- La facturation est entièrement confiée à Stripe : la table `factures` part.
+--
+-- DÉCISION DU 22/09/2026. Stripe émet la facture au paiement (Checkout,
+-- `invoice_creation`), la numérote, l'envoie à l'acheteur et la conserve ; on
+-- la consulte, la renvoie ou l'annule par avoir dans son tableau de bord.
+-- TradingCorp n'en tient plus aucune copie : ni reflet en base, ni écran
+-- (l'écran élève « Mes factures » a été retiré le même jour, l'écran admin
+-- « Facturation » avec cette migration), ni fonction de téléchargement.
+--
+-- Garder la table aurait entretenu une seconde vérité sur les factures, qui
+-- n'aurait été juste que tant que le webhook l'alimentait sans faute — et
+-- n'aurait jamais connu les avoirs émis dans Stripe.
+--
+-- Vérifié avant suppression : aucune fonction, vue ni clé étrangère ne lit
+-- `factures`. Elle ne contenait qu'une ligne, le reflet de la facture d'essai
+-- du 22/09 (mode test) ; la facture elle-même reste chez Stripe.
+--
+-- La policy `factures_select_titulaire` et les privilèges de colonne partent
+-- avec la table. Le bucket `factures` (vide) reste en place : Supabase interdit
+-- de supprimer un bucket en SQL — il se retire depuis le tableau de bord.
+-- =============================================================================
+
+drop table if exists public.factures;

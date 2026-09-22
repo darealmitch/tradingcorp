@@ -119,66 +119,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      factures: {
-        Row: {
-          client_email: string | null;
-          client_nom: string | null;
-          date_emission: string;
-          designation: string;
-          devise: string;
-          id_facture: string;
-          id_paiement: string | null;
-          id_profil: string | null;
-          mode_test: boolean;
-          montant_centimes: number;
-          numero: string;
-          stripe_invoice_id: string;
-        };
-        Insert: {
-          client_email?: string | null;
-          client_nom?: string | null;
-          date_emission?: string;
-          designation: string;
-          devise?: string;
-          id_facture?: string;
-          id_paiement?: string | null;
-          id_profil?: string | null;
-          mode_test?: boolean;
-          montant_centimes: number;
-          numero: string;
-          stripe_invoice_id: string;
-        };
-        Update: {
-          client_email?: string | null;
-          client_nom?: string | null;
-          date_emission?: string;
-          designation?: string;
-          devise?: string;
-          id_facture?: string;
-          id_paiement?: string | null;
-          id_profil?: string | null;
-          mode_test?: boolean;
-          montant_centimes?: number;
-          numero?: string;
-          stripe_invoice_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'factures_id_paiement_fkey';
-            columns: ['id_paiement'];
-            isOneToOne: false;
-            referencedRelation: 'paiements';
-            referencedColumns: ['id_paiement'];
-          },
-          {
-            foreignKeyName: 'factures_id_profil_fkey';
-            columns: ['id_profil'];
-            isOneToOne: false;
-            referencedRelation: 'profils';
-            referencedColumns: ['id_profil'];
-          },
-        ];
-      };
       incidents: {
         Row: {
           agent: string | null;

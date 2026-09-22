@@ -1,10 +1,4 @@
-import {
-  FactureEmise,
-  PaiementLigne,
-  compteDansCa,
-  compteEnFacturation,
-  cumulAnnee,
-} from './finance.model';
+import { PaiementLigne, compteDansCa } from './finance.model';
 
 /**
  * `compteDansCa` définit à elle seule ce qu'est le chiffre d'affaires affiché.
@@ -77,84 +71,5 @@ describe('compteDansCa', () => {
   it('écarte un compte supprimé dont le paiement était en mode test', () => {
     // Le mode test prime : il ne s'agissait pas d'un vrai encaissement.
     expect(compteDansCa(paiement({ profils: null, mode_test: true }))).toBe(false);
-  });
-});
-
-/**
- * `compteEnFacturation` est le pendant de `compteDansCa` pour les factures, et
- * son critère est nécessairement plus pauvre : une facture fige une identité,
- * elle ne porte pas le rôle de l'acheteur. Impossible d'y écarter un compte de
- * démonstration comme on le fait sur un paiement — seul le mode Stripe reste.
- */
-function factureEmise(partiel: Partial<FactureEmise> = {}): FactureEmise {
-  return {
-    id_facture: 'f-1',
-    numero: 'TRADINGCORP-0001',
-    designation: 'Formation TradingCorp',
-    montant_centimes: 99700,
-    devise: 'eur',
-    date_emission: '2026-09-14T10:00:00Z',
-    id_profil: 'profil-1',
-    client_nom: 'Client Exemple',
-    client_email: 'client@exemple.fr',
-    mode_test: false,
-    ...partiel,
-  };
-}
-
-describe('compteEnFacturation', () => {
-  it('compte une vente réelle', () => {
-    expect(compteEnFacturation(factureEmise())).toBe(true);
-  });
-
-  it('écarte une vente passée avec les clés de test Stripe', () => {
-    expect(compteEnFacturation(factureEmise({ mode_test: true }))).toBe(false);
-  });
-
-  it('conserve la facture d’un compte supprimé', () => {
-    // `factures.id_profil` est en ON DELETE SET NULL : la pièce comptable
-    // survit au compte, l'obligation de conservation primant l'effacement.
-    expect(compteEnFacturation(factureEmise({ id_profil: null }))).toBe(true);
-  });
-});
-
-describe('cumulAnnee', () => {
-  it('additionne les factures de l’exercice demandé', () => {
-    const factures = [
-      factureEmise({ numero: 'TRADINGCORP-0001', montant_centimes: 99700 }),
-      factureEmise({ id_facture: 'f-2', numero: 'TRADINGCORP-0002', montant_centimes: 49900 }),
-    ];
-
-    expect(cumulAnnee(factures, 2026)).toBe(149600);
-  });
-
-  it('écarte les factures des autres exercices', () => {
-    const factures = [
-      factureEmise({ numero: 'TRADINGCORP-0001', date_emission: '2025-12-31T10:00:00Z' }),
-      factureEmise({ id_facture: 'f-2', numero: 'TRADINGCORP-0002' }),
-    ];
-
-    expect(cumulAnnee(factures, 2026)).toBe(99700);
-    expect(cumulAnnee(factures, 2025)).toBe(99700);
-  });
-
-  it('rattache une vente du 1er janvier à 0 h 30, heure de Paris, à l’année qui commence', () => {
-    // 23 h 30 UTC le 31 décembre, c'est 0 h 30 le 1er janvier à Paris (UTC+1
-    // en hiver). Lue en UTC, cette vente tomberait dans l'exercice précédent.
-    const nouvelAn = factureEmise({ date_emission: '2026-12-31T23:30:00Z' });
-
-    expect(cumulAnnee([nouvelAn], 2027)).toBe(99700);
-    expect(cumulAnnee([nouvelAn], 2026)).toBe(0);
-  });
-
-  it('garde au 31 décembre une vente de la soirée, heure de Paris', () => {
-    // 22 h 30 UTC, soit 23 h 30 à Paris : toujours le 31 décembre.
-    const soiree = factureEmise({ date_emission: '2026-12-31T22:30:00Z' });
-
-    expect(cumulAnnee([soiree], 2026)).toBe(99700);
-  });
-
-  it('rend zéro sur une liste vide', () => {
-    expect(cumulAnnee([], 2026)).toBe(0);
   });
 });

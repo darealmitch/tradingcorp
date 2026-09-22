@@ -134,10 +134,13 @@ Deno.serve(async (req) => {
       // l'e-mail de Stripe ET la facture en héritent — et une facture émise
       // par une entreprise française se rédige en français.
       locale: 'fr',
-      // LA FACTURE EST ÉMISE PAR STRIPE. Checkout la crée au paiement, avec sa
-      // numérotation séquentielle à l'échelle du compte, et l'envoie à
-      // l'acheteur si les reçus automatiques sont activés (Paramètres →
-      // E-mails aux clients → Paiements réussis). Coût : 0,4 % par facture,
+      // LA FACTURE EST ENTIÈREMENT CONFIÉE À STRIPE (décision du 22/09/2026).
+      // Checkout la crée au paiement, avec sa numérotation séquentielle à
+      // l'échelle du compte, et l'envoie à l'acheteur — à condition que les
+      // reçus automatiques soient activés (Paramètres → E-mails aux clients →
+      // « Paiements réussis ») : c'est le SEUL envoi de la facture, rien de
+      // notre côté ne le double. Elle se consulte, se renvoie et s'annule par
+      // avoir dans le tableau de bord Stripe. Coût : 0,4 % par facture,
       // plafonné à 2 $ — soit environ 2 € sur une vente à 997 €.
       //
       // Ce que Stripe ne sait pas et qu'on lui dit ici : les mentions propres
@@ -161,8 +164,8 @@ Deno.serve(async (req) => {
           // Sans cette mention, l'absence de TVA sur la facture exposerait à
           // un rappel : la franchise en base doit être revendiquée.
           footer: 'TVA non applicable — article 293 B du Code général des impôts',
-          // Le webhook rattache la facture par la session ; ces métadonnées
-          // servent au rapprochement si un reflet venait à manquer.
+          // Pour retrouver, depuis le tableau de bord Stripe, à quel compte et
+          // à quelle formation une facture se rapporte.
           metadata: { id_profil: user.id, id_formation: formation.id_formation },
         },
       },
