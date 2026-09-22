@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { Facture } from './facture.model';
 import { Formation, FormationStaff, Inscription } from './formation.model';
 
 const ERREUR_GENERIQUE = 'Le paiement est indisponible pour le moment. Réessaie plus tard.';
@@ -23,43 +22,13 @@ export class CommerceService {
   }
 
   /**
-   * Factures du profil connecté, la plus récente en tête.
-   *
-   * LE FILTRE EST EXPLICITE, et ce n'est pas une redondance de la RLS. Pour un
-   * apprenant, `factures_select_titulaire` suffirait — elle ne lui montre que
-   * ses lignes. Mais la même policy ouvre TOUTES les factures à un
-   * administrateur : sans ce `.eq()`, l'écran « Mes factures » lui rendrait
-   * celles du site entier sous un titre qui annonce les siennes. Un
-   * administrateur qui achète la formation est un client comme un autre, et
-   * cette page-ci est celle du client. La comptabilité a son écran
-   * (`/espace/facturation`), qui dit ce qu'il montre.
-   *
-   * Compte introuvable : liste vide plutôt que requête sans filtre — le repli
-   * d'une erreur d'authentification ne doit pas être « tout afficher ».
-   */
-  async chargerFactures(): Promise<Facture[]> {
-    const idProfil = await this.acces.idUtilisateur();
-    if (!idProfil) {
-      return [];
-    }
-    return this.acces.lire<Facture[]>(
-      'lecture des factures',
-      this.acces
-        .table('factures')
-        .select('id_facture, numero, designation, montant_centimes, devise, date_emission')
-        .eq('id_profil', idProfil)
-        .order('date_emission', { ascending: false }),
-      [],
-    );
-  }
-
-  /**
    * Lien de téléchargement d'une facture.
    *
-   * La facture a été émise et envoyée par Stripe au moment du paiement : cette
-   * méthode ne fabrique rien, elle rend le PDF de Stripe. Le lien est redemandé
-   * à chaque clic, parce que ceux de Stripe expirent — un lien conservé serait
-   * mort bien avant que l'élève ne revienne chercher sa facture.
+   * Sert l'écran de facturation de l'administrateur. La facture a été émise
+   * par Stripe au paiement : cette méthode ne fabrique rien, elle rend le PDF
+   * de Stripe. Le lien est redemandé à chaque clic, parce que ceux de Stripe
+   * expirent — un lien conservé serait mort bien avant qu'on en ait besoin,
+   * par exemple pour renvoyer une facture à un client qui l'a égarée.
    */
   async lienFacture(idFacture: string): Promise<{ url?: string; erreur?: string }> {
     const { donnees, erreur } = await this.acces.invoquer<{ url: string }>(

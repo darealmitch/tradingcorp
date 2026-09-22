@@ -7,14 +7,9 @@ import { StatCard } from '../../../shared/ui/stat-card';
 /**
  * Les factures émises, vues depuis la comptabilité.
  *
- * Le pendant administrateur de « Mes factures » : même table, même document,
- * mais la question posée n'est pas la même. L'acheteur demande « où est ma
- * facture ? » ; le vendeur demande « qu'ai-je facturé, à qui, et la
- * numérotation est-elle continue ? ».
- *
- * Les deux écrans sont séparés parce que les confondre faisait mentir le
- * premier : la policy ouvre toutes les factures à un administrateur, qui
- * lisait donc le site entier sous un titre annonçant les siennes.
+ * La question posée est celle du vendeur : « qu'ai-je facturé, à qui, et la
+ * numérotation est-elle continue ? ». L'acheteur, lui, n'a pas d'écran : il
+ * reçoit sa facture jointe à la confirmation de commande (22/09/2026).
  *
  * Ce n'est pas cette page qui protège quoi que ce soit. Le droit vient de
  * `factures_select_titulaire` (20260914100000) : un formateur qui forcerait

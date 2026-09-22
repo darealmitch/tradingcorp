@@ -149,9 +149,14 @@ Deno.serve(async (req) => {
         invoice_data: {
           custom_fields: [
             { name: 'SIRET', value: '909 608 697 00019' },
-            // Obligatoire sur tout document professionnel d'un entrepreneur
-            // individuel depuis 2022 (art. L526-22 du Code de commerce).
-            { name: 'Statut', value: 'Entrepreneur individuel (EI)' },
+            // Le NOM de l'entrepreneur, et pas seulement son statut : une
+            // entreprise individuelle facture en son nom propre, et « Trading
+            // Corp » — le nom commercial, tiré des informations publiques du
+            // compte Stripe — ne suffit pas à l'identifier. Relevé sur la
+            // première facture d'essai, le 22/09/2026. La mention EI, elle,
+            // est obligatoire depuis 2022 (art. L526-22 du Code de commerce).
+            // Même libellé que les mentions légales.
+            { name: 'Exploitant', value: 'Keryan André, entrepreneur individuel (EI)' },
           ],
           // Sans cette mention, l'absence de TVA sur la facture exposerait à
           // un rappel : la franchise en base doit être revendiquée.

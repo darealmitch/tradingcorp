@@ -1,11 +1,9 @@
 /**
- * Facture émise après un paiement, telle que son TITULAIRE la voit.
+ * Facture émise après un paiement — le socle commun, sans l'identité de
+ * l'acheteur. La comptabilité l'étend avec `FactureEmise` (core/finance).
  *
- * Le modèle s'en tient à ce qu'un écran d'apprenant a besoin d'afficher. Deux
- * colonnes lisibles en base n'y figurent pas — `client_nom` et `client_email`,
- * figés à l'émission : l'acheteur connaît sa propre identité, la lui réafficher
- * n'apprend rien. Elles servent à la comptabilité, qui a son modèle à elle
- * (`FactureEmise`, core/finance).
+ * L'acheteur n'a pas d'écran de factures : la sienne lui parvient jointe à la
+ * confirmation de commande (22/09/2026).
  *
  * La facture est émise par Stripe. Son identifiant Stripe reste côté serveur :
  * le PDF s'obtient par `generer-facture`, qui établit le droit sous RLS avant

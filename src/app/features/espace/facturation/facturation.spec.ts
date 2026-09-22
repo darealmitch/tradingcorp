@@ -70,7 +70,7 @@ describe('Facturation', () => {
     window.open = ouvrirOriginal;
   });
 
-  it('montre l’identité de l’acheteur, que « Mes factures » n’affiche pas', async () => {
+  it('montre l’identité de l’acheteur', async () => {
     await creer();
 
     expect(interne.factures().length).toBe(1);

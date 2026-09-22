@@ -3,7 +3,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@18';
 import { envoyerConfirmation } from '../_partages/confirmation.ts';
-import { enregistrerFacture } from './facture-stripe.ts';
+import { enregistrerFacture, telechargerPdf } from './facture-stripe.ts';
 
 // Webhook appelé par Stripe (jamais par le navigateur) : à déployer avec
 // verify_jwt désactivé ; l'authenticité est garantie par la signature Stripe.
@@ -231,14 +231,18 @@ Deno.serve(async (req) => {
     const adresseSite = Deno.env.get('SITE_URL')?.replace(/\/+$/, '') || 'https://tradingcorp.fr';
 
     // La facture : ÉMISE PAR STRIPE, pas ici. Checkout l'a créée au paiement
-    // (`invoice_creation`, paramétré dans `checkout`) et l'envoie lui-même à
-    // l'acheteur. On n'en garde que le reflet, pour l'espace de l'élève et
-    // l'écran de facturation.
-    const numeroFacture = await enregistrerFacture(stripe, session, {
+    // (`invoice_creation`, paramétré dans `checkout`). On en garde le reflet
+    // pour l'écran de facturation, et on récupère son PDF pour le joindre à la
+    // confirmation : l'élève n'a pas d'écran de factures, l'e-mail est le seul
+    // endroit où il la reçoit. Ne pas dépendre de l'envoi de Stripe, c'est ne
+    // dépendre ni d'un réglage de console, ni du mode — Stripe n'envoie rien en
+    // mode test.
+    const facture = await enregistrerFacture(stripe, session, {
       idProfil: id_profil,
       idPaiement: paiement.id_paiement,
       designation,
     });
+    const pdfFacture = facture?.lienPdf ? await telechargerPdf(facture.lienPdf) : null;
 
     // La confirmation de commande : une obligation DISTINCTE de la facture
     // (L221-13 — le contrat confirmé sur support durable, avec le droit de
@@ -255,7 +259,8 @@ Deno.serve(async (req) => {
         devise: session.currency ?? 'eur',
         clientNom: session.customer_details?.name ?? null,
         clientEmail: session.customer_details?.email ?? null,
-        numeroFacture,
+        numeroFacture: facture?.numero ?? null,
+        pdfFacture,
       },
       adresseSite,
     );

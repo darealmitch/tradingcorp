@@ -25,6 +25,13 @@ export interface Commande {
   /** Numéro de la facture Stripe, s'il est connu au moment de l'envoi. */
   numeroFacture: string | null;
   /**
+   * Le PDF de la facture, joint au message. L'acheteur n'a pas d'écran de
+   * factures : cette pièce jointe est l'endroit où il la reçoit. Absent si le
+   * téléchargement chez Stripe a échoué — la confirmation part alors quand
+   * même, et le journal le signale pour un renvoi depuis l'écran Facturation.
+   */
+  pdfFacture?: Uint8Array | null;
+  /**
    * Essai déclenché depuis l'écran Paramètres : même gabarit, même envoi, mais
    * un bandeau dit en tête qu'aucune vente n'a eu lieu.
    */
@@ -50,11 +57,15 @@ function montant(centimes: number, devise: string): string {
   return `${(centimes / 100).toFixed(2).replace('.', ',')} ${symbole}`;
 }
 
+/** Ce que la ligne « Facture » dit, selon que le PDF est joint ou non. */
+function libelleFacture(c: Commande): string {
+  const numero = c.numeroFacture ? `n° ${c.numeroFacture}, ` : '';
+  return c.pdfFacture ? `${numero}jointe à ce message` : `${numero}vous sera transmise séparément`;
+}
+
 /** Corps de la confirmation. Les mentions suivent les CGV, article par article. */
 function corps(c: Commande, adresseSite: string): string {
-  const facture = c.numeroFacture
-    ? `n° ${echapper(c.numeroFacture)}, envoyée par un e-mail séparé`
-    : 'envoyée par un e-mail séparé';
+  const facture = echapper(libelleFacture(c));
   const bandeauEssai = c.essai
     ? `<p style="padding:10px 14px;border:1px solid #d94d59;border-radius:8px;color:#b3303c">
     Ceci est un <strong>essai</strong> déclenché depuis l’écran Paramètres : aucune vente n’a eu
@@ -74,11 +85,6 @@ function corps(c: Commande, adresseSite: string): string {
     <tr><td style="padding:4px 16px 4px 0;color:#6b6f80">Montant réglé</td><td><strong>${montant(c.montantCentimes, c.devise)}</strong></td></tr>
     <tr><td style="padding:4px 16px 4px 0;color:#6b6f80">Facture</td><td>${facture}</td></tr>
   </table>
-
-  <p>
-    Votre facture reste disponible à tout moment dans votre espace, rubrique
-    <a href="${adresseSite}/espace/factures">Mes factures</a>.
-  </p>
 
   <p>
     L'accès est personnel : il ne peut être partagé ni revendu, et les contenus
@@ -127,9 +133,7 @@ function corps(c: Commande, adresseSite: string): string {
  * l'adresse de rétractation et celle des CGV qui comptent ici.
  */
 function texteBrut(c: Commande, adresseSite: string): string {
-  const facture = c.numeroFacture
-    ? `n° ${c.numeroFacture}, envoyée par un e-mail séparé`
-    : 'envoyée par un e-mail séparé';
+  const facture = libelleFacture(c);
   return [
     ...(c.essai
       ? [
@@ -145,8 +149,6 @@ function texteBrut(c: Commande, adresseSite: string): string {
     `Formation : ${c.designation}`,
     `Montant réglé : ${montant(c.montantCentimes, c.devise)}`,
     `Facture : ${facture}`,
-    '',
-    `Votre facture reste disponible à tout moment dans votre espace : ${adresseSite}/espace/factures`,
     '',
     'L’accès est personnel : il ne peut être partagé ni revendu, et les contenus ne peuvent être',
     'reproduits ou diffusés (article 10 des conditions générales de vente).',
@@ -189,7 +191,17 @@ export async function envoyerConfirmation(c: Commande, adresseSite: string): Pro
         : 'Confirmation de votre commande TradingCorp',
       html: corps(c, adresseSite),
       texte: texteBrut(c, adresseSite),
+      piecesJointes: c.pdfFacture
+        ? [{ nom: `facture-${c.numeroFacture ?? 'tradingcorp'}.pdf`, contenu: c.pdfFacture }]
+        : undefined,
     });
+    if (!c.pdfFacture && !c.essai) {
+      console.error(
+        '[confirmation] facture non jointe — à renvoyer depuis l’écran Facturation',
+        c.numeroFacture,
+        c.clientEmail,
+      );
+    }
     if (!parti) {
       console.error('[confirmation] non remise', c.numeroFacture, c.clientEmail);
     }

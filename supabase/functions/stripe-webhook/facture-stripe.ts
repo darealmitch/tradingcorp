@@ -4,12 +4,12 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 /**
  * Reflet, dans `factures`, de la facture que Stripe a émise au paiement.
  *
- * Stripe fait tout le travail légal : numérotation séquentielle à l'échelle du
- * compte, composition du PDF, envoi à l'acheteur (Checkout, `invoice_creation`,
- * paramétré dans `checkout`). Ce module n'en garde que ce qu'il faut pour que
- * l'élève retrouve sa facture dans son espace, et l'administrateur toutes les
- * siennes : le numéro, le montant, la date — et l'identifiant Stripe, à partir
- * duquel `generer-facture` redemande un lien frais à chaque téléchargement.
+ * Stripe fait le travail légal : numérotation séquentielle à l'échelle du
+ * compte et composition du PDF (Checkout, `invoice_creation`, paramétré dans
+ * `checkout`). Ce module en garde le reflet pour l'écran de facturation de
+ * l'administrateur — numéro, montant, date, et l'identifiant Stripe à partir
+ * duquel `generer-facture` redemande un lien frais —, et rend le lien du PDF,
+ * que le webhook joint à la confirmation de commande.
  *
  * N'ÉCHOUE JAMAIS, comme tout ce que le webhook appelle après l'encaissement :
  * la facture existe chez Stripe et part par e-mail quoi qu'il arrive ici. Un
@@ -24,12 +24,19 @@ export interface Contexte {
   designation: string;
 }
 
-/** Rend le numéro Stripe de la facture, ou `null` si elle n'a pas pu être lue. */
+export interface FactureLue {
+  /** Numéro attribué par Stripe. */
+  numero: string;
+  /** Lien de téléchargement du PDF, frais : il vient d'être lu chez Stripe. */
+  lienPdf: string | null;
+}
+
+/** Rend la facture Stripe telle que lue, ou `null` si elle n'a pas pu l'être. */
 export async function enregistrerFacture(
   stripe: Stripe,
   session: Stripe.Checkout.Session,
   contexte: Contexte,
-): Promise<string | null> {
+): Promise<FactureLue | null> {
   try {
     // Un client à soi plutôt que celui du webhook passé en paramètre. Typer ce
     // paramètre est un piège : `ReturnType<typeof createClient>` instancie les
@@ -90,7 +97,7 @@ export async function enregistrerFacture(
     if (error) {
       console.error('[facture] reflet non enregistré', idFacture, error);
     }
-    return numero;
+    return { numero, lienPdf: facture.invoice_pdf ?? null };
   } catch (erreur) {
     console.error('[facture] lecture impossible', session.id, erreur);
     return null;
@@ -103,4 +110,37 @@ function identifiant(valeur: string | Stripe.Invoice | null | undefined): string
     return null;
   }
   return typeof valeur === 'string' ? valeur : (valeur.id ?? null);
+}
+
+/**
+ * Télécharge le PDF d'une facture Stripe, pour le joindre à la confirmation.
+ *
+ * Rend `null` plutôt que de lever, comme tout ce qui suit l'encaissement : sans
+ * pièce jointe, la confirmation part quand même, et le journal dit pourquoi.
+ *
+ * Trois précautions. Un délai maximal, parce que le webhook dispose de vingt
+ * secondes en tout et que Stripe compose le PDF au premier téléchargement. La
+ * redirection suivie — Stripe répond 302 avant de servir le fichier (vérifié le
+ * 22/09/2026), ce que `fetch` fait par défaut. Et la signature `%PDF` vérifiée :
+ * joindre une page d'erreur HTML sous le nom « facture.pdf » serait pire que
+ * de ne rien joindre.
+ */
+export async function telechargerPdf(lien: string): Promise<Uint8Array | null> {
+  try {
+    const reponse = await fetch(lien, { signal: AbortSignal.timeout(8000) });
+    if (!reponse.ok) {
+      console.error('[facture] PDF indisponible', reponse.status);
+      return null;
+    }
+    const octets = new Uint8Array(await reponse.arrayBuffer());
+    const signature = new TextDecoder().decode(octets.subarray(0, 4));
+    if (signature !== '%PDF') {
+      console.error('[facture] le fichier reçu n’est pas un PDF', signature);
+      return null;
+    }
+    return octets;
+  } catch (erreur) {
+    console.error('[facture] téléchargement du PDF impossible', erreur);
+    return null;
+  }
 }

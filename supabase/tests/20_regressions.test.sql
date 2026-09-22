@@ -14,7 +14,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(11);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- P-02 — majorité exigée à la création du compte
@@ -134,6 +134,55 @@ select is(
     where id_profil = 'b2222222-0000-0000-0000-000000000002'),
   true,
   'P-04 — le blocage des autres comptes n''est pas touché au passage'
+);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 20260922100000 — une fonction « invoker » lisait une colonne retirée
+--
+-- `prochaines_lecons` s'exécute avec les droits de l'élève et renvoyait encore
+-- `video_url`, retirée du périmètre client le 12/09 : 42501 pour tous les
+-- élèves, dix jours durant, sans que rien ne le montre. Deux garde-fous.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- Structurel, et c'est lui qui compte : il couvre toute la famille de défauts,
+-- pas seulement la fonction corrigée. Une fonction SECURITY DEFINER peut lire
+-- l'adresse (elle décide elle-même de ce qu'elle rend) ; une fonction invoker
+-- ouverte aux élèves, jamais. `\m…\M` borne le mot : `a_video_url` ne compte pas.
+select is(
+  (select count(*)::int
+     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.prokind = 'f' and not p.prosecdef
+      and has_function_privilege('authenticated', p.oid, 'EXECUTE')
+      and p.prosrc ~* '\mvideo_url\M'),
+  0,
+  '20260922100000 — aucune fonction exécutée avec les droits de l''élève ne lit video_url'
+);
+
+-- Comportemental : la fonction elle-même, appelée par un élève. Le rôle est
+-- pris et rendu À L'INTÉRIEUR du bloc, pour ne jamais laisser le rôle simulé
+-- toucher aux tables internes de pgTAP.
+create function pg_temp.erreur_sous(p_sub text, p_sql text) returns text
+language plpgsql as $$
+declare code text;
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', p_sub, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    execute p_sql;
+  exception when others then
+    code := sqlstate;
+  end;
+  execute 'reset role';
+  return code;
+end;
+$$;
+
+select is(
+  pg_temp.erreur_sous('b2222222-0000-0000-0000-000000000001',
+    'select * from public.prochaines_lecons(3)'),
+  null::text,
+  '20260922100000 — prochaines_lecons s''exécute pour un élève sans refus de privilège'
 );
 
 select * from finish();
