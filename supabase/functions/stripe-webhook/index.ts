@@ -3,7 +3,6 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@18';
 import { envoyerConfirmation } from '../_partages/confirmation.ts';
-import { enregistrerFacture, telechargerPdf } from './facture-stripe.ts';
 
 // Webhook appelé par Stripe (jamais par le navigateur) : à déployer avec
 // verify_jwt désactivé ; l'authenticité est garantie par la signature Stripe.
@@ -230,28 +229,19 @@ Deno.serve(async (req) => {
     const designation = formation?.titre ?? 'Formation TradingCorp';
     const adresseSite = Deno.env.get('SITE_URL')?.replace(/\/+$/, '') || 'https://tradingcorp.fr';
 
-    // La facture : ÉMISE PAR STRIPE, pas ici. Checkout l'a créée au paiement
-    // (`invoice_creation`, paramétré dans `checkout`). On en garde le reflet
-    // pour l'écran de facturation, et on récupère son PDF pour le joindre à la
-    // confirmation : l'élève n'a pas d'écran de factures, l'e-mail est le seul
-    // endroit où il la reçoit. Ne pas dépendre de l'envoi de Stripe, c'est ne
-    // dépendre ni d'un réglage de console, ni du mode — Stripe n'envoie rien en
-    // mode test.
-    const facture = await enregistrerFacture(stripe, session, {
-      idProfil: id_profil,
-      idPaiement: paiement.id_paiement,
-      designation,
-    });
-    const pdfFacture = facture?.lienPdf ? await telechargerPdf(facture.lienPdf) : null;
+    // La facture n'est PAS l'affaire de ce webhook : Stripe l'émet au paiement
+    // (`invoice_creation`, paramétré dans `checkout`) et l'envoie lui-même à
+    // l'acheteur — réglage « Paiements réussis » des e-mails clients. Décision
+    // du 22/09/2026 : la facturation est entièrement confiée à Stripe, qui la
+    // numérote, la conserve et permet d'y émettre des avoirs.
 
     // La confirmation de commande : une obligation DISTINCTE de la facture
     // (L221-13 — le contrat confirmé sur support durable, avec le droit de
-    // rétractation), que l'e-mail de Stripe ne remplit pas. Envoyée même si
-    // le reflet de la facture a échoué : l'une ne dépend pas de l'autre.
+    // rétractation), que l'e-mail de Stripe ne remplit pas.
     //
     // Awaitée plutôt que détachée : l'envoi prend une seconde, loin des vingt
-    // que Stripe accorde. Aucune des deux fonctions n'échoue jamais — elles
-    // journalisent —, donc rien ici ne peut provoquer un rejeu de l'événement.
+    // que Stripe accorde. `envoyerConfirmation` n'échoue jamais — elle
+    // journalise —, donc rien ici ne peut provoquer un rejeu de l'événement.
     await envoyerConfirmation(
       {
         designation,
@@ -259,8 +249,6 @@ Deno.serve(async (req) => {
         devise: session.currency ?? 'eur',
         clientNom: session.customer_details?.name ?? null,
         clientEmail: session.customer_details?.email ?? null,
-        numeroFacture: facture?.numero ?? null,
-        pdfFacture,
       },
       adresseSite,
     );

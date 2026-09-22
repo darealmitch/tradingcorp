@@ -4,7 +4,8 @@ import { envoyer } from './courriel.ts';
  * Confirmation de commande, envoyée après chaque encaissement.
  *
  * CE N'EST PAS LA FACTURE, et les deux ne se remplacent pas. La facture est
- * émise et envoyée par Stripe au paiement (Checkout, `invoice_creation`). Cette
+ * émise et envoyée par Stripe au paiement (Checkout, `invoice_creation`) :
+ * TradingCorp n'y touche pas (décision du 22/09/2026). Cette
  * confirmation-ci répond à une autre obligation : l'article L221-13 du Code de
  * la consommation impose de confirmer le contrat sur un support durable, en
  * reprenant les informations précontractuelles — au premier rang desquelles le
@@ -22,15 +23,6 @@ export interface Commande {
   devise: string;
   clientNom: string | null;
   clientEmail: string | null;
-  /** Numéro de la facture Stripe, s'il est connu au moment de l'envoi. */
-  numeroFacture: string | null;
-  /**
-   * Le PDF de la facture, joint au message. L'acheteur n'a pas d'écran de
-   * factures : cette pièce jointe est l'endroit où il la reçoit. Absent si le
-   * téléchargement chez Stripe a échoué — la confirmation part alors quand
-   * même, et le journal le signale pour un renvoi depuis l'écran Facturation.
-   */
-  pdfFacture?: Uint8Array | null;
   /**
    * Essai déclenché depuis l'écran Paramètres : même gabarit, même envoi, mais
    * un bandeau dit en tête qu'aucune vente n'a eu lieu.
@@ -57,15 +49,17 @@ function montant(centimes: number, devise: string): string {
   return `${(centimes / 100).toFixed(2).replace('.', ',')} ${symbole}`;
 }
 
-/** Ce que la ligne « Facture » dit, selon que le PDF est joint ou non. */
-function libelleFacture(c: Commande): string {
-  const numero = c.numeroFacture ? `n° ${c.numeroFacture}, ` : '';
-  return c.pdfFacture ? `${numero}jointe à ce message` : `${numero}vous sera transmise séparément`;
-}
+/**
+ * Ce que la ligne « Facture » dit. La confirmation ne connaît pas la facture —
+ * Stripe l'émet et l'envoie de son côté —, elle dit donc seulement où la
+ * trouver. Partagé par le HTML et le texte : les deux versions ne doivent
+ * jamais dire deux choses différentes.
+ */
+const LIBELLE_FACTURE = 'envoyée par un e-mail séparé au moment du paiement';
 
 /** Corps de la confirmation. Les mentions suivent les CGV, article par article. */
 function corps(c: Commande, adresseSite: string): string {
-  const facture = echapper(libelleFacture(c));
+  const facture = LIBELLE_FACTURE;
   const bandeauEssai = c.essai
     ? `<p style="padding:10px 14px;border:1px solid #d94d59;border-radius:8px;color:#b3303c">
     Ceci est un <strong>essai</strong> déclenché depuis l’écran Paramètres : aucune vente n’a eu
@@ -133,7 +127,7 @@ function corps(c: Commande, adresseSite: string): string {
  * l'adresse de rétractation et celle des CGV qui comptent ici.
  */
 function texteBrut(c: Commande, adresseSite: string): string {
-  const facture = libelleFacture(c);
+  const facture = LIBELLE_FACTURE;
   return [
     ...(c.essai
       ? [
@@ -180,7 +174,7 @@ function texteBrut(c: Commande, adresseSite: string): string {
 export async function envoyerConfirmation(c: Commande, adresseSite: string): Promise<boolean> {
   try {
     if (!c.clientEmail) {
-      console.error('[confirmation] pas d’adresse — confirmation non envoyée', c.numeroFacture);
+      console.error('[confirmation] pas d’adresse — confirmation non envoyée', c.designation);
       return false;
     }
     const parti = await envoyer({
@@ -191,19 +185,9 @@ export async function envoyerConfirmation(c: Commande, adresseSite: string): Pro
         : 'Confirmation de votre commande TradingCorp',
       html: corps(c, adresseSite),
       texte: texteBrut(c, adresseSite),
-      piecesJointes: c.pdfFacture
-        ? [{ nom: `facture-${c.numeroFacture ?? 'tradingcorp'}.pdf`, contenu: c.pdfFacture }]
-        : undefined,
     });
-    if (!c.pdfFacture && !c.essai) {
-      console.error(
-        '[confirmation] facture non jointe — à renvoyer depuis l’écran Facturation',
-        c.numeroFacture,
-        c.clientEmail,
-      );
-    }
     if (!parti) {
-      console.error('[confirmation] non remise', c.numeroFacture, c.clientEmail);
+      console.error('[confirmation] non remise', c.clientEmail);
     }
     return parti;
   } catch (erreur) {

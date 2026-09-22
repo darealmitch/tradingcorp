@@ -157,7 +157,6 @@ Deno.serve(async (req) => {
             ? [profil.prenom, profil.nom].filter(Boolean).join(' ').trim() || null
             : null,
         clientEmail: adresse,
-        numeroFacture: numero,
         essai: true,
       },
       adresseSite,

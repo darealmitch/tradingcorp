@@ -21,25 +21,6 @@ export class CommerceService {
     );
   }
 
-  /**
-   * Lien de téléchargement d'une facture.
-   *
-   * Sert l'écran de facturation de l'administrateur. La facture a été émise
-   * par Stripe au paiement : cette méthode ne fabrique rien, elle rend le PDF
-   * de Stripe. Le lien est redemandé à chaque clic, parce que ceux de Stripe
-   * expirent — un lien conservé serait mort bien avant qu'on en ait besoin,
-   * par exemple pour renvoyer une facture à un client qui l'a égarée.
-   */
-  async lienFacture(idFacture: string): Promise<{ url?: string; erreur?: string }> {
-    const { donnees, erreur } = await this.acces.invoquer<{ url: string }>(
-      'téléchargement de la facture',
-      'generer-facture',
-      { id_facture: idFacture },
-      'La facture n’a pas pu être préparée. Réessaie.',
-    );
-    return { url: donnees?.url, erreur };
-  }
-
   /** Inscriptions actives du profil connecté (RLS : ses lignes uniquement). */
   async chargerInscriptions(): Promise<Inscription[]> {
     return this.acces.lire<Inscription[]>(
