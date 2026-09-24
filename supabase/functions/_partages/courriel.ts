@@ -19,6 +19,41 @@ const API = 'https://api.brevo.com/v3/smtp/email';
 /** Expéditeur — l'adresse doit être vérifiée dans Brevo, sinon tout est rejeté. */
 const EXPEDITEUR = { name: 'TradingCorp', email: 'contact@tradingcorp.fr' };
 
+/**
+ * ADRESSE DE RÉPONSE — distincte de l'expéditeur, et c'est volontaire.
+ *
+ * L'expéditeur reste `contact@tradingcorp.fr` parce que c'est l'adresse
+ * AUTHENTIFIÉE du domaine : le SPF de `tradingcorp.fr` autorise Brevo
+ * (`include:spf.brevo.com`) et le DKIM est signé sous `brevo1`/`brevo2.
+ * _domainkey.tradingcorp.fr`. C'est cet alignement qui fait passer les
+ * messages — 8,2/10 à mail-tester le 21/09/2026.
+ *
+ * Mettre une adresse `@gmail.com` en expéditeur le romprait : Brevo signerait
+ * au nom d'un domaine qui n'est pas le sien, et l'écart entre le `From` affiché
+ * et le domaine signataire est précisément ce que les filtres lisent comme une
+ * usurpation. Le DMARC de gmail.com (`p=none; sp=quarantine`) ne rejetterait
+ * pas le message, mais Gmail et Outlook le classeraient.
+ *
+ * Reste le vrai problème : `contact@tradingcorp.fr` ne relève AUCUNE boîte.
+ * Sans adresse de réponse, la demande de rétractation d'un client — que
+ * l'article L221-13 nous fait justement obligation de recevoir — part dans le
+ * vide pendant que son délai de quatorze jours continue de courir.
+ *
+ * Le nom reste « TradingCorp » : c'est lui qui s'affichera dans le champ « À »
+ * quand le client cliquera sur Répondre, et une adresse Gmail nue y ferait
+ * douter qu'on écrit bien au vendeur.
+ *
+ * L'adresse, elle, se surcharge par un secret. Le jour où `contact@` relèvera
+ * enfin une boîte, il suffira de poser `COURRIEL_REPONSE` : sans cela, il
+ * faudrait republier toutes les fonctions qui envoient du courrier pour changer
+ * une seule ligne. `||` et non `??` — un secret déclaré vide rendrait la chaîne
+ * vide, que `??` laisserait passer et que Brevo refuserait.
+ */
+const REPONDRE_A = {
+  name: 'TradingCorp',
+  email: Deno.env.get('COURRIEL_REPONSE') || 'mailtradingcorp@gmail.com',
+};
+
 export interface PieceJointe {
   /** Nom affiché dans le client de messagerie. */
   nom: string;
@@ -69,6 +104,7 @@ export async function envoyer(message: Message): Promise<boolean> {
 
   const corps = {
     sender: EXPEDITEUR,
+    replyTo: REPONDRE_A,
     to: [{ email: message.destinataire, name: message.destinataireNom ?? undefined }],
     subject: message.objet,
     htmlContent: message.html,
