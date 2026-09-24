@@ -38,8 +38,25 @@ interface Bilan {
   probleme: string | null;
 }
 
-/** Au-delà, on dépasse le plafond d'envoi du fournisseur d'e-mails. */
-const LOT_MAXIMUM = 40;
+/**
+ * Élèves par appel — c'est un DÉBIT qui commande, pas une capacité de
+ * traitement.
+ *
+ * L'invitation passe par `resetPasswordForEmail`, donc par `/auth/v1/recover`,
+ * soumis au même seau que `/auth/v1/signup` et `/auth/v1/user` : « 30 new users
+ * per hour » par défaut avec un SMTP personnalisé, et ce plafond vaut pour le
+ * PROJET entier. Un élève déjà repris qui demande son mot de passe oublié
+ * pendant une reprise puise dans le même quota.
+ *
+ * La valeur était de 40, au-dessus du plafond réel. Un lot plein aurait vu ses
+ * dix derniers refusés EN COURS DE ROUTE : comptes créés, progression écrite,
+ * invitations perdues — et rien à l'écran pour dire lesquelles. Relevé le
+ * 25/09/2026 en préparant la reprise des 41 anciens élèves.
+ *
+ * Le plafond se relève dans les réglages d'authentification du projet
+ * (`rate_limit_email_sent`) ; cette constante suivrait alors.
+ */
+const LOT_MAXIMUM = 30;
 
 function json(req: Request, corps: unknown, statut: number): Response {
   return new Response(JSON.stringify(corps), {

@@ -2,8 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
 import { EleveAMigrer, ResultatMigration } from './migration.model';
 
-/** Au-delà, l'Edge Function refuse : c'est le plafond d'envoi du fournisseur. */
-export const LOT_MAXIMUM = 40;
+/**
+ * Au-delà, l'Edge Function refuse. Le chiffre vient du débit d'envoi d'e-mails
+ * de Supabase Auth — 30 par heure pour tout le projet — et non d'une limite de
+ * traitement : voir le commentaire de `LOT_MAXIMUM` dans `migrer-eleves`, qui
+ * porte la même valeur et doit changer en même temps.
+ */
+export const LOT_MAXIMUM = 30;
 
 /**
  * Reprise des anciens élèves de la plateforme Wix.
