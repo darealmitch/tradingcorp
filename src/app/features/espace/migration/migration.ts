@@ -79,29 +79,40 @@ export class Migration {
   }
 
   /**
-   * Wix range dans son champ `name` ce que la personne a bien voulu y mettre :
-   * parfois un nom, souvent l'identifiant tiré de l'adresse — « nathan.assimba ».
-   * Importé tel quel, il donne des apprenants nommés comme des comptes
-   * techniques. On ne retient donc que ce qui ressemble à une identité, et on
-   * laisse le champ vide — mais modifiable — pour le reste.
+   * Nom à préremplir, déduit de ce que Wix fournit.
+   *
+   * Wix ne livre qu'UN champ libre, et c'est souvent un identifiant plutôt
+   * qu'une identité : « nathan.assimba », « Mehdaoui.nabil113 », « Claade40 ».
+   * La version précédente refusait de deviner dans ces cas et laissait le champ
+   * vide, à charge pour l'éditeur de le compléter. Personne ne l'a complété :
+   * le premier élève repris est arrivé en base sans prénom ni nom, le
+   * 24/09/2026.
+   *
+   * Un nom approximatif vaut mieux qu'un champ vide, parce que les deux ne se
+   * rattrapent pas de la même façon : le premier saute aux yeux dans la liste
+   * AVANT l'envoi, le second ne se découvre qu'au moment où
+   * `generer-certificat` compose un diplôme sans titulaire.
+   *
+   * La dérivation est volontairement mécanique — séparateurs techniques en
+   * espaces, chiffres retirés, chaque mot capitalisé. Elle ne prétend pas être
+   * juste : « Mehdaoui.nabil113 » donne « Mehdaoui Nabil », dans l'ordre
+   * inverse du nôtre. Elle prétend seulement être VISIBLE et corrigible d'un
+   * clic, ce qu'un champ vide n'est pas.
    */
   private identiteProbable(nom: string, email: string): string {
-    const brut = nom.trim();
-    if (!brut) {
-      return '';
-    }
-    const local = (email.split('@')[0] ?? '').toLowerCase();
-    const identifiant =
-      !brut.includes(' ') &&
-      (brut.includes('.') || /\d/.test(brut) || brut.toLowerCase() === local);
-    if (identifiant) {
-      return '';
-    }
-    // « senku » → « Senku » : Wix ne capitalise rien.
-    return brut
-      .split(/\s+/)
-      .map((mot) => mot.charAt(0).toUpperCase() + mot.slice(1))
-      .join(' ');
+    // À défaut de nom, la partie gauche de l'adresse : c'est encore ce qui
+    // ressemble le plus à une identité.
+    const brut = nom.trim() || (email.split('@')[0] ?? '');
+    return (
+      brut
+        .replace(/[._+-]+/g, ' ')
+        .replace(/\d+/g, ' ')
+        .split(/\s+/)
+        .filter(Boolean)
+        // « senku » → « Senku » : Wix ne capitalise rien.
+        .map((mot) => mot.charAt(0).toUpperCase() + mot.slice(1))
+        .join(' ')
+    );
   }
 
   protected basculer(email: string): void {
@@ -314,8 +325,13 @@ export class Migration {
     return Math.round((100 * etapes) / ETAPES_PROGRAMME);
   }
 
-  /** Ce que Wix proposait, quand ce n'était pas un identifiant. */
-  protected suggestionRejetee(eleve: EleveLu): boolean {
-    return eleve.nom.trim().length > 0 && this.identiteProbable(eleve.nom, eleve.email) === '';
+  /**
+   * Vrai quand le nom affiché a été DÉDUIT d'un identifiant, et non donné tel
+   * quel par Wix — le champ est rempli, mais il mérite un regard avant l'envoi.
+   */
+  protected identiteDeduite(eleve: EleveLu): boolean {
+    const brut = eleve.nom.trim();
+    const local = (eleve.email.split('@')[0] ?? '').toLowerCase();
+    return !brut || (!brut.includes(' ') && (/[._\d]/.test(brut) || brut.toLowerCase() === local));
   }
 }
