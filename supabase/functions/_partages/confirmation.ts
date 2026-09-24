@@ -92,7 +92,7 @@ function corps(c: Commande, adresseSite: string): string {
     rétracter, sans motif ni frais, même si vous avez déjà commencé la formation :
     nous ne vous demandons pas d'y renoncer. Il vous suffit de nous adresser une
     déclaration dénuée d'ambiguïté à
-    <a href="mailto:contact@tradingcorp.fr">contact@tradingcorp.fr</a> avant
+    <a href="mailto:mailtradingcorp@gmail.com">mailtradingcorp@gmail.com</a> avant
     l'expiration du délai. Le remboursement intégral intervient au plus tard
     14 jours après réception de votre demande, par le même moyen de paiement.
   </p>
@@ -112,7 +112,7 @@ function corps(c: Commande, adresseSite: string): string {
   <p style="margin-top:26px">
     Les <a href="${adresseSite}/cgv">conditions générales de vente</a> applicables
     sont celles en vigueur au jour de votre commande. Pour toute question, écrivez-nous
-    à <a href="mailto:contact@tradingcorp.fr">contact@tradingcorp.fr</a>.
+    à <a href="mailto:mailtradingcorp@gmail.com">mailtradingcorp@gmail.com</a>.
   </p>
 
   <p style="margin-top:26px;color:#6b6f80;font-size:13px">TradingCorp</p>
@@ -150,7 +150,7 @@ function texteBrut(c: Commande, adresseSite: string): string {
     'VOTRE DROIT DE RÉTRACTATION',
     'Vous disposez de 14 jours à compter d’aujourd’hui pour vous rétracter, sans motif ni frais,',
     'même si vous avez déjà commencé la formation : nous ne vous demandons pas d’y renoncer. Il',
-    'vous suffit de nous adresser une déclaration dénuée d’ambiguïté à contact@tradingcorp.fr',
+    'vous suffit de nous adresser une déclaration dénuée d’ambiguïté à mailtradingcorp@gmail.com',
     'avant l’expiration du délai. Le remboursement intégral intervient au plus tard 14 jours après',
     'réception de votre demande, par le même moyen de paiement.',
     `Un formulaire type est disponible en annexe des conditions générales de vente : ${adresseSite}/cgv`,
@@ -161,7 +161,7 @@ function texteBrut(c: Commande, adresseSite: string): string {
     'rétractation.',
     '',
     `Les conditions générales de vente applicables sont celles en vigueur au jour de votre commande : ${adresseSite}/cgv`,
-    'Pour toute question : contact@tradingcorp.fr',
+    'Pour toute question : mailtradingcorp@gmail.com',
     '',
     'TradingCorp',
   ].join('\n');
