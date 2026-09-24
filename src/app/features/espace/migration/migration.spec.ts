@@ -33,7 +33,7 @@ describe('Migration — lecture de l’export Wix', () => {
       pourcentage(n: number): number;
       identite(email: string): string;
       corrigerIdentite(email: string, valeur: string): void;
-      suggestionRejetee(e: { nom: string; email: string }): boolean;
+      identiteDeduite(e: { nom: string; email: string }): boolean;
       aMigrer(): { email: string; prenom: string; nom: string }[];
     };
     return c;
@@ -138,17 +138,20 @@ describe('Migration — lecture de l’export Wix', () => {
     expect(etat().lectureImpossible()).toBe(true);
   });
 
-  it('refuse d’importer un identifiant comme identité', async () => {
-    // « camille.durand » n'est pas un nom : c'est l'adresse sans le domaine.
-    // Importé tel quel, l'apprenant s'appelait ainsi dans toute l'interface.
+  it('tire une identité lisible d’un identifiant, plutôt que de renoncer', async () => {
+    // Laisser le champ vide revenait à le laisser vide pour de bon : le premier
+    // élève repris est arrivé en base sans prénom ni nom (24/09/2026), et c'est
+    // ce nom-là que `generer-certificat` imprime sur un diplôme.
     await etat().lireFichier(fichier(EXPORT_WIX));
 
-    expect(etat().identite('camille.durand@example.com')).toBe('');
-    expect(etat().identite('moreau.lea42@example.com')).toBe('');
+    expect(etat().identite('camille.durand@example.com')).toBe('Camille Durand');
+    // Les chiffres tombent ; l'ordre reste celui de Wix, d'où l'avertissement.
+    expect(etat().identite('moreau.lea42@example.com')).toBe('Moreau Lea');
+
     const camille = etat()
       .exploitables()
       .find((e) => e.email.startsWith('camille'))!;
-    expect(etat().suggestionRejetee(camille)).toBe(true);
+    expect(etat().identiteDeduite(camille)).toBe(true);
   });
 
   it('garde et capitalise un nom qui en est un', async () => {
@@ -167,7 +170,7 @@ describe('Migration — lecture de l’export Wix', () => {
     expect(camille?.nom).toBe('Durand');
   });
 
-  it('n’invente pas d’identité quand Wix n’en donne aucune', async () => {
+  it('retombe sur l’adresse quand Wix ne donne aucun nom', async () => {
     await etat().lireFichier(
       fichier(
         [
@@ -177,8 +180,10 @@ describe('Migration — lecture de l’export Wix', () => {
       ),
     );
 
-    expect(etat().identite('sans.nom@exemple.fr')).toBe('');
-    expect(etat().suggestionRejetee(etat().exploitables()[0])).toBe(false);
+    // Faute de mieux, la partie gauche de l'adresse : c'est encore ce qui
+    // ressemble le plus à une identité, et l'écran le signale.
+    expect(etat().identite('sans.nom@exemple.fr')).toBe('Sans Nom');
+    expect(etat().identiteDeduite(etat().exploitables()[0])).toBe(true);
   });
 
   it('exprime l’avancement en pourcentage du parcours', async () => {
