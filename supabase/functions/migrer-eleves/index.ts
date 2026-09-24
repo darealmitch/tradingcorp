@@ -48,13 +48,51 @@ function json(req: Request, corps: unknown, statut: number): Response {
   });
 }
 
-/** Mot de passe temporaire : personne ne le lit, il est remplacé par l'élève. */
+/**
+ * Mot de passe temporaire : personne ne le lit, il est remplacé par l'élève.
+ *
+ * IL DOIT SATISFAIRE LA POLITIQUE DE MOT DE PASSE DU PROJET, sans quoi
+ * `createUser` refuse — et la reprise échoue pour TOUS les élèves à la fois.
+ * La version précédente composait le mot de passe avec `toString(36)`, dont
+ * l'alphabet `0-9a-z` ne contient aucune majuscule : le jour où la politique a
+ * exigé les trois classes, plus aucun compte n'a pu être créé. Relevé le
+ * 24/09/2026 sur la reprise d'essai, avec ce message de Supabase :
+ * « Password should contain at least one character of each: abcdefghijklmnopqrstuvwxyz,
+ * ABCDEFGHIJKLMNOPQRSTUVWXYZ, 0123456789. »
+ *
+ * Les symboles sont inclus alors que la politique ne les exige pas
+ * aujourd'hui : en ajouter est sans effet si l'exigence n'existe pas, et évite
+ * la même panne si elle est durcie un jour. Un caractère de chaque classe est
+ * GARANTI plutôt que laissé au hasard — un tirage aléatoire finit toujours par
+ * produire, un jour, un mot de passe sans chiffre.
+ */
+const CLASSES = [
+  'abcdefghijklmnopqrstuvwxyz',
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  '0123456789',
+  '!@#$%^&*-_=+',
+];
+
 function motDePasseJetable(): string {
-  const octets = new Uint32Array(24);
-  crypto.getRandomValues(octets);
-  return Array.from(octets, (o) => o.toString(36))
-    .join('')
-    .slice(0, 32);
+  const alphabet = CLASSES.join('');
+  const tirage = new Uint32Array(32);
+  crypto.getRandomValues(tirage);
+
+  const signes = CLASSES.map((classe, i) => classe[tirage[i] % classe.length]);
+  for (let i = CLASSES.length; i < tirage.length; i++) {
+    signes.push(alphabet[tirage[i] % alphabet.length]);
+  }
+
+  // Mélange de Fisher-Yates. Sans lui, les quatre premiers signes suivraient
+  // toujours l'ordre des classes ci-dessus — une régularité qui n'a aucune
+  // conséquence ici, mais que personne ne doit recopier ailleurs.
+  const rangs = new Uint32Array(signes.length);
+  crypto.getRandomValues(rangs);
+  for (let i = signes.length - 1; i > 0; i--) {
+    const j = rangs[i] % (i + 1);
+    [signes[i], signes[j]] = [signes[j], signes[i]];
+  }
+  return signes.join('');
 }
 
 Deno.serve(async (req) => {
