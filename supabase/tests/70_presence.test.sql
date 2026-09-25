@@ -9,7 +9,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(17);
+select plan(18);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Jeu d'essai : deux élèves, une formatrice, une administratrice.
@@ -110,10 +110,20 @@ select is(
 -- LA LECTURE — l'administration seule
 -- ─────────────────────────────────────────────────────────────────────────────
 
+-- La table est lisible par les comptes connectés, mais la policy n'y laisse
+-- voir aucune ligne à un élève — pas même la sienne, que son export lui rend.
 select is(
-  pg_temp.erreur_sous('e0000000-0000-0000-0000-0000000000a1', 'select count(*) from public.presences'),
-  '42501',
-  'présence — un élève ne peut pas lire la présence des autres'
+  pg_temp.sous('e0000000-0000-0000-0000-0000000000a1', 'select count(*)::text from public.presences'),
+  '0',
+  'présence — un élève ne voit la présence de personne'
+);
+
+-- Contre-épreuve : le zéro ci-dessus vient bien de la policy, pas d'une table
+-- vide.
+select is(
+  pg_temp.sous('e0000000-0000-0000-0000-0000000000ad', 'select count(*)::text from public.presences'),
+  '1',
+  'présence — l''administratrice, elle, lit la table'
 );
 
 select is(
