@@ -186,7 +186,7 @@ select is(
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 20260925120000 — l'upsert de la position de lecture réécrit ses clés
+-- 20260925115251 — l'upsert de la position de lecture réécrit ses clés
 --
 -- Le client sauvegarde par `upsert(..., { onConflict: 'id_profil,id_lecon' })`,
 -- que PostgREST traduit en `ON CONFLICT DO UPDATE SET` réécrivant CHAQUE
@@ -202,7 +202,7 @@ select is(
 select ok(
   has_column_privilege('authenticated', 'public.progression_lecons', 'id_profil', 'UPDATE')
   and has_column_privilege('authenticated', 'public.progression_lecons', 'id_lecon', 'UPDATE'),
-  '20260925120000 — un élève peut réécrire les clés de conflit de sa progression'
+  '20260925115251 — un élève peut réécrire les clés de conflit de sa progression'
 );
 
 -- Le pendant du précédent, et le plus important des deux : rétablir l'upsert ne
@@ -211,7 +211,7 @@ select ok(
 -- n'est écrite que par `terminer_lecon()` ou par la correction des quiz.
 select ok(
   not has_column_privilege('authenticated', 'public.progression_lecons', 'terminee_le', 'UPDATE'),
-  '20260925120000 — terminee_le reste hors de portée du client'
+  '20260925115251 — terminee_le reste hors de portée du client'
 );
 
 select * from finish();
