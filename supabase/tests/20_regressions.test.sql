@@ -14,7 +14,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(11);
+select plan(13);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- P-02 — majorité exigée à la création du compte
@@ -183,6 +183,35 @@ select is(
     'select * from public.prochaines_lecons(3)'),
   null::text,
   '20260922100000 — prochaines_lecons s''exécute pour un élève sans refus de privilège'
+);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 20260925120000 — l'upsert de la position de lecture réécrit ses clés
+--
+-- Le client sauvegarde par `upsert(..., { onConflict: 'id_profil,id_lecon' })`,
+-- que PostgREST traduit en `ON CONFLICT DO UPDATE SET` réécrivant CHAQUE
+-- colonne du payload, clés comprises. Sans UPDATE sur ces deux colonnes, 42501
+-- à chaque seconde de vidéo — et en silence, cette écriture étant la seule dont
+-- l'échec ne remonte pas à l'appelant. 336 fois en quatorze heures sur le
+-- premier élève repris de Wix, le 24/09/2026.
+--
+-- Contrôle STRUCTUREL et non comportemental : il ne suppose aucune leçon en
+-- base, donc il tient sur une base vierge comme en production.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+select ok(
+  has_column_privilege('authenticated', 'public.progression_lecons', 'id_profil', 'UPDATE')
+  and has_column_privilege('authenticated', 'public.progression_lecons', 'id_lecon', 'UPDATE'),
+  '20260925120000 — un élève peut réécrire les clés de conflit de sa progression'
+);
+
+-- Le pendant du précédent, et le plus important des deux : rétablir l'upsert ne
+-- doit pas rouvrir la colonne qui marque une leçon terminée. Accordée au
+-- client, elle ouvrirait tout le parcours d'un seul UPDATE — `terminee_le`
+-- n'est écrite que par `terminer_lecon()` ou par la correction des quiz.
+select ok(
+  not has_column_privilege('authenticated', 'public.progression_lecons', 'terminee_le', 'UPDATE'),
+  '20260925120000 — terminee_le reste hors de portée du client'
 );
 
 select * from finish();

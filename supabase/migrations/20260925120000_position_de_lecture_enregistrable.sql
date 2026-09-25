@@ -1,0 +1,39 @@
+-- La position de lecture vidéo ne s'enregistrait plus : 42501 à chaque essai.
+--
+-- SYMPTÔME — 336 incidents « enregistrement de la position de lecture », code
+-- 42501, entre le 24/09/2026 22:19 et le 25/09/2026 12:10, sur les deux seules
+-- sessions d'élève qu'ait connues la plateforme. Le premier ancien élève repris
+-- de Wix s'est connecté à 22:18 : quatre minutes plus tard, chaque seconde de
+-- vidéo qu'il regardait était perdue. Rien ne le lui disait — cette écriture
+-- est la seule dont l'échec ne remonte pas à l'appelant, par dessein (elle part
+-- toutes les quelques secondes, une alerte par intermittence réseau serait pire
+-- que le défaut). Sans la table `incidents`, personne ne l'aurait su.
+--
+-- CAUSE — le client sauvegarde par un UPSERT :
+--
+--   upsert({ id_profil, id_lecon, position_video_s }, { onConflict: 'id_profil,id_lecon' })
+--
+-- que PostgREST traduit en `INSERT … ON CONFLICT DO UPDATE SET` réécrivant
+-- CHAQUE colonne du payload — les clés de conflit comprises. Il faut donc le
+-- privilège UPDATE sur `id_profil` et `id_lecon`, que le client n'avait pas :
+-- depuis le 16/07/2026, il ne dispose de l'écriture que sur `position_video_s`
+-- et `video_terminee_le`.
+--
+-- Le découpage colonne par colonne était juste, et le reste : `terminee_le`
+-- n'est écrite que par `terminer_lecon()` ou par la correction des quiz —
+-- accordée au client, elle ouvrirait tout le parcours d'un seul UPDATE. Ce qui
+-- manquait, ce sont les deux colonnes que l'upsert réécrit à l'identique.
+--
+-- CE QUE CELA N'OUVRE PAS — un élève peut désormais réécrire `id_profil` et
+-- `id_lecon` de SES lignes, et rien de plus :
+--   • `progression_update_self` borne l'UPDATE à `id_profil = auth.uid()` en
+--     USING comme en WITH CHECK : il ne peut ni toucher la progression d'un
+--     autre, ni céder la sienne ;
+--   • `terminee_le` lui reste interdite (vérifié : has_column_privilege = false).
+-- Déplacer sa propre position d'une leçon à l'autre est donc le seul effet
+-- nouveau, et il ne débloque rien.
+--
+-- Éprouvé avant application sous l'identité réelle d'un élève, en transaction
+-- annulée : 42501 sans le grant, OK avec.
+
+grant update (id_profil, id_lecon) on public.progression_lecons to authenticated;
