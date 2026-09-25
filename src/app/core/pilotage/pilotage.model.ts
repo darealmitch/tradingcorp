@@ -61,3 +61,23 @@ export interface CertificatEmis {
   profils: { prenom: string; nom: string } | null;
   formations: { titre: string } | null;
 }
+
+/**
+ * Élève ayant donné signe de vie ces dernières 24 heures (`eleves_connectes`).
+ *
+ * L'ancienneté du dernier signal arrive déjà calculée, en secondes, et non
+ * sous forme d'heure : c'est le serveur qui la mesure, l'horloge du poste qui
+ * consulte ne peut donc pas la fausser.
+ */
+export interface EleveConnecte {
+  id_profil: string;
+  prenom: string;
+  nom: string;
+  est_test: boolean;
+  /** Une inscription active existe — l'accès au contenu est ouvert. */
+  inscrit: boolean;
+  /** Début de la visite en cours, ou de la dernière. */
+  depuis: string;
+  /** Secondes écoulées depuis le dernier signal, à l'instant de la lecture. */
+  inactif_depuis_s: number;
+}

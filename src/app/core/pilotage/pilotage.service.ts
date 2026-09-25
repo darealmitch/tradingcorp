@@ -4,6 +4,7 @@ import {
   ApprenantSuivi,
   CertificatEmis,
   DecompteApprenants,
+  EleveConnecte,
   InscriptionRecente,
 } from './pilotage.model';
 
@@ -107,6 +108,20 @@ export class PilotageService {
     return this.acces.lire<ApprenantSuivi[]>(
       'lecture des apprenants',
       this.acces.appel('suivi_apprenants', { p_limite: limite, p_decalage: decalage }),
+      [],
+    );
+  }
+
+  /**
+   * Élèves présents, ou passés ces dernières 24 heures, du plus récent au plus
+   * ancien. Réservé aux administrateurs : la RPC refuse tout autre appelant,
+   * formateurs compris — l'écran reçoit alors une liste vide et l'incident est
+   * signalé, comme pour `suivreApprenants()`.
+   */
+  async elevesConnectes(): Promise<EleveConnecte[]> {
+    return this.acces.lire<EleveConnecte[]>(
+      'lecture des élèves connectés',
+      this.acces.appel('eleves_connectes'),
       [],
     );
   }

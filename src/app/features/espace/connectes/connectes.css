@@ -1,0 +1,41 @@
+/* Pastille « en direct » : la couleur de l'état acquis, comme le badge
+   « Accès actif », et une onde lente qui dit que la liste vit. */
+.pastille-direct {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--up-etat);
+}
+
+.pastille-direct::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--up-etat);
+  animation: onde-direct 2.4s ease-out infinite;
+}
+
+@keyframes onde-direct {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pastille-direct::after {
+    animation: none;
+  }
+}
+
+.actualisation {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  text-align: right;
+}

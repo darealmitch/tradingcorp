@@ -40,6 +40,7 @@ const ELEMENTS_NAV: ElementNav[] = [
     lien: '/espace/apprenants',
     roles: ['formateur', 'admin'],
   },
+  { libelle: 'Connectés', icone: 'activite', lien: '/espace/connectes', roles: ['admin'] },
   {
     libelle: 'Modération',
     icone: 'moderation',

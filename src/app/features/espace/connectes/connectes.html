@@ -1,0 +1,107 @@
+<header class="page-tete">
+  <h1 class="page-titre">Élèves connectés</h1>
+  <p class="page-sous">
+    Qui suit la formation en ce moment. La liste s'actualise d'elle-même toutes les 30 secondes ; un
+    élève en sort peu après avoir quitté le site ou laissé son onglet en arrière-plan.
+  </p>
+</header>
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">
+      <span class="pastille-direct" aria-hidden="true"></span>
+      En ligne maintenant
+    </h2>
+    @if (!chargement()) {
+      <span class="badge-statut" [class.est-succes]="enLigne().length > 0">
+        {{ enLigne().length }} en ligne
+      </span>
+    }
+  </div>
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (enLigne().length === 0) {
+    <p class="cellule-discrete">Aucun élève en ligne pour l'instant.</p>
+  } @else {
+    <div class="tableau-defile">
+      <table class="tableau tableau-en-ligne">
+        <thead>
+          <tr>
+            <th>Élève</th>
+            <th>Formation</th>
+            <th>Connecté depuis</th>
+            <th>Dernier signe</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (lu of enLigne(); track lu.eleve.id_profil) {
+            <tr>
+              <td>
+                {{ lu.eleve.prenom }} {{ lu.eleve.nom }}
+                @if (lu.eleve.est_test) {
+                  <span class="badge-statut">Test</span>
+                }
+              </td>
+              <td>
+                @if (lu.eleve.inscrit) {
+                  <span class="badge-statut est-succes">Accès actif</span>
+                } @else {
+                  <span class="badge-statut">Sans accès</span>
+                }
+              </td>
+              <td class="cellule-discrete">{{ heure(lu.eleve.depuis) }}</td>
+              <td class="cellule-discrete">{{ lu.presence.libelle }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Vus ces dernières 24 heures</h2>
+  </div>
+  @if (chargement()) {
+    <p class="cellule-discrete">Chargement…</p>
+  } @else if (recents().length === 0) {
+    <p class="cellule-discrete">Aucun autre élève n'est passé ces dernières 24 heures.</p>
+  } @else {
+    <div class="tableau-defile">
+      <table class="tableau tableau-recents">
+        <thead>
+          <tr>
+            <th>Élève</th>
+            <th>Formation</th>
+            <th>Dernière activité</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (lu of recents(); track lu.eleve.id_profil) {
+            <tr>
+              <td>
+                {{ lu.eleve.prenom }} {{ lu.eleve.nom }}
+                @if (lu.eleve.est_test) {
+                  <span class="badge-statut">Test</span>
+                }
+              </td>
+              <td>
+                @if (lu.eleve.inscrit) {
+                  <span class="badge-statut est-succes">Accès actif</span>
+                } @else {
+                  <span class="badge-statut">Sans accès</span>
+                }
+              </td>
+              <td class="cellule-discrete">{{ lu.presence.libelle }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (actualiseLe(); as date) {
+  <p class="actualisation cellule-discrete">Actualisé à {{ heureActualisation(date) }}</p>
+}
