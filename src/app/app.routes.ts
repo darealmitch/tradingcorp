@@ -200,6 +200,13 @@ export const routes: Routes = [
         title: 'TradingCorp — Apprenants',
       },
       {
+        path: 'connectes',
+        loadComponent: () =>
+          import('./features/espace/connectes/connectes').then((m) => m.Connectes),
+        canActivate: [roleGuard('admin')],
+        title: 'TradingCorp — Élèves connectés',
+      },
+      {
         path: 'moderation',
         loadComponent: () =>
           import('./features/espace/moderation/moderation').then((m) => m.Moderation),

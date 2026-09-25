@@ -431,6 +431,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      presences: {
+        Row: {
+          depuis: string;
+          id_profil: string;
+          vu_le: string;
+        };
+        Insert: {
+          depuis?: string;
+          id_profil: string;
+          vu_le?: string;
+        };
+        Update: {
+          depuis?: string;
+          id_profil?: string;
+          vu_le?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'presences_id_profil_fkey';
+            columns: ['id_profil'];
+            isOneToOne: true;
+            referencedRelation: 'profils';
+            referencedColumns: ['id_profil'];
+          },
+        ];
+      };
       profils: {
         Row: {
           date_creation: string;
@@ -772,6 +798,18 @@ export type Database = {
         Args: { p_id_formation: string; p_id_profil: string };
         Returns: string;
       };
+      eleves_connectes: {
+        Args: never;
+        Returns: {
+          depuis: string;
+          est_test: boolean;
+          id_profil: string;
+          inactif_depuis_s: number;
+          inscrit: boolean;
+          nom: string;
+          prenom: string;
+        }[];
+      };
       est_apprenant: { Args: { p_id_profil: string }; Returns: boolean };
       etats_lecons: {
         Args: { p_id_section: string };
@@ -895,6 +933,7 @@ export type Database = {
         Args: { p_motif?: string; p_reference: string };
         Returns: boolean;
       };
+      signaler_presence: { Args: never; Returns: undefined };
       suivi_apprenants: {
         Args: { p_decalage?: number; p_limite?: number };
         Returns: {

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
+import { PresenceService } from './core/presence/presence.service';
 import { UrlCanoniqueService } from './core/seo/url-canonique.service';
 import { Footer } from './layout/footer/footer';
 import { Header } from './layout/header/header';
@@ -23,6 +24,9 @@ export class App {
     // injecter un service pour son seul effet de bord se lit mal, et se
     // supprime par mégarde au premier nettoyage d'imports.
     inject(UrlCanoniqueService).demarrer();
+    // Le signal de présence des élèves, pour l'écran « Connectés » : ici et
+    // non dans l'espace, car le lecteur de leçons vit hors de son gabarit.
+    inject(PresenceService).demarrer();
   }
 
   /** Le footer marketing n'a pas sa place dans les pages connectées (espace + parcours). */
