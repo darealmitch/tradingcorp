@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ApprenantSuivi } from '../../../core/pilotage/pilotage.model';
 import { PilotageService } from '../../../core/pilotage/pilotage.service';
 import { BarreProgression } from '../../../shared/ui/barre-progression';
@@ -6,8 +7,8 @@ import { BarreProgression } from '../../../shared/ui/barre-progression';
 @Component({
   selector: 'app-apprenants',
   templateUrl: './apprenants.html',
-  styleUrl: '../espace-pages.css',
-  imports: [BarreProgression],
+  styleUrls: ['../espace-pages.css', './apprenants.css'],
+  imports: [BarreProgression, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Apprenants {

@@ -81,3 +81,43 @@ export interface EleveConnecte {
   /** Secondes écoulées depuis le dernier signal, à l'instant de la lecture. */
   inactif_depuis_s: number;
 }
+
+/**
+ * Une leçon du programme, vue depuis le parcours d'un élève
+ * (`parcours_apprenant`) — mêmes définitions que celles qui servent à l'élève.
+ */
+export interface LeconSuivie {
+  id_section: string;
+  titre_module: string;
+  position_module: number;
+  id_lecon: string;
+  titre_lecon: string;
+  position_lecon: number;
+  type_lecon: 'article' | 'video' | 'quiz';
+  /** Vidéo vue jusqu'au bout : la leçon est entamée, pas encore validée. */
+  video_terminee_le: string | null;
+  /** Leçon validée : c'est elle, et elle seule, qui compte dans la progression. */
+  terminee_le: string | null;
+  /** Tentatives au quiz de la leçon ; 0 hors quiz. */
+  nombre_tentatives: number;
+  meilleur_score: number | null;
+  /** Score requis pour réussir le quiz ; null hors quiz. */
+  score_requis: number | null;
+}
+
+/** Ce que l'équipe sait d'un élève, à côté de sa progression leçon par leçon. */
+export interface FicheApprenant {
+  id_profil: string;
+  prenom: string;
+  nom: string;
+  est_test: boolean;
+  date_creation: string;
+  /** L'inscription active si elle existe, sinon la plus récente. */
+  inscription: {
+    statut: 'active' | 'revoquee';
+    date_inscription: string;
+    source: 'paiement' | 'manuel';
+    formation: string;
+  } | null;
+  certificat: { numero: string; date_obtention: string } | null;
+}

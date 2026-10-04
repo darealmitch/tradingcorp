@@ -1,0 +1,20 @@
+/* Le nom ouvre le parcours détaillé : il doit se lire comme un lien sans
+   alourdir le tableau. */
+.lien-parcours {
+  color: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 3px;
+}
+
+.lien-parcours:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
+.lien-parcours:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

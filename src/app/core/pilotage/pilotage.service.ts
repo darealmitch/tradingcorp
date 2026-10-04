@@ -5,7 +5,9 @@ import {
   CertificatEmis,
   DecompteApprenants,
   EleveConnecte,
+  FicheApprenant,
   InscriptionRecente,
+  LeconSuivie,
 } from './pilotage.model';
 
 /**
@@ -110,6 +112,83 @@ export class PilotageService {
       this.acces.appel('suivi_apprenants', { p_limite: limite, p_decalage: decalage }),
       [],
     );
+  }
+
+  /**
+   * Parcours d'un élève, leçon par leçon, dans l'ordre du programme.
+   *
+   * Lu par une RPC et non recomposé ici : les fonctions qui calculent l'état
+   * d'une leçon (`etats_lecons`, `etats_modules`) ne savent le faire que pour
+   * la personne connectée. `parcours_apprenant` reprend leurs définitions pour
+   * un élève donné, et un test vérifie qu'elle rend les mêmes totaux que
+   * `ma_progression` — l'équipe et l'élève lisent la même progression.
+   */
+  async parcoursApprenant(idProfil: string): Promise<LeconSuivie[]> {
+    return this.acces.lire<LeconSuivie[]>(
+      'lecture du parcours d’un apprenant',
+      this.acces.appel('parcours_apprenant', { p_id_profil: idProfil }),
+      [],
+    );
+  }
+
+  /**
+   * Identité, accès et certificat d'un élève. Trois lectures directes : la RLS
+   * ouvre déjà ces tables au staff (`*_select_self_ou_staff`).
+   */
+  async ficheApprenant(idProfil: string): Promise<FicheApprenant | null> {
+    const [profil, inscriptions, certificats] = await Promise.all([
+      this.acces.lire<Omit<FicheApprenant, 'inscription' | 'certificat'> | null>(
+        'lecture du profil d’un apprenant',
+        this.acces
+          .table('profils')
+          .select('id_profil, prenom, nom, est_test, date_creation')
+          .eq('id_profil', idProfil)
+          .maybeSingle(),
+        null,
+      ),
+      this.acces.lire<
+        {
+          statut: 'active' | 'revoquee';
+          date_inscription: string;
+          source: 'paiement' | 'manuel';
+          formations: { titre: string } | null;
+        }[]
+      >(
+        'lecture des inscriptions d’un apprenant',
+        this.acces
+          .table('inscriptions')
+          .select('statut, date_inscription, source, formations(titre)')
+          .eq('id_profil', idProfil)
+          .order('date_inscription', { ascending: false }),
+        [],
+      ),
+      this.acces.lire<{ numero: string; date_obtention: string }[]>(
+        'lecture des certificats d’un apprenant',
+        this.acces
+          .table('certificats')
+          .select('numero, date_obtention')
+          .eq('id_profil', idProfil)
+          .order('date_obtention', { ascending: false })
+          .limit(1),
+        [],
+      ),
+    ]);
+    if (!profil) {
+      return null;
+    }
+    const inscription = inscriptions.find((i) => i.statut === 'active') ?? inscriptions[0] ?? null;
+    return {
+      ...profil,
+      inscription: inscription
+        ? {
+            statut: inscription.statut,
+            date_inscription: inscription.date_inscription,
+            source: inscription.source,
+            formation: inscription.formations?.titre ?? 'Formation',
+          }
+        : null,
+      certificat: certificats[0] ?? null,
+    };
   }
 
   /**

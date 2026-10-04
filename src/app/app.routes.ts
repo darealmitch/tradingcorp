@@ -200,6 +200,15 @@ export const routes: Routes = [
         title: 'TradingCorp — Apprenants',
       },
       {
+        path: 'apprenants/:id',
+        loadComponent: () =>
+          import('./features/espace/apprenants/parcours-apprenant').then(
+            (m) => m.ParcoursApprenant,
+          ),
+        canActivate: [roleGuard('formateur', 'admin')],
+        title: 'TradingCorp — Parcours d’un apprenant',
+      },
+      {
         path: 'connectes',
         loadComponent: () =>
           import('./features/espace/connectes/connectes').then((m) => m.Connectes),

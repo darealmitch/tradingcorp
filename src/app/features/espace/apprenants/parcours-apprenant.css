@@ -1,0 +1,167 @@
+/* Parcours d'un élève, vu par l'équipe. Les panneaux, badges et tuiles
+   viennent des styles partagés de l'espace ; ne s'ajoute ici que ce qui est
+   propre à cette page. */
+
+.retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.retour:hover {
+  color: var(--text);
+}
+
+/* La flèche du jeu d'icônes pointe vers l'avant : on la retourne. */
+.retour app-icone {
+  transform: rotate(180deg);
+}
+
+.page-titre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-sous .badge-statut {
+  margin-right: 6px;
+}
+
+/* ===== Situation ===== */
+
+.situation {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px 28px;
+  margin: 22px 0 0;
+}
+
+.situation dt {
+  margin-bottom: 4px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.situation dd {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.situation .badge-statut {
+  margin-left: 6px;
+}
+
+/* Un quiz qui bloque attend une action de l'équipe : l'ambre des statuts
+   « en attente », pas le rouge de l'échec. */
+.alerte.est-attention {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 0;
+  border-color: color-mix(in srgb, var(--attention) 50%, transparent);
+  color: var(--attention-text);
+}
+
+/* ===== Modules ===== */
+
+.modules {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.module {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.module[open] {
+  border-color: var(--line-strong);
+}
+
+.module summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 14px 18px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.module summary::-webkit-details-marker {
+  display: none;
+}
+
+.module summary:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  border-radius: 14px;
+}
+
+.module-titre {
+  flex: 1;
+  min-width: 200px;
+  font-weight: 500;
+}
+
+.module-compte {
+  min-width: 56px;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.lecons {
+  margin: 0;
+  padding: 4px 18px 14px;
+  list-style: none;
+}
+
+.lecon {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.lecon-icone {
+  color: var(--muted);
+}
+
+.lecon.est-terminee .lecon-icone {
+  color: var(--up-text);
+}
+
+.lecon.est-entamee .lecon-icone {
+  color: var(--attention-text);
+}
+
+.lecon-detail {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .lecon {
+    grid-template-columns: 22px 1fr;
+  }
+
+  .lecon-detail {
+    grid-column: 2;
+    text-align: left;
+  }
+}

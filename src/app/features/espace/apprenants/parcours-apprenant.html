@@ -1,0 +1,181 @@
+<a class="retour" routerLink="/espace/apprenants">
+  <app-icone nom="fleche" [taille]="16" />
+  Apprenants
+</a>
+
+@if (chargement()) {
+  <p class="cellule-discrete">Chargement du parcours…</p>
+} @else if (fiche(); as eleve) {
+  <header class="page-tete">
+    <h1 class="page-titre">
+      {{ eleve.prenom }} {{ eleve.nom }}
+      @if (eleve.est_test) {
+        <span class="badge-statut">Test</span>
+      }
+    </h1>
+    <p class="page-sous">
+      @if (eleve.inscription; as inscription) {
+        @if (inscription.statut === 'active') {
+          <span class="badge-statut est-succes">Accès actif</span>
+        } @else {
+          <span class="badge-statut est-echec">Accès révoqué</span>
+        }
+        {{ inscription.formation }} — inscrit le {{ date(inscription.date_inscription) }} ({{
+          inscription.source === 'paiement' ? 'achat' : 'ajout manuel'
+        }}).
+      } @else {
+        <span class="badge-statut">Sans accès</span>
+        Aucune inscription : pas encore de parcours.
+      }
+      Compte créé le {{ date(eleve.date_creation) }}.
+    </p>
+  </header>
+
+  @let suivi = lecture();
+  @if (suivi.total > 0) {
+    <div class="grille-stats">
+      <app-stat-card
+        icone="tendance"
+        libelle="Progression"
+        [valeur]="suivi.pourcentage + ' %'"
+        [detail]="validees(suivi.terminees, suivi.total)"
+      />
+      <app-stat-card
+        icone="contenus"
+        libelle="Modules terminés"
+        [valeur]="suivi.modulesTermines + ' / ' + suivi.modules.length"
+      />
+      <app-stat-card
+        icone="liste"
+        libelle="Reste à faire"
+        [valeur]="pluriel(suivi.restantes, 'leçon')"
+      />
+      <app-stat-card
+        icone="diplome"
+        libelle="Certificat"
+        [valeur]="eleve.certificat ? 'Obtenu' : 'Pas encore'"
+        [detail]="eleve.certificat ? 'n° ' + eleve.certificat.numero : null"
+      />
+    </div>
+
+    <section class="panneau">
+      <div class="panneau-tete">
+        <h2 class="panneau-titre">Où en est {{ eleve.prenom }} ?</h2>
+        <span class="cellule-discrete">{{ suivi.terminees }} / {{ suivi.total }}</span>
+      </div>
+      <app-barre-progression [valeur]="suivi.pourcentage" />
+
+      <dl class="situation">
+        @if (suivi.prochaine; as prochaine) {
+          <div>
+            <dt>Module en cours</dt>
+            <dd>
+              Module {{ prochaine.module.position }} — {{ prochaine.module.titre }}
+              <span class="cellule-discrete">
+                ({{ prochaine.module.terminees }} / {{ prochaine.module.total }} leçons)
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>Prochaine étape</dt>
+            <dd>
+              {{ prochaine.lecon.titre_lecon }}
+              <span class="badge-statut">{{ libelleType(prochaine.lecon) }}</span>
+              @if (prochaine.lecon.etat === 'entamee') {
+                <span class="cellule-discrete">— vidéo vue, leçon pas encore validée</span>
+              }
+            </dd>
+          </div>
+        } @else {
+          <div>
+            <dt>Formation</dt>
+            <dd>
+              <span class="badge-statut est-succes">Terminée</span>
+              Toutes les leçons du programme sont validées.
+            </dd>
+          </div>
+        }
+        <div>
+          <dt>Dernière leçon validée</dt>
+          <dd>
+            @if (suivi.derniereValidation; as derniere) {
+              {{ derniere.titre_lecon }}
+              <span class="cellule-discrete">— le {{ date(derniere.terminee_le) }}</span>
+            } @else {
+              <span class="cellule-discrete">Aucune leçon validée pour l'instant.</span>
+            }
+          </dd>
+        </div>
+        @if (eleve.certificat; as certificat) {
+          <div>
+            <dt>Certificat</dt>
+            <dd>n° {{ certificat.numero }}, obtenu le {{ date(certificat.date_obtention) }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if (suivi.quizBloquant; as quiz) {
+        <p class="alerte est-attention">
+          <app-icone nom="alerte" [taille]="16" />
+          Bloque sur le quiz « {{ quiz.titre_lecon }} » : {{ detailQuiz(quiz) }}.
+        </p>
+      }
+    </section>
+
+    <section class="panneau">
+      <div class="panneau-tete">
+        <h2 class="panneau-titre">Programme, module par module</h2>
+      </div>
+      <div class="modules">
+        @for (module of suivi.modules; track module.id_section) {
+          <details
+            class="module"
+            [open]="module.id_section === suivi.prochaine?.module?.id_section"
+          >
+            <summary>
+              <span class="module-titre"> Module {{ module.position }} — {{ module.titre }} </span>
+              <span
+                class="badge-statut"
+                [class.est-succes]="module.etat === 'termine'"
+                [class.est-attente]="module.etat === 'en_cours'"
+              >
+                {{ libelleModule(module.etat) }}
+              </span>
+              <span class="module-compte">{{ module.terminees }} / {{ module.total }}</span>
+            </summary>
+            <ul class="lecons">
+              @for (lecon of module.lecons; track lecon.id_lecon) {
+                <li
+                  class="lecon"
+                  [class.est-terminee]="lecon.etat === 'terminee'"
+                  [class.est-entamee]="lecon.etat === 'entamee'"
+                >
+                  <span class="lecon-icone"
+                    ><app-icone [nom]="icone(lecon.etat)" [taille]="14"
+                  /></span>
+                  <span class="lecon-titre">{{ lecon.titre_lecon }}</span>
+                  <span class="lecon-detail">
+                    @if (lecon.etat === 'terminee') {
+                      Validée le {{ date(lecon.terminee_le) }}
+                    } @else if (lecon.etat === 'entamee') {
+                      Vidéo vue, à valider
+                    } @else {
+                      À faire
+                    }
+                    @if (detailQuiz(lecon); as quiz) {
+                      · {{ quiz }}
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      </div>
+    </section>
+  }
+} @else {
+  <p class="cellule-discrete">
+    Cet apprenant est introuvable : son compte a peut-être été supprimé.
+  </p>
+}
