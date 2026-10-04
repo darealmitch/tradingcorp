@@ -91,30 +91,36 @@ export type Database = {
           contenu: string;
           date_creation: string;
           date_modification: string;
+          est_prive: boolean;
           id_commentaire: string;
           id_lecon: string;
           id_parent: string | null;
           id_profil: string;
+          par_equipe: boolean;
           statut: string;
         };
         Insert: {
           contenu: string;
           date_creation?: string;
           date_modification?: string;
+          est_prive?: boolean;
           id_commentaire?: string;
           id_lecon: string;
           id_parent?: string | null;
           id_profil: string;
+          par_equipe?: boolean;
           statut?: string;
         };
         Update: {
           contenu?: string;
           date_creation?: string;
           date_modification?: string;
+          est_prive?: boolean;
           id_commentaire?: string;
           id_lecon?: string;
           id_parent?: string | null;
           id_profil?: string;
+          par_equipe?: boolean;
           statut?: string;
         };
         Relationships: [];
@@ -811,6 +817,7 @@ export type Database = {
         }[];
       };
       est_apprenant: { Args: { p_id_profil: string }; Returns: boolean };
+      est_auteur_du_message: { Args: { p_id_commentaire: string }; Returns: boolean };
       etats_lecons: {
         Args: { p_id_section: string };
         Returns: {
@@ -904,6 +911,23 @@ export type Database = {
         Returns: undefined;
       };
       numero_certificat: { Args: never; Returns: string };
+      parcours_apprenant: {
+        Args: { p_id_profil: string };
+        Returns: {
+          id_lecon: string;
+          id_section: string;
+          meilleur_score: number;
+          nombre_tentatives: number;
+          position_lecon: number;
+          position_module: number;
+          score_requis: number;
+          terminee_le: string;
+          titre_lecon: string;
+          titre_module: string;
+          type_lecon: string;
+          video_terminee_le: string;
+        }[];
+      };
       prochaines_lecons: {
         Args: { p_limite?: number };
         Returns: {
@@ -928,6 +952,10 @@ export type Database = {
           id_question: string;
           id_reponse: string;
         }[];
+      };
+      repondre_en_equipe: {
+        Args: { p_contenu: string; p_id_commentaire: string; p_prive?: boolean };
+        Returns: string;
       };
       revoquer_pour_remboursement: {
         Args: { p_motif?: string; p_reference: string };

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   AvisEnAttente,
   CommentaireEnAttente,
@@ -10,7 +11,7 @@ import { Icone } from '../../../shared/ui/icone';
   selector: 'app-moderation',
   templateUrl: './moderation.html',
   styleUrls: ['../espace-pages.css', './moderation.css'],
-  imports: [Icone],
+  imports: [Icone, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Moderation {

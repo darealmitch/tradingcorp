@@ -141,3 +141,61 @@
 .commentaire-boutons button:hover {
   color: inherit;
 }
+
+/* ===== Réponses de l'équipe =====
+   Une réponse de l'équipe se reconnaît à son badge ; une réponse PRIVÉE, elle,
+   doit se distinguer au premier regard d'une réponse publique : l'élève doit
+   comprendre qu'il s'agit d'un échange que les autres ne lisent pas. D'où un
+   encadré teinté, une mention en tête et une précision en pied, dans la teinte
+   violette du thème, qu'aucun autre élément du fil n'emploie. */
+
+.badge-equipe {
+  padding: 1px 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.commentaire.est-privee {
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--violet) 45%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--violet) 8%, transparent);
+}
+
+.mention-privee,
+.saisie-privee {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  color: var(--violet-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.saisie-privee {
+  align-items: flex-start;
+  margin-bottom: 8px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.pied-prive {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.commentaire-saisie.est-privee textarea {
+  border-color: color-mix(in srgb, var(--violet) 55%, transparent);
+}
+
+.commentaire-boutons .bouton-prive {
+  color: var(--violet-text);
+}

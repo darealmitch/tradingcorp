@@ -58,7 +58,11 @@ function creerService(lignes: Commentaire[] = []) {
 
   const acces = {
     table: () => builder(),
-    appel: () => builder(),
+    appel: (nom: string, parametres?: Record<string, unknown>) => {
+      chaineCourante.push(`rpc:${nom}`);
+      chargeCourante = parametres;
+      return builder();
+    },
     lire: () => Promise.resolve(lignes),
     compter: () => Promise.resolve(0),
     idUtilisateur: () => Promise.resolve('moi'),
@@ -87,6 +91,8 @@ function unCommentaire(champs: Partial<Commentaire> = {}): Commentaire {
     date_creation: '2026-08-01T10:00:00Z',
     id_profil: 'moi',
     profils: { prenom: 'Ada', nom: 'Lovelace' },
+    par_equipe: false,
+    est_prive: false,
     ...champs,
   };
 }
@@ -158,6 +164,33 @@ describe('CommunauteService', () => {
       await service.publierCommentaire('l-1', 'Ma réponse', 'c-9');
 
       expect(appels[0].charge?.['id_parent']).toBe('c-9');
+    });
+  });
+
+  describe('réponse de l’équipe', () => {
+    // L'équipe ne passe pas par la table : la règle d'écriture des élèves
+    // exige une inscription et met tout en modération. Seule la fonction
+    // serveur pose les marqueurs « équipe » et « privée ».
+    it('passe par repondre_en_equipe, jamais par la table', async () => {
+      const { service, appels } = creerService();
+
+      await service.repondreEnEquipe('c-9', '  Réponse privée  ', true);
+
+      expect(appels[0].chaine).toEqual(['rpc:repondre_en_equipe']);
+      expect(appels[0].charge).toEqual({
+        p_id_commentaire: 'c-9',
+        p_contenu: 'Réponse privée',
+        p_prive: true,
+      });
+    });
+
+    it('rend le refus du serveur à l’écran', async () => {
+      const { service, refuser } = creerService();
+      refuser('Ce message n’est pas encore publié : approuve-le d’abord, ou réponds en privé');
+
+      expect(await service.repondreEnEquipe('c-9', 'Publique', false)).toContain(
+        'réponds en privé',
+      );
     });
   });
 

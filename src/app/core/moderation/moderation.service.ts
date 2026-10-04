@@ -3,10 +3,12 @@ import { AccesDonnees } from '../supabase/acces-donnees';
 
 export interface CommentaireEnAttente {
   id_commentaire: string;
+  id_lecon: string;
   contenu: string;
   date_creation: string;
   profils: { prenom: string; nom: string } | null;
-  lecons: { titre: string } | null;
+  /** `id_section` sert au lien vers le fil, dans la leçon. */
+  lecons: { titre: string; id_section: string } | null;
 }
 
 export interface AvisEnAttente {
@@ -27,7 +29,10 @@ export class ModerationService {
       'lecture des commentaires à modérer',
       this.acces
         .table('commentaires')
-        .select('id_commentaire, contenu, date_creation, profils(prenom, nom), lecons(titre)')
+        .select(
+          'id_commentaire, id_lecon, contenu, date_creation, profils(prenom, nom), ' +
+            'lecons(titre, id_section)',
+        )
         .eq('statut', 'en_attente')
         .order('date_creation', { ascending: false }),
       [],

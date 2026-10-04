@@ -1,7 +1,8 @@
 <header class="page-tete">
   <h1 class="page-titre">Modération</h1>
   <p class="page-sous">
-    Commentaires et avis en attente d'approbation avant d'être visibles par les apprenants.
+    Commentaires et avis en attente d'approbation avant d'être visibles par les apprenants. Pour
+    répondre à un élève, en public ou en privé, ouvre le message dans sa leçon.
   </p>
 </header>
 
@@ -34,6 +35,16 @@
         <p class="liste-date">{{ datePublication(commentaire.date_creation) }}</p>
       </div>
       <div class="moderation-actions">
+        <!-- Le fil de la leçon est le seul endroit où l'équipe répond, en public
+             comme en privé : on y va directement depuis la file. -->
+        @if (commentaire.lecons; as lecon) {
+          <a
+            class="btn btn-ghost btn-compact"
+            [routerLink]="['/parcours', lecon.id_section, 'lecon', commentaire.id_lecon]"
+          >
+            Voir dans la leçon
+          </a>
+        }
         <button
           class="btn btn-ghost btn-compact"
           type="button"

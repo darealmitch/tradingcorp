@@ -99,7 +99,8 @@ export class CommunauteService {
       this.acces
         .table('commentaires')
         .select(
-          'id_commentaire, id_parent, contenu, statut, date_creation, id_profil, profils(prenom, nom)',
+          'id_commentaire, id_parent, contenu, statut, date_creation, id_profil, ' +
+            'par_equipe, est_prive, profils(prenom, nom, role)',
         )
         .eq('id_lecon', idLecon)
         .order('date_creation', { ascending: true }),
@@ -133,6 +134,31 @@ export class CommunauteService {
         contenu: contenu.trim(),
       }),
       "Le commentaire n'a pas pu être publié. Réessaie.",
+    );
+  }
+
+  /**
+   * Réponse de l'équipe sous le message d'un élève, publique ou privée.
+   *
+   * Une voie à part, et non `publierCommentaire` : la règle d'écriture des
+   * élèves exige une inscription et place tout en modération, deux conditions
+   * qui n'ont pas de sens pour l'équipe. `repondre_en_equipe` vérifie le rôle,
+   * publie directement, pose les marqueurs `par_equipe` / `est_prive` — que la
+   * base refuse à un élève — et prévient l'élève par une notification.
+   */
+  async repondreEnEquipe(
+    idCommentaire: string,
+    contenu: string,
+    prive: boolean,
+  ): Promise<string | null> {
+    return this.acces.ecrire(
+      'réponse de l’équipe',
+      this.acces.appel('repondre_en_equipe', {
+        p_id_commentaire: idCommentaire,
+        p_contenu: contenu.trim(),
+        p_prive: prive,
+      }),
+      "La réponse n'a pas pu être publiée. Réessaie.",
     );
   }
 

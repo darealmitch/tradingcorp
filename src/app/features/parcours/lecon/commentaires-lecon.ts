@@ -39,6 +39,11 @@ export class CommentairesLecon {
   protected readonly texte = signal('');
   protected readonly repondA = signal<string | null>(null);
   protected readonly texteReponse = signal('');
+  /** La réponse en cours est privée (équipe seulement). */
+  protected readonly reponsePrivee = signal(false);
+
+  /** Formateur ou administrateur : répond par sa propre voie, et peut le faire en privé. */
+  protected readonly estEquipe = this.auth.estFormateurOuAdmin;
 
   protected readonly maxLongueur = LONGUEUR_MAX_CONTENU;
 
@@ -62,8 +67,38 @@ export class CommentairesLecon {
   }
 
   protected auteur(commentaire: Commentaire): string {
+    // Avant la jointure : un élève ne lit pas le profil d'un membre de
+    // l'équipe, `profils` lui reviendrait vide et il lirait « Compte supprimé ».
+    if (commentaire.par_equipe) {
+      return 'Équipe TradingCorp';
+    }
     const p = commentaire.profils;
     return p ? `${p.prenom} ${p.nom}`.trim() : 'Compte supprimé';
+  }
+
+  /** Pour l'équipe seulement : quel membre a signé la réponse. */
+  protected signataire(commentaire: Commentaire): string | null {
+    const p = commentaire.profils;
+    return commentaire.par_equipe && this.estEquipe() && p ? `${p.prenom} ${p.nom}`.trim() : null;
+  }
+
+  /**
+   * L'équipe ne répond publiquement que sous un message publié : la base
+   * refuserait sinon, la réponse s'afficherait seule aux autres élèves.
+   * L'élève, lui, garde son bouton tel qu'avant.
+   */
+  protected peutRepondrePubliquement(message: Commentaire): boolean {
+    return !this.estEquipe() || message.statut === 'approuve';
+  }
+
+  /** Réponse privée : par l'équipe, sous le message d'un élève, quel que soit son statut. */
+  protected peutRepondreEnPrive(message: Commentaire): boolean {
+    return this.estEquipe() && !message.par_equipe && message.profils?.role === 'apprenant';
+  }
+
+  /** « Léa » — ou « l'élève » si le prénom manque. */
+  protected prenomDe(message: Commentaire): string {
+    return message.profils?.prenom?.trim() || 'l’élève';
   }
 
   protected enAttente(commentaire: Commentaire): boolean {
@@ -83,20 +118,29 @@ export class CommentairesLecon {
     if (!contenu || this.envoi()) {
       return;
     }
-    await this.envoyer(contenu, idParent, () => {
-      this.texteReponse.set('');
-      this.repondA.set(null);
-    });
+    await this.envoyer(
+      contenu,
+      idParent,
+      () => {
+        this.texteReponse.set('');
+        this.repondA.set(null);
+      },
+      this.reponsePrivee(),
+    );
   }
 
   private async envoyer(
     contenu: string,
     idParent: string | undefined,
     apres: () => void,
+    prive = false,
   ): Promise<void> {
     this.envoi.set(true);
     this.erreur.set(null);
-    const echec = await this.communaute.publierCommentaire(this.idLecon(), contenu, idParent);
+    const echec =
+      idParent && this.estEquipe()
+        ? await this.communaute.repondreEnEquipe(idParent, contenu, prive)
+        : await this.communaute.publierCommentaire(this.idLecon(), contenu, idParent);
     this.envoi.set(false);
     if (echec) {
       this.erreur.set(echec);
@@ -106,8 +150,11 @@ export class CommentairesLecon {
     await this.charger(this.idLecon());
   }
 
-  protected basculerReponse(idCommentaire: string): void {
-    this.repondA.set(this.repondA() === idCommentaire ? null : idCommentaire);
+  /** Ouvre ou referme la réponse ; passer de publique à privée garde le formulaire ouvert. */
+  protected basculerReponse(idCommentaire: string, privee = false): void {
+    const memeFormulaire = this.repondA() === idCommentaire && this.reponsePrivee() === privee;
+    this.repondA.set(memeFormulaire ? null : idCommentaire);
+    this.reponsePrivee.set(privee);
     this.texteReponse.set('');
   }
 
