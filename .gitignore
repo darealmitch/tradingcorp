@@ -72,6 +72,10 @@ AUDIT-SUIVI-2026-08-25.md
 AUDIT-RGPD-2026-08-25.md
 RGPD-REGISTRE-ET-PROCEDURES.md
 
+# Contenu réel des quiz (questions ET bonnes réponses) : il vit sur ce poste et
+# en base, jamais dans ce dépôt public. Retiré de l'historique le 05/10/2026.
+supabase/seed_quiz_*.sql
+
 # Maquette de refonte : support de décision, le rendu final vit dans src/
 maquette-refonte.html
 
