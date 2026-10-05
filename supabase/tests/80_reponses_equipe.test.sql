@@ -206,7 +206,8 @@ select is(
 );
 
 -- Les deux marqueurs ensemble satisfont la contrainte de la table : c'est donc
--- bien la policy, et non la contrainte, qui refuse.
+-- bien un droit qui refuse, et non la contrainte — depuis le 05/10/2026, le
+-- privilège de colonne, avant même la policy.
 select is(
   pg_temp.erreur_sous('80000000-0000-0000-0000-0000000000a1',
     $$update public.commentaires set par_equipe = true, est_prive = true

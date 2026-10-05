@@ -161,11 +161,36 @@
   text-transform: uppercase;
 }
 
-.commentaire.est-privee {
+/* L'échange privé : un bloc teinté sous le fil, qui regroupe la conversation
+   et se termine par sa propre saisie. Un fil rendu privé porte la teinte sur
+   toute sa carte — le bloc intérieur n'en rajoute pas une seconde. */
+.echange-prive,
+.commentaire.est-fil-prive {
   padding: 12px 14px;
   border: 1px solid color-mix(in srgb, var(--violet) 45%, transparent);
   border-radius: 12px;
   background: color-mix(in srgb, var(--violet) 8%, transparent);
+}
+
+.echange-prive {
+  margin-top: 14px;
+}
+
+.commentaire.est-fil-prive .echange-prive {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.echange-prive .commentaire-reponses {
+  margin-left: 0;
+  border-left-color: color-mix(in srgb, var(--violet) 40%, transparent);
+}
+
+/* Rejeté par l'équipe : vu du seul auteur et de l'équipe. */
+.commentaire-etat.est-non-publie {
+  border-color: var(--down);
+  color: var(--down-text);
 }
 
 .mention-privee,

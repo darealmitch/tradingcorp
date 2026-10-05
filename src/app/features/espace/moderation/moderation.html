@@ -1,68 +1,238 @@
 <header class="page-tete">
   <h1 class="page-titre">Modération</h1>
   <p class="page-sous">
-    Commentaires et avis en attente d'approbation avant d'être visibles par les apprenants. Pour
-    répondre à un élève, en public ou en privé, ouvre le message dans sa leçon.
+    Tous les commentaires, quel que soit leur état. Une décision se rattrape : un message rejeté se
+    republie, un échange privé se rend public.
   </p>
 </header>
 
 @if (erreur(); as message) {
   <p class="alerte est-erreur">{{ message }}</p>
 }
+@if (suite(); as s) {
+  <p class="alerte est-succes" role="status">
+    {{ s.texte }}
+    @if (s.onglet; as o) {
+      <a [routerLink]="[]" [queryParams]="{ onglet: o }">{{ libelleOnglet(o) }}</a
+      >.
+    }
+  </p>
+}
 
 <section class="panneau">
   <div class="panneau-tete">
     <h2 class="panneau-titre">
       <app-icone nom="moderation" [taille]="18" />
-      Commentaires en attente
+      Commentaires
     </h2>
   </div>
 
+  <nav class="onglets" aria-label="États des commentaires">
+    @for (o of onglets; track o.id) {
+      <a
+        class="onglet"
+        [routerLink]="[]"
+        [queryParams]="{ onglet: o.id }"
+        [class.est-actif]="onglet() === o.id"
+        [attr.aria-current]="onglet() === o.id ? 'page' : null"
+      >
+        {{ o.libelle }}
+        @if (compte(o.id); as n) {
+          <span class="onglet-compte">{{ n }}</span>
+        }
+      </a>
+    }
+  </nav>
+
   @if (chargement()) {
     <p class="cellule-discrete">Chargement…</p>
-  } @else if (commentaires().length === 0) {
-    <p class="cellule-discrete">
-      Aucun commentaire en attente. Ils arriveront ici quand les apprenants commenteront les leçons.
-    </p>
-  }
-  @for (commentaire of commentaires(); track commentaire.id_commentaire) {
-    <div class="moderation-ligne">
-      <div class="liste-corps">
-        <p class="liste-titre">
-          {{ nomComplet(commentaire.profils) }} — {{ commentaire.lecons?.titre }}
+  } @else if (onglet() === 'prives') {
+    @if (echanges().length === 0) {
+      <p class="cellule-discrete">{{ messageVide() }}</p>
+    }
+    @for (echange of echanges(); track echange.fil.id_commentaire) {
+      <article class="echange" [class.est-a-repondre]="echange.aRepondre">
+        <div class="echange-tete">
+          <p class="liste-titre">
+            {{ nomComplet(echange.fil.profils) }} — {{ echange.fil.lecons?.titre }}
+          </p>
+          @if (echange.aRepondre) {
+            <span class="badge-statut est-attente">À répondre</span>
+          } @else {
+            <span class="badge-statut">Répondu</span>
+          }
+        </div>
+
+        <p class="liste-date">
+          {{ echange.filPrive ? 'Message rendu privé' : 'Message public' }} ·
+          {{ datePublication(echange.fil.date_creation) }}
         </p>
-        <p class="moderation-contenu">{{ commentaire.contenu }}</p>
-        <p class="liste-date">{{ datePublication(commentaire.date_creation) }}</p>
-      </div>
-      <div class="moderation-actions">
-        <!-- Le fil de la leçon est le seul endroit où l'équipe répond, en public
-             comme en privé : on y va directement depuis la file. -->
-        @if (commentaire.lecons; as lecon) {
-          <a
-            class="btn btn-ghost btn-compact"
-            [routerLink]="['/parcours', lecon.id_section, 'lecon', commentaire.id_lecon]"
-          >
-            Voir dans la leçon
-          </a>
+        <p class="moderation-contenu">{{ echange.fil.contenu }}</p>
+
+        @if (echange.messages.length > 0) {
+          <ol class="echange-messages">
+            @for (message of echange.messages; track message.id_commentaire) {
+              <li class="echange-message" [class.est-equipe]="message.par_equipe">
+                <p class="liste-titre">
+                  {{ auteur(message) }}
+                  <span class="liste-date">{{ datePublication(message.date_creation) }}</span>
+                </p>
+                <p class="moderation-contenu">{{ message.contenu }}</p>
+                @if (peutRendrePublic(message, echange)) {
+                  <button
+                    class="btn btn-ghost btn-compact"
+                    type="button"
+                    [disabled]="traitement()"
+                    (click)="rendrePublic(message)"
+                  >
+                    Rendre public
+                  </button>
+                }
+              </li>
+            }
+          </ol>
         }
-        <button
-          class="btn btn-ghost btn-compact"
-          type="button"
-          [disabled]="traitement()"
-          (click)="traiterCommentaire(commentaire.id_commentaire, 'approuve')"
-        >
-          Approuver
-        </button>
-        <button
-          class="btn btn-ghost btn-compact est-rejet"
-          type="button"
-          [disabled]="traitement()"
-          (click)="traiterCommentaire(commentaire.id_commentaire, 'rejete')"
-        >
-          Rejeter
-        </button>
+
+        @if (repondA() === echange.fil.id_commentaire) {
+          <form class="echange-saisie" (ngSubmit)="repondre(echange)">
+            <label class="echange-consigne" [for]="'reponse-' + echange.fil.id_commentaire">
+              <app-icone nom="cadenas" [taille]="14" />
+              Réponse privée : seuls {{ echange.fil.profils?.prenom || 'l’élève' }} et l'équipe la
+              verront. Une notification l'avertira.
+            </label>
+            <textarea
+              [id]="'reponse-' + echange.fil.id_commentaire"
+              rows="3"
+              [maxlength]="maxLongueur"
+              [ngModel]="texteReponse()"
+              (ngModelChange)="texteReponse.set($event)"
+              name="reponse"
+              placeholder="Ta réponse privée…"
+            ></textarea>
+            <div class="moderation-actions">
+              <button
+                class="btn btn-ghost btn-compact"
+                type="button"
+                (click)="basculerReponse(echange.fil.id_commentaire)"
+              >
+                Annuler
+              </button>
+              <button
+                class="btn btn-primary btn-compact"
+                type="submit"
+                [disabled]="!texteReponse().trim() || traitement()"
+              >
+                {{ traitement() ? 'Envoi…' : 'Envoyer en privé' }}
+              </button>
+            </div>
+          </form>
+        }
+
+        <div class="moderation-actions">
+          @if (echange.fil.lecons; as lecon) {
+            <a
+              class="btn btn-ghost btn-compact"
+              [routerLink]="['/parcours', lecon.id_section, 'lecon', echange.fil.id_lecon]"
+              fragment="echanges"
+            >
+              Voir dans la leçon
+            </a>
+          }
+          @if (repondA() !== echange.fil.id_commentaire) {
+            <button
+              class="btn btn-ghost btn-compact est-prive"
+              type="button"
+              (click)="basculerReponse(echange.fil.id_commentaire)"
+            >
+              <app-icone nom="cadenas" [taille]="14" />
+              Répondre en privé
+            </button>
+          }
+          @if (echange.filPrive) {
+            <button
+              class="btn btn-ghost btn-compact"
+              type="button"
+              [disabled]="traitement()"
+              (click)="rendrePublic(echange.fil)"
+            >
+              Rendre public
+            </button>
+          }
+        </div>
+      </article>
+    }
+  } @else {
+    @if (commentaires().length === 0) {
+      <p class="cellule-discrete">{{ messageVide() }}</p>
+    }
+    @for (commentaire of commentaires(); track commentaire.id_commentaire) {
+      <div class="moderation-ligne">
+        <div class="liste-corps">
+          <p class="liste-titre">
+            {{ auteur(commentaire) }} — {{ commentaire.lecons?.titre }}
+            @if (commentaire.est_prive) {
+              <span class="badge-prive">Privé</span>
+            }
+          </p>
+          @if (commentaire.parent; as parent) {
+            <p class="moderation-contexte">
+              En réponse à {{ nomComplet(parent.profils) }} : « {{ extrait(parent.contenu) }} »
+            </p>
+          }
+          <p class="moderation-contenu">{{ commentaire.contenu }}</p>
+          <p class="liste-date">{{ datePublication(commentaire.date_creation) }}</p>
+        </div>
+        <div class="moderation-actions">
+          <!-- Le fil de la leçon reste l'endroit où l'on lit la conversation
+               entière : on y va directement depuis chaque ligne. -->
+          @if (commentaire.lecons; as lecon) {
+            <a
+              class="btn btn-ghost btn-compact"
+              [routerLink]="['/parcours', lecon.id_section, 'lecon', commentaire.id_lecon]"
+              fragment="echanges"
+            >
+              Voir dans la leçon
+            </a>
+          }
+          @if (suppressionId() === commentaire.id_commentaire) {
+            <span class="confirmation-suppression">
+              <span class="confirmation-texte">Supprimer définitivement, avec ses réponses ?</span>
+              <button
+                class="btn btn-danger btn-compact"
+                type="button"
+                [disabled]="traitement()"
+                (click)="confirmerSuppression(commentaire)"
+              >
+                {{ traitement() ? 'Suppression…' : 'Confirmer' }}
+              </button>
+              <button
+                class="btn btn-ghost btn-compact"
+                type="button"
+                [disabled]="traitement()"
+                (click)="suppressionId.set(null)"
+              >
+                Annuler
+              </button>
+            </span>
+          } @else {
+            @for (action of actions(commentaire); track action.decision) {
+              <button
+                class="btn btn-ghost btn-compact"
+                type="button"
+                [class.est-rejet]="action.retrait"
+                [disabled]="traitement()"
+                (click)="decider(commentaire, action)"
+              >
+                {{ action.libelle }}
+              </button>
+            }
+          }
+        </div>
       </div>
-    </div>
+    }
+    @if (commentaires().length >= maxParOnglet) {
+      <p class="cellule-discrete">Seuls les {{ maxParOnglet }} plus récents sont affichés.</p>
+    }
   }
 </section>
 
@@ -74,7 +244,7 @@
     </h2>
   </div>
 
-  @if (chargement()) {
+  @if (!avisCharges()) {
     <p class="cellule-discrete">Chargement…</p>
   } @else if (avis().length === 0) {
     <p class="cellule-discrete">

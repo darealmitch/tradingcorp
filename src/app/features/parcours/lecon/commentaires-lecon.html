@@ -1,4 +1,4 @@
-<section class="commentaires">
+<section class="commentaires" id="echanges">
   <h2 class="lecon-sous-titre">Échanges sur ce chapitre</h2>
 
   @if (erreur(); as message) {
@@ -31,12 +31,27 @@
   } @else {
     <ul class="commentaire-liste">
       @for (fil of fils(); track fil.message.id_commentaire) {
-        <li class="commentaire">
+        <li class="commentaire" [class.est-fil-prive]="fil.message.est_prive">
+          <!-- Tout le fil est privé : la mention vient avant le message, pour
+               qu'on sache avant de lire que personne d'autre ne le voit. -->
+          @if (fil.message.est_prive) {
+            <p class="mention-privee">
+              <app-icone nom="cadenas" [taille]="14" />
+              @if (estEquipe()) {
+                Échange privé avec {{ prenomDe(fil.message) }} — rendu privé par l'équipe
+              } @else {
+                Échange privé avec l'équipe TradingCorp — personne d'autre ne le voit
+              }
+            </p>
+          }
           <div class="commentaire-tete">
             <span class="commentaire-auteur">{{ auteur(fil.message) }}</span>
             <span class="discret">{{ quand(fil.message.date_creation) }}</span>
             @if (enAttente(fil.message)) {
               <span class="commentaire-etat">en attente de validation</span>
+            }
+            @if (nonPublie(fil.message)) {
+              <span class="commentaire-etat est-non-publie">non publié</span>
             }
           </div>
           <p class="commentaire-texte">{{ fil.message.contenu }}</p>
@@ -48,7 +63,9 @@
                 Répondre
               </button>
             }
-            @if (peutRepondreEnPrive(fil.message)) {
+            <!-- L'équipe ouvre l'échange d'ici ; une fois ouvert, on y répond
+                 au bas du bloc privé, là où se lit la conversation. -->
+            @if (estEquipe() && peutRepondreEnPrive(fil) && !afficherEchange(fil)) {
               <button
                 type="button"
                 class="bouton-prive"
@@ -63,21 +80,13 @@
             }
           </div>
 
-          @if (repondA() === fil.message.id_commentaire) {
+          @if (saisieOuverte(fil.message.id_commentaire, false)) {
             <form
               class="commentaire-saisie est-reponse"
-              [class.est-privee]="reponsePrivee()"
               (ngSubmit)="publierReponse(fil.message.id_commentaire)"
             >
-              @if (reponsePrivee()) {
-                <p class="saisie-privee">
-                  <app-icone nom="cadenas" [taille]="14" />
-                  Réponse privée : seuls {{ prenomDe(fil.message) }} et l'équipe la verront, même si
-                  son message n'est pas publié. Une notification l'avertira.
-                </p>
-              }
               <label class="visuellement-cache" [for]="'reponse-' + fil.message.id_commentaire">
-                {{ reponsePrivee() ? 'Ta réponse privée' : 'Ta réponse' }}
+                Ta réponse
               </label>
               <textarea
                 [id]="'reponse-' + fil.message.id_commentaire"
@@ -86,10 +95,10 @@
                 [ngModel]="texteReponse()"
                 (ngModelChange)="texteReponse.set($event)"
                 name="reponse"
-                [placeholder]="reponsePrivee() ? 'Ta réponse privée…' : 'Ta réponse…'"
+                placeholder="Ta réponse…"
               ></textarea>
               <div class="commentaire-actions">
-                @if (estEquipe() && !reponsePrivee()) {
+                @if (estEquipe()) {
                   <p class="discret">Publiée directement, visible par tous les inscrits.</p>
                 }
                 <button
@@ -97,26 +106,16 @@
                   type="submit"
                   [disabled]="!texteReponse().trim() || envoi()"
                 >
-                  {{ envoi() ? 'Envoi…' : reponsePrivee() ? 'Envoyer en privé' : 'Répondre' }}
+                  {{ envoi() ? 'Envoi…' : 'Répondre' }}
                 </button>
               </div>
             </form>
           }
 
-          @if (fil.reponses.length > 0) {
+          @if (reponsesPubliques(fil).length > 0) {
             <ul class="commentaire-reponses">
-              @for (reponse of fil.reponses; track reponse.id_commentaire) {
-                <li
-                  class="commentaire"
-                  [class.est-equipe]="reponse.par_equipe"
-                  [class.est-privee]="reponse.est_prive"
-                >
-                  @if (reponse.est_prive) {
-                    <p class="mention-privee">
-                      <app-icone nom="cadenas" [taille]="14" />
-                      Réponse privée
-                    </p>
-                  }
+              @for (reponse of reponsesPubliques(fil); track reponse.id_commentaire) {
+                <li class="commentaire" [class.est-equipe]="reponse.par_equipe">
                   <div class="commentaire-tete">
                     <span class="commentaire-auteur">{{ auteur(reponse) }}</span>
                     @if (reponse.par_equipe) {
@@ -129,18 +128,11 @@
                     @if (enAttente(reponse)) {
                       <span class="commentaire-etat">en attente de validation</span>
                     }
+                    @if (nonPublie(reponse)) {
+                      <span class="commentaire-etat est-non-publie">non publié</span>
+                    }
                   </div>
                   <p class="commentaire-texte">{{ reponse.contenu }}</p>
-                  @if (reponse.est_prive) {
-                    <p class="pied-prive">
-                      @if (estEquipe()) {
-                        Visible uniquement par {{ prenomDe(fil.message) }} et l'équipe.
-                      } @else {
-                        Visible uniquement par toi et l'équipe TradingCorp : les autres élèves ne la
-                        voient pas.
-                      }
-                    </p>
-                  }
                   @if (estMoi(reponse)) {
                     <div class="commentaire-boutons">
                       <button type="button" (click)="supprimer(reponse)">Supprimer</button>
@@ -149,6 +141,114 @@
                 </li>
               }
             </ul>
+          }
+
+          @if (afficherEchange(fil)) {
+            <div class="echange-prive">
+              @if (!fil.message.est_prive) {
+                <p class="mention-privee">
+                  <app-icone nom="cadenas" [taille]="14" />
+                  @if (estEquipe()) {
+                    Échange privé avec {{ prenomDe(fil.message) }}
+                  } @else {
+                    Échange privé avec l'équipe TradingCorp — personne d'autre ne le voit
+                  }
+                </p>
+              }
+
+              @if (messagesPrives(fil).length > 0) {
+                <ul class="commentaire-reponses">
+                  @for (message of messagesPrives(fil); track message.id_commentaire) {
+                    <li class="commentaire" [class.est-equipe]="message.par_equipe">
+                      <div class="commentaire-tete">
+                        <span class="commentaire-auteur">{{ auteur(message) }}</span>
+                        @if (message.par_equipe) {
+                          <span class="badge-equipe">Équipe</span>
+                        }
+                        @if (signataire(message); as nom) {
+                          <span class="discret">{{ nom }}</span>
+                        }
+                        <span class="discret">{{ quand(message.date_creation) }}</span>
+                      </div>
+                      <p class="commentaire-texte">{{ message.contenu }}</p>
+                      @if (estMoi(message)) {
+                        <div class="commentaire-boutons">
+                          <button type="button" (click)="supprimer(message)">Supprimer</button>
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+
+              @if (saisieOuverte(fil.message.id_commentaire, true)) {
+                <form
+                  class="commentaire-saisie est-reponse est-privee"
+                  (ngSubmit)="publierReponse(fil.message.id_commentaire)"
+                >
+                  <p class="saisie-privee">
+                    <app-icone nom="cadenas" [taille]="14" />
+                    @if (estEquipe()) {
+                      Réponse privée : seuls {{ prenomDe(fil.message) }} et l'équipe la verront,
+                      même si son message n'est pas publié. Une notification l'avertira.
+                    } @else {
+                      Ta réponse ne sera lue que par l'équipe TradingCorp.
+                    }
+                  </p>
+                  <label
+                    class="visuellement-cache"
+                    [for]="'reponse-privee-' + fil.message.id_commentaire"
+                  >
+                    Ta réponse privée
+                  </label>
+                  <textarea
+                    [id]="'reponse-privee-' + fil.message.id_commentaire"
+                    rows="2"
+                    [maxlength]="maxLongueur"
+                    [ngModel]="texteReponse()"
+                    (ngModelChange)="texteReponse.set($event)"
+                    name="reponse-privee"
+                    placeholder="Ta réponse privée…"
+                  ></textarea>
+                  <div class="commentaire-actions">
+                    <button
+                      class="btn btn-ghost"
+                      type="button"
+                      (click)="basculerReponse(fil.message.id_commentaire, true)"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      class="btn btn-primary"
+                      type="submit"
+                      [disabled]="!texteReponse().trim() || envoi()"
+                    >
+                      {{ envoi() ? 'Envoi…' : 'Envoyer en privé' }}
+                    </button>
+                  </div>
+                </form>
+              } @else if (peutRepondreEnPrive(fil)) {
+                <div class="commentaire-boutons">
+                  <button
+                    type="button"
+                    class="bouton-prive"
+                    (click)="basculerReponse(fil.message.id_commentaire, true)"
+                  >
+                    <app-icone nom="cadenas" [taille]="14" />
+                    Répondre en privé
+                  </button>
+                </div>
+              }
+
+              <p class="pied-prive">
+                @if (estEquipe()) {
+                  Visible uniquement par {{ prenomDe(fil.message) }} et l'équipe.
+                } @else {
+                  Visible uniquement par toi et l'équipe TradingCorp : les autres élèves ne le
+                  voient pas.
+                }
+              </p>
+            </div>
           }
         </li>
       }

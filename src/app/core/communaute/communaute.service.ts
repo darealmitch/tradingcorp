@@ -92,20 +92,33 @@ export class CommunauteService {
    * refaire. Une réponse dont le message parent est encore en modération se
    * retrouverait orpheline : elle est alors présentée comme un message, plutôt
    * que masquée, pour ne pas escamoter un propos légitime.
+   *
+   * Les noms publics arrivent à part : un élève ne lit que son propre profil,
+   * la jointure lui revient vide pour tout autre auteur.
    */
   async commentaires(idLecon: string): Promise<FilCommentaire[]> {
-    const lignes = await this.acces.lire<Commentaire[]>(
-      'lecture des commentaires',
-      this.acces
-        .table('commentaires')
-        .select(
-          'id_commentaire, id_parent, contenu, statut, date_creation, id_profil, ' +
-            'par_equipe, est_prive, profils(prenom, nom, role)',
-        )
-        .eq('id_lecon', idLecon)
-        .order('date_creation', { ascending: true }),
-      [],
-    );
+    const [brutes, noms] = await Promise.all([
+      this.acces.lire<Commentaire[]>(
+        'lecture des commentaires',
+        this.acces
+          .table('commentaires')
+          .select(
+            'id_commentaire, id_parent, contenu, statut, date_creation, id_profil, ' +
+              'par_equipe, est_prive, profils(prenom, nom, role)',
+          )
+          .eq('id_lecon', idLecon)
+          .order('date_creation', { ascending: true }),
+        [],
+      ),
+      this.acces.lire<{ id_profil: string; nom_public: string | null }[]>(
+        'lecture des noms publics',
+        this.acces.appel('noms_publics_commentaires', { p_id_lecon: idLecon }),
+        [],
+      ),
+    ]);
+
+    const nomsPublics = new Map(noms.map((n) => [n.id_profil, n.nom_public]));
+    const lignes = brutes.map((c) => ({ ...c, nom_public: nomsPublics.get(c.id_profil) ?? null }));
 
     const visibles = new Set(lignes.map((c) => c.id_commentaire));
     const messages = lignes.filter((c) => !c.id_parent || !visibles.has(c.id_parent));
@@ -162,7 +175,26 @@ export class CommunauteService {
     );
   }
 
-  /** Supprime mon commentaire (la RLS autorise l'auteur et le staff). */
+  /**
+   * Réponse de l'élève dans l'échange privé ouvert sur son propre message.
+   *
+   * Une voie à part, comme pour l'équipe : la règle d'écriture des élèves ne
+   * produit que des messages publics, en modération. `repondre_en_prive`
+   * vérifie que l'élève écrit dans son propre fil, qu'un échange privé y est
+   * ouvert, publie sans modération et prévient les administrateurs.
+   */
+  async repondreEnPrive(idCommentaire: string, contenu: string): Promise<string | null> {
+    return this.acces.ecrire(
+      'réponse privée d’un élève',
+      this.acces.appel('repondre_en_prive', {
+        p_id_commentaire: idCommentaire,
+        p_contenu: contenu.trim(),
+      }),
+      "Le message n'a pas pu être envoyé. Réessaie.",
+    );
+  }
+
+  /** Supprime mon commentaire (la RLS n'autorise que l'auteur). */
   async supprimerCommentaire(idCommentaire: string): Promise<string | null> {
     return this.acces.modifier(
       'suppression d’un commentaire',

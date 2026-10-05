@@ -3,13 +3,16 @@ import {
   Component,
   HostListener,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { ModerationService } from '../../core/moderation/moderation.service';
 import { NotificationsService } from '../../core/notifications/notifications.service';
 import { Role } from '../../core/auth/profil.model';
 import { Icone } from '../../shared/ui/icone';
@@ -23,6 +26,8 @@ interface ElementNav {
   exact?: boolean;
   /** Absent = visible pour tous les rôles. */
   roles?: Role[];
+  /** Ce qui attend une action derrière ce lien, compté dans une pastille. */
+  aTraiter?: 'moderation';
 }
 
 const ELEMENTS_NAV: ElementNav[] = [
@@ -46,6 +51,7 @@ const ELEMENTS_NAV: ElementNav[] = [
     icone: 'moderation',
     lien: '/espace/moderation',
     roles: ['formateur', 'admin'],
+    aTraiter: 'moderation',
   },
   { libelle: 'Utilisateurs', icone: 'profil', lien: '/espace/utilisateurs', roles: ['admin'] },
   { libelle: 'Paiements', icone: 'paiements', lien: '/espace/paiements', roles: ['admin'] },
@@ -66,6 +72,7 @@ export class EspaceLayout {
 
   protected readonly auth = inject(AuthService);
   protected readonly notifications = inject(NotificationsService);
+  private readonly moderation = inject(ModerationService);
 
   /** Latérale réduite à ses icônes — réglage volontaire, sur grand écran. */
   protected readonly replie = signal(false);
@@ -82,7 +89,21 @@ export class EspaceLayout {
     return ELEMENTS_NAV.filter((e) => !e.roles || (role !== null && e.roles.includes(role)));
   });
 
+  /** Ce qui attend derrière un lien : messages à modérer, échanges à répondre, avis. */
+  protected aTraiter(element: ElementNav): number {
+    return element.aTraiter === 'moderation' ? this.moderation.aTraiter() : 0;
+  }
+
   constructor() {
+    // L'équipe voit d'ici ce qui l'attend, quelle que soit la page ouverte —
+    // l'administrateur n'a pas, comme le formateur, le décompte sur son
+    // tableau de bord. Un élève n'a rien à compter : aucune requête pour lui.
+    effect(() => {
+      if (this.auth.estFormateurOuAdmin()) {
+        untracked(() => void this.moderation.rafraichirCompteurs());
+      }
+    });
+
     // Naviguer referme le tiroir : sans cela il masquerait la page qu'on vient
     // justement de demander.
     this.router.events

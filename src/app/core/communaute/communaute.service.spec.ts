@@ -29,7 +29,10 @@ interface Appel {
   charge?: Record<string, unknown>;
 }
 
-function creerService(lignes: Commentaire[] = []) {
+function creerService(
+  lignes: Commentaire[] = [],
+  noms: { id_profil: string; nom_public: string | null }[] = [],
+) {
   const appels: Appel[] = [];
   let erreur: string | null = null;
   let chaineCourante: string[] = [];
@@ -63,7 +66,9 @@ function creerService(lignes: Commentaire[] = []) {
       chargeCourante = parametres;
       return builder();
     },
-    lire: () => Promise.resolve(lignes),
+    // Deux lectures distinctes : les messages, et les noms publics de leurs auteurs.
+    lire: (operation: string) =>
+      Promise.resolve(operation === 'lecture des noms publics' ? noms : lignes),
     compter: () => Promise.resolve(0),
     idUtilisateur: () => Promise.resolve('moi'),
     ecrire: (operation: string) => enregistrer('ecrire', operation),
@@ -194,7 +199,44 @@ describe('CommunauteService', () => {
     });
   });
 
+  describe('réponse privée de l’élève', () => {
+    // La voie d'écriture des élèves ne produit que du public, en modération :
+    // poursuivre un échange privé passe par la fonction qui vérifie que
+    // l'élève écrit dans son propre fil, et qu'un échange y est ouvert.
+    it('passe par repondre_en_prive, jamais par la table', async () => {
+      const { service, appels } = creerService();
+
+      await service.repondreEnPrive('c-9', '  Merci pour la réponse  ');
+
+      expect(appels[0].chaine).toEqual(['rpc:repondre_en_prive']);
+      expect(appels[0].charge).toEqual({
+        p_id_commentaire: 'c-9',
+        p_contenu: 'Merci pour la réponse',
+      });
+    });
+
+    it('rend le refus du serveur à l’écran', async () => {
+      const { service, refuser } = creerService();
+      refuser('Aucun échange privé n’est ouvert sur ce message');
+
+      expect(await service.repondreEnPrive('c-9', 'Bonjour')).toContain('Aucun échange privé');
+    });
+  });
+
   describe('organisation en fils', () => {
+    it('attache à chaque message le nom public de son auteur', async () => {
+      // Un élève ne lit que son propre profil : sans ce nom, il lirait
+      // « Compte supprimé » sous le message d'un camarade.
+      const { service } = creerService(
+        [unCommentaire({ id_commentaire: 'c-1', id_profil: 'lea', profils: null })],
+        [{ id_profil: 'lea', nom_public: 'Léa M.' }],
+      );
+
+      const fils = await service.commentaires('l-1');
+
+      expect(fils[0].message.nom_public).toBe('Léa M.');
+    });
+
     it('rattache les réponses à leur message', async () => {
       const { service } = creerService([
         unCommentaire({ id_commentaire: 'c-1' }),

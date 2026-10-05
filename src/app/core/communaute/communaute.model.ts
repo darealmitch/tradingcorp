@@ -35,8 +35,16 @@ export interface Commentaire {
    * de l'auteur reste fermé.
    */
   par_equipe: boolean;
-  /** Réponse privée : seuls l'auteur du message et l'équipe la lisent. */
+  /**
+   * Message privé : lu par son auteur, par l'équipe et, pour une réponse de
+   * l'équipe, par l'auteur du fil. Sur un message d'origine, tout le fil l'est.
+   */
   est_prive: boolean;
+  /**
+   * « Prénom I. » de l'auteur, rendu par la base pour les seuls messages
+   * publiés : c'est ce qu'un élève lit sous le message d'un camarade.
+   */
+  nom_public?: string | null;
 }
 
 /** Un message et ses réponses, prêt à afficher. */

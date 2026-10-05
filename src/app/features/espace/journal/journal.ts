@@ -6,6 +6,7 @@ const LIBELLES_ACTIONS: Record<string, string> = {
   changement_role: 'Changement de rôle',
   creation_compte: 'Création de compte',
   correction_identite: 'Correction du nom',
+  suppression_commentaire: 'Suppression d’un commentaire',
   suppression_compte: 'Suppression de compte',
 };
 

@@ -22,16 +22,19 @@ interface Appel {
   operation: string;
   /** Méthodes chaînées sur le builder, dans l'ordre. */
   chaine: string[];
+  /** Paramètres d'une RPC. */
+  charge?: Record<string, unknown>;
 }
 
 function creerService() {
   const appels: Appel[] = [];
   let erreur: string | null = null;
   let chaineCourante: string[] = [];
+  let chargeCourante: Record<string, unknown> | undefined;
 
   const builder = (): Record<string, unknown> => {
     const chainable: Record<string, unknown> = {};
-    for (const methode of ['update', 'eq', 'select', 'order']) {
+    for (const methode of ['update', 'eq', 'in', 'select', 'order', 'limit']) {
       chainable[methode] = () => {
         chaineCourante.push(methode);
         return chainable;
@@ -41,20 +44,26 @@ function creerService() {
   };
 
   const enregistrer = (methode: string, operation: string): Promise<string | null> => {
-    appels.push({ methode, operation, chaine: chaineCourante });
+    appels.push({ methode, operation, chaine: chaineCourante, charge: chargeCourante });
     chaineCourante = [];
+    chargeCourante = undefined;
     return Promise.resolve(erreur);
   };
 
   const acces = {
     table: () => builder(),
-    appel: () => builder(),
+    appel: (nom: string, parametres?: Record<string, unknown>) => {
+      chaineCourante.push(`rpc:${nom}`);
+      chargeCourante = parametres;
+      return builder();
+    },
     // `lire` rend le REPLI que l'appelant lui passe — c'est son contrat réel.
     // Le rendre en dur (`[]`) faisait recevoir un tableau vide là où le service
     // attend `null`, et `Number([])` valant 0, une moyenne inexistante serait
     // devenue « 0 / 5 ».
     lire: (_operation: string, _requete: unknown, repli: unknown) => Promise.resolve(repli),
-    compter: () => Promise.resolve(0),
+    // Deux commentaires et un avis en attente : de quoi vérifier l'addition.
+    compter: (operation: string) => Promise.resolve(operation.includes('avis') ? 1 : 2),
     ecrire: (operation: string) => enregistrer('ecrire', operation),
     modifier: (operation: string) => enregistrer('modifier', operation),
   };
@@ -105,14 +114,45 @@ describe('ModerationService', () => {
     });
   });
 
-  describe('traitement d’un commentaire', () => {
-    it('suit exactement les mêmes règles', async () => {
+  describe('décision sur un commentaire', () => {
+    // Les décisions passent par `moderer_commentaire` : c'est le serveur qui
+    // sait ce qu'une décision a de sensé, et qui fait suivre tout le fil quand
+    // un message devient privé. Une écriture directe dans la table le
+    // contournerait.
+    it('passe par moderer_commentaire, jamais par la table', async () => {
       const { service, appels } = creerService();
 
-      await service.traiterCommentaire('c-1', 'rejete');
+      await service.modererCommentaire('c-1', 'rendre_prive');
 
-      expect(appels[0].methode).toBe('modifier');
-      expect(appels[0].chaine).toContain('select');
+      expect(appels[0].chaine).toEqual(['rpc:moderer_commentaire']);
+      expect(appels[0].charge).toEqual({ p_id_commentaire: 'c-1', p_decision: 'rendre_prive' });
+    });
+
+    it('rend le refus du serveur à l’écran', async () => {
+      const { service, refuser } = creerService();
+      refuser('Un message écrit en privé par un élève reste privé');
+
+      expect(await service.modererCommentaire('c-1', 'rendre_public')).toContain('reste privé');
+    });
+
+    it('supprime définitivement par la fonction réservée à l’administrateur', async () => {
+      const { service, appels } = creerService();
+
+      await service.supprimerDefinitivement('c-1');
+
+      expect(appels[0].chaine).toEqual(['rpc:supprimer_commentaire']);
+      expect(appels[0].charge).toEqual({ p_id_commentaire: 'c-1' });
+    });
+  });
+
+  describe('compteurs', () => {
+    it('additionne ce qui attend l’équipe, pour la pastille de la navigation', async () => {
+      const { service } = creerService();
+
+      const compteurs = await service.rafraichirCompteurs();
+
+      expect(compteurs).toEqual({ enAttente: 2, aRepondre: 0, avisEnAttente: 1 });
+      expect(service.aTraiter()).toBe(3);
     });
   });
 
@@ -122,7 +162,8 @@ describe('ModerationService', () => {
 
       expect(await service.avisEnAttente()).toEqual([]);
       expect(await service.commentairesEnAttente()).toEqual([]);
-      expect(await service.compterCommentairesEnAttente()).toBe(0);
+      expect(await service.commentairesParEtat('publies')).toEqual([]);
+      expect(await service.echangesPrives()).toEqual([]);
     });
 
     it('ne calcule pas de moyenne sans avis', async () => {

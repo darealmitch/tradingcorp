@@ -2,7 +2,10 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router, provideRouter } from '@angular/router';
 import { Subject } from 'rxjs';
+import { vi } from 'vitest';
 import { AuthService } from '../../core/auth/auth.service';
+import { Role } from '../../core/auth/profil.model';
+import { ModerationService } from '../../core/moderation/moderation.service';
 import { NotificationsService } from '../../core/notifications/notifications.service';
 import { EspaceLayout } from './espace-layout';
 
@@ -27,8 +30,19 @@ describe('EspaceLayout — tiroir mobile', () => {
       imports: [EspaceLayout],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { role: signal('admin'), profil: signal(null) } },
+        {
+          provide: AuthService,
+          useValue: {
+            role: signal('admin'),
+            profil: signal(null),
+            estFormateurOuAdmin: signal(true),
+          },
+        },
         { provide: NotificationsService, useValue: { nonLues: signal(0) } },
+        {
+          provide: ModerationService,
+          useValue: { aTraiter: signal(0), rafraichirCompteurs: () => Promise.resolve() },
+        },
       ],
     }).compileComponents();
 
@@ -122,5 +136,63 @@ describe('EspaceLayout — tiroir mobile', () => {
 
     interne.basculerTiroir();
     expect(interne.replie()).toBe(true);
+  });
+});
+
+describe('EspaceLayout — ce qui attend l’équipe', () => {
+  afterEach(() => TestBed.resetTestingModule());
+
+  async function monter(role: Role, aTraiter: number) {
+    const rafraichirCompteurs = vi.fn(() => Promise.resolve());
+    await TestBed.configureTestingModule({
+      imports: [EspaceLayout],
+      providers: [
+        provideRouter([]),
+        {
+          provide: AuthService,
+          useValue: {
+            role: signal(role),
+            profil: signal(null),
+            estFormateurOuAdmin: signal(role !== 'apprenant'),
+          },
+        },
+        { provide: NotificationsService, useValue: { nonLues: signal(0) } },
+        {
+          provide: ModerationService,
+          useValue: { aTraiter: signal(aTraiter), rafraichirCompteurs },
+        },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(EspaceLayout);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const page = fixture.nativeElement as HTMLElement;
+    const lienModeration = [...page.querySelectorAll('.lateral-lien')].find((l) =>
+      l.textContent?.includes('Modération'),
+    );
+    return { lienModeration, rafraichirCompteurs };
+  }
+
+  it.each<Role>(['formateur', 'admin'])(
+    'compte sur « Modération » ce qui attend l’équipe (%s)',
+    async (role) => {
+      const { lienModeration, rafraichirCompteurs } = await monter(role, 3);
+
+      expect(rafraichirCompteurs).toHaveBeenCalled();
+      expect(lienModeration?.querySelector('.pastille')?.textContent?.trim()).toBe('3');
+    },
+  );
+
+  it('n’affiche pas de pastille quand rien n’attend', async () => {
+    const { lienModeration } = await monter('admin', 0);
+
+    expect(lienModeration?.querySelector('.pastille')).toBeNull();
+  });
+
+  it('ne compte rien pour un élève : aucune requête de modération', async () => {
+    const { lienModeration, rafraichirCompteurs } = await monter('apprenant', 0);
+
+    expect(lienModeration).toBeUndefined();
+    expect(rafraichirCompteurs).not.toHaveBeenCalled();
   });
 });

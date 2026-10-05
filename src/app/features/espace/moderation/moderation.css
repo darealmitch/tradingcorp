@@ -30,7 +30,163 @@
 
 .moderation-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
+}
+
+/* ===== Onglets =====
+   Un onglet par état : le message approuvé ou rejeté ne disparaît plus, il
+   change de place. L'onglet actif est mémorisé dans l'adresse. */
+
+.onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.onglet {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.onglet:hover {
+  color: var(--text);
+}
+
+.onglet.est-actif {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.onglet-compte {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--attention) 18%, transparent);
+  color: var(--attention-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ===== Contexte d'une réponse ===== */
+
+.moderation-contexte {
+  margin: 4px 0 0;
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.badge-prive {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid color-mix(in srgb, var(--violet) 45%, transparent);
+  border-radius: 999px;
+  color: var(--violet-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* ===== Échanges privés =====
+   La teinte violette des échanges privés, comme dans le fil de la leçon : le
+   même signe veut dire la même chose partout. */
+
+.echange {
+  padding: 16px 18px;
+  border: 1px solid color-mix(in srgb, var(--violet) 35%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--violet) 5%, transparent);
+}
+
+.echange + .echange {
+  margin-top: 14px;
+}
+
+.echange.est-a-repondre {
+  border-color: color-mix(in srgb, var(--attention) 50%, transparent);
+}
+
+.echange-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.echange-messages {
+  margin: 12px 0;
+  padding: 0 0 0 16px;
+  border-left: 1px solid color-mix(in srgb, var(--violet) 40%, transparent);
+  list-style: none;
+}
+
+.echange-message + .echange-message {
+  margin-top: 12px;
+}
+
+.echange-message.est-equipe .liste-titre {
+  color: var(--violet-text);
+}
+
+.echange-saisie {
+  margin: 12px 0;
+}
+
+.echange-consigne {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: var(--violet-text);
+  font-size: 0.85rem;
+}
+
+.echange-saisie textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--violet) 55%, transparent);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+
+.btn.est-prive {
+  color: var(--violet-text);
+}
+
+/* ===== Suppression définitive : confirmée en deux temps ===== */
+
+.confirmation-suppression {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirmation-texte {
+  color: var(--down-text);
+  font-size: 0.85rem;
 }
 
 .est-rejet {

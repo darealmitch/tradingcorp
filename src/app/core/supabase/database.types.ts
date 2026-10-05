@@ -818,6 +818,7 @@ export type Database = {
       };
       est_apprenant: { Args: { p_id_profil: string }; Returns: boolean };
       est_auteur_du_message: { Args: { p_id_commentaire: string }; Returns: boolean };
+      est_message_prive: { Args: { p_id_commentaire: string }; Returns: boolean };
       etats_lecons: {
         Args: { p_id_section: string };
         Returns: {
@@ -897,7 +898,18 @@ export type Database = {
         }[];
       };
       mes_donnees_personnelles: { Args: never; Returns: Json };
+      moderer_commentaire: {
+        Args: { p_decision: string; p_id_commentaire: string };
+        Returns: undefined;
+      };
       nom_affichage: { Args: { p_id_profil: string }; Returns: string };
+      noms_publics_commentaires: {
+        Args: { p_id_lecon: string };
+        Returns: {
+          id_profil: string;
+          nom_public: string;
+        }[];
+      };
       note_moyenne_avis: { Args: never; Returns: number | null };
       notifier_admins: {
         Args: {
@@ -957,6 +969,10 @@ export type Database = {
         Args: { p_contenu: string; p_id_commentaire: string; p_prive?: boolean };
         Returns: string;
       };
+      repondre_en_prive: {
+        Args: { p_contenu: string; p_id_commentaire: string };
+        Returns: string;
+      };
       revoquer_pour_remboursement: {
         Args: { p_motif?: string; p_reference: string };
         Returns: boolean;
@@ -976,6 +992,7 @@ export type Database = {
           total: number;
         }[];
       };
+      supprimer_commentaire: { Args: { p_id_commentaire: string }; Returns: undefined };
       terminer_lecon: { Args: { p_id_lecon: string }; Returns: undefined };
       verifier_certificat: {
         Args: { p_numero: string };

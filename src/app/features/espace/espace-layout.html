@@ -41,6 +41,9 @@
         >
           <span class="lien-icone"><app-icone [nom]="element.icone" [taille]="18" /></span>
           <span class="lien-libelle">{{ element.libelle }}</span>
+          @if (aTraiter(element); as compte) {
+            <span class="pastille" [attr.aria-label]="compte + ' à traiter'">{{ compte }}</span>
+          }
         </a>
       }
 
