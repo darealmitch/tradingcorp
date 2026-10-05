@@ -14,6 +14,8 @@ export interface Notification {
   date_envoi: string;
   lue: boolean;
   priorite: PrioriteNotification;
+  /** Page concernée — la leçon d'une réponse, la liste des apprenants… — ou null. */
+  lien: string | null;
 }
 
 interface LigneNotification {
@@ -23,6 +25,7 @@ interface LigneNotification {
   date_envoi: string;
   lu_le: string | null;
   priorite: PrioriteNotification;
+  lien: string | null;
 }
 
 /**
@@ -57,7 +60,7 @@ export class NotificationsService {
       'lecture des notifications',
       this.acces
         .table('notifications')
-        .select('id_notification, titre, message, date_envoi, lu_le, priorite')
+        .select('id_notification, titre, message, date_envoi, lu_le, priorite, lien')
         .order('date_envoi', { ascending: false })
         // Le volet en montre les plus récentes : au-delà, c'est de l'historique
         // que personne ne déroule, transporté à chaque ouverture (audit P-10).

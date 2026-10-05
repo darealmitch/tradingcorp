@@ -65,6 +65,20 @@
   background: var(--accent);
 }
 
+/* La flèche dit qu'un clic mène à la page concernée, pas seulement qu'il
+   marque la notification comme lue. */
+.notification-lien {
+  flex-shrink: 0;
+  display: inline-flex;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+
+.notification:hover .notification-lien {
+  transform: translateX(2px);
+  color: inherit;
+}
+
 .btn-compact:disabled {
   opacity: 0.5;
   pointer-events: none;

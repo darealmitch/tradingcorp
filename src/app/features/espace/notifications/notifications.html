@@ -29,7 +29,7 @@
         class="notification est-urgente"
         type="button"
         [class.est-lue]="notification.lue"
-        (click)="notifications.marquerLue(notification.id_notification)"
+        (click)="ouvrir(notification)"
       >
         <span class="liste-icone"><app-icone nom="paiements" [taille]="16" /></span>
         <span class="liste-corps">
@@ -41,6 +41,11 @@
         <span class="liste-date">{{ dateEnvoi(notification.date_envoi) }}</span>
         @if (!notification.lue) {
           <span class="point-non-lue" aria-label="Non lue"></span>
+        }
+        @if (notification.lien) {
+          <span class="notification-lien" aria-hidden="true">
+            <app-icone nom="fleche" [taille]="14" />
+          </span>
         }
       </button>
     }
@@ -73,7 +78,7 @@
         class="notification"
         type="button"
         [class.est-lue]="notification.lue"
-        (click)="notifications.marquerLue(notification.id_notification)"
+        (click)="ouvrir(notification)"
       >
         <span class="liste-icone"><app-icone nom="cloche" [taille]="16" /></span>
         <span class="liste-corps">
@@ -85,6 +90,11 @@
         <span class="liste-date">{{ dateEnvoi(notification.date_envoi) }}</span>
         @if (!notification.lue) {
           <span class="point-non-lue" aria-label="Non lue"></span>
+        }
+        @if (notification.lien) {
+          <span class="notification-lien" aria-hidden="true">
+            <app-icone nom="fleche" [taille]="14" />
+          </span>
         }
       </button>
     }
