@@ -13,7 +13,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(17);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Jeu d'essai : deux apprenants distincts. Le second existe pour une seule
@@ -215,6 +215,16 @@ select is(
     where id_paiement = '9b000000-0000-0000-0000-00000000000e'),
   null,
   'art. 5.1.e — mais l''e-mail en est retiré, l''obligation comptable étant éteinte'
+);
+
+-- La liste des comptes inactifs (dernière connexion, paiement, rôle de chacun)
+-- ne sert qu'à la rétention, qui s'exécute avec les droits du propriétaire.
+-- Ouverte à tout compte connecté, elle aurait livré ces données sur les autres
+-- élèves sans qu'aucune requête échoue (audit du 05/10/2026).
+select ok(
+  not has_function_privilege('authenticated', 'public.comptes_inactifs(integer)', 'execute')
+  and not has_function_privilege('anon', 'public.comptes_inactifs(integer)', 'execute'),
+  'art. 5.1.f — la liste des comptes inactifs n''est lisible par aucun compte connecté'
 );
 
 select * from finish();
