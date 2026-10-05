@@ -8,7 +8,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(38);
+select plan(40);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Jeu d'essai : deux élèves inscrites, une formatrice, une administratrice,
@@ -359,7 +359,7 @@ select is(
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- LES COLONNES — l'auteur, le fil et les marqueurs ne bougent plus par l'API
+-- LES COLONNES — l'auteur, le fil, les marqueurs et le statut ne bougent plus par l'API
 -- ─────────────────────────────────────────────────────────────────────────────
 
 select is(
@@ -376,6 +376,25 @@ select is(
        where id_commentaire = 'c9500000-0000-0000-0000-000000000011'$$),
   '42501',
   'colonnes — l''équipe ne change pas l''auteur d''un message'
+);
+
+-- L'équipe décide par moderer_commentaire, qui applique ses règles ; un UPDATE
+-- direct du statut les contournerait (publier un message écrit en privé…).
+select is(
+  pg_temp.erreur_sous('95000000-0000-0000-0000-0000000000f3',
+    $$update public.commentaires set statut = 'approuve'
+       where id_commentaire = 'c9500000-0000-0000-0000-000000000005'$$),
+  '42501',
+  'colonnes — l''équipe ne change plus le statut en direct'
+);
+
+-- Une seule policy de modification, celle de l'auteur : c'est elle que le test
+-- P-03 du socle contrôle (WITH CHECK identique au USING).
+select is(
+  (select string_agg(policyname, ', ') from pg_policies
+    where schemaname = 'public' and tablename = 'commentaires' and cmd = 'UPDATE'),
+  'commentaires_update_soi_en_attente',
+  'colonnes — seule l''auteure modifie, et seulement son message en attente'
 );
 
 -- Contre-épreuve : la correction de son message en attente fonctionne toujours.
