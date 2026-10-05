@@ -1,4 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  DERNIERE_MISE_A_JOUR,
+  MiseAJourConditions,
+  ResultatAnnonce,
+} from '../../../core/conditions/conditions.model';
+import { ConditionsService } from '../../../core/conditions/conditions.service';
 import { DomaineExpediteur, EssaiFacturation } from '../../../core/finance/finance.model';
 import { FinanceService } from '../../../core/finance/finance.service';
 import { Parametres } from './parametres';
@@ -53,6 +59,7 @@ describe('Parametres — essai de facturation', () => {
             enregistrementsExpediteur: () => Promise.resolve(reponseDns),
           },
         },
+        { provide: ConditionsService, useValue: { annoncer: () => Promise.resolve({}) } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(Parametres);
@@ -200,5 +207,190 @@ describe('Parametres — essai de facturation', () => {
     const texte = fixture.nativeElement.textContent;
     expect(texte).toContain('Cloudflare');
     expect(texte).toContain('2 septembre 2026');
+  });
+});
+
+/**
+ * L'annonce d'une mise à jour des conditions touche chaque compte, par e-mail :
+ * rien ne doit partir à tous sans un second geste, l'essai ne doit viser que
+ * les comptes de test, et le bilan doit dire ce qui est réellement parti — un
+ * e-mail refusé ne se rattrape pas en relançant l'envoi.
+ */
+interface InterneAnnonce {
+  envoyerEssaiAnnonce(): Promise<void>;
+  demanderEnvoiAnnonce(): void;
+  confirmerEnvoiAnnonce(): Promise<void>;
+  annoncePrete: () => boolean;
+}
+
+describe('Parametres — annonce d’une mise à jour des conditions', () => {
+  let fixture: ComponentFixture<Parametres>;
+  let interne: InterneAnnonce;
+  let appels: { mode: string; miseAJour: MiseAJourConditions }[];
+  let reponse: { resultat?: ResultatAnnonce; erreur?: string };
+
+  function bilan(partiel: Partial<ResultatAnnonce>): ResultatAnnonce {
+    return {
+      mode: 'essai',
+      notifies: 1,
+      courriels_envoyes: 1,
+      courriels_echoues: 0,
+      deja_informes: false,
+      ...partiel,
+    };
+  }
+
+  async function creer(): Promise<void> {
+    await TestBed.configureTestingModule({
+      imports: [Parametres],
+      providers: [
+        {
+          provide: FinanceService,
+          useValue: {
+            envoyerFactureEssai: () => Promise.resolve({}),
+            enregistrementsExpediteur: () => Promise.resolve({}),
+          },
+        },
+        {
+          provide: ConditionsService,
+          useValue: {
+            annoncer: (mode: string, miseAJour: MiseAJourConditions) => {
+              appels.push({ mode, miseAJour });
+              return Promise.resolve(reponse);
+            },
+          },
+        },
+      ],
+    }).compileComponents();
+    fixture = TestBed.createComponent(Parametres);
+    interne = fixture.componentInstance as unknown as InterneAnnonce;
+    fixture.detectChanges();
+  }
+
+  function texte(): string {
+    return (fixture.nativeElement as HTMLElement).textContent ?? '';
+  }
+
+  function bouton(libelle: string): HTMLButtonElement | undefined {
+    return [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find(
+      (b) => b.textContent?.trim() === libelle,
+    );
+  }
+
+  beforeEach(() => {
+    appels = [];
+    reponse = { resultat: bilan({}) };
+  });
+
+  afterEach(() => TestBed.resetTestingModule());
+
+  it('propose la dernière mise à jour, pré-remplie', async () => {
+    await creer();
+    const page = fixture.nativeElement as HTMLElement;
+
+    expect((page.querySelector('#annonce-date') as HTMLInputElement).value).toBe('2026-10-05');
+    expect((page.querySelector('#annonce-resume') as HTMLTextAreaElement).value).toContain(
+      '« Léa M. »',
+    );
+    const coches = [...page.querySelectorAll('.parametres-documents input')].map(
+      (c) => (c as HTMLInputElement).checked,
+    );
+    expect(coches).toEqual([true, true, false]);
+  });
+
+  it('envoie l’essai aux comptes de test, avec ce qui est à l’écran', async () => {
+    await creer();
+
+    await interne.envoyerEssaiAnnonce();
+    fixture.detectChanges();
+
+    expect(appels).toEqual([
+      {
+        mode: 'essai',
+        miseAJour: {
+          date: '2026-10-05',
+          documents: ['cgu', 'confidentialite'],
+          resume: DERNIERE_MISE_A_JOUR.resume,
+        },
+      },
+    ]);
+    expect(texte()).toContain(
+      'Essai envoyé à 1 compte de test : notification posée, 1 e-mail parti.',
+    );
+  });
+
+  it('n’envoie à tous qu’au second geste', async () => {
+    reponse = { resultat: bilan({ mode: 'envoi', notifies: 27, courriels_envoyes: 27 }) };
+    await creer();
+
+    bouton('Envoyer à tous les utilisateurs')?.click();
+    fixture.detectChanges();
+    expect(appels).toEqual([]);
+    expect(bouton('Confirmer l’envoi à tous')).toBeDefined();
+
+    await interne.confirmerEnvoiAnnonce();
+    fixture.detectChanges();
+
+    expect(appels.map((a) => a.mode)).toEqual(['envoi']);
+    expect(texte()).toContain(
+      'Annonce envoyée à 27 comptes : notification posée, 27 e-mails partis.',
+    );
+    expect(bouton('Confirmer l’envoi à tous')).toBeUndefined();
+  });
+
+  it('dit quand tout le monde avait déjà été prévenu', async () => {
+    reponse = {
+      resultat: bilan({ mode: 'envoi', notifies: 0, courriels_envoyes: 0, deja_informes: true }),
+    };
+    await creer();
+
+    interne.demanderEnvoiAnnonce();
+    await interne.confirmerEnvoiAnnonce();
+    fixture.detectChanges();
+
+    expect(texte()).toContain('rien n’est reparti');
+  });
+
+  it('signale les e-mails refusés sans les confondre avec un succès', async () => {
+    reponse = {
+      resultat: bilan({ mode: 'envoi', notifies: 27, courriels_envoyes: 25, courriels_echoues: 2 }),
+    };
+    await creer();
+
+    interne.demanderEnvoiAnnonce();
+    await interne.confirmerEnvoiAnnonce();
+    fixture.detectChanges();
+
+    const alerte = (fixture.nativeElement as HTMLElement).querySelector('.alerte[role="status"]');
+    expect(alerte?.textContent).toContain('2 e-mails refusés par Brevo');
+    expect(alerte?.classList.contains('est-succes')).toBe(false);
+  });
+
+  it('rapporte le motif d’un refus', async () => {
+    reponse = { erreur: 'Aucun compte de test : marque un compte comme compte de test.' };
+    await creer();
+
+    await interne.envoyerEssaiAnnonce();
+    fixture.detectChanges();
+
+    expect(texte()).toContain('Aucun compte de test');
+  });
+
+  it('ne laisse rien partir sans document coché', async () => {
+    await creer();
+    const page = fixture.nativeElement as HTMLElement;
+
+    for (const case_ of page.querySelectorAll<HTMLInputElement>('.parametres-documents input')) {
+      if (case_.checked) {
+        case_.click();
+      }
+    }
+    fixture.detectChanges();
+
+    expect(interne.annoncePrete()).toBe(false);
+    expect(bouton('Envoyer un essai aux comptes de test')?.disabled).toBe(true);
+    expect(bouton('Envoyer à tous les utilisateurs')?.disabled).toBe(true);
+    await interne.envoyerEssaiAnnonce();
+    expect(appels).toEqual([]);
   });
 });

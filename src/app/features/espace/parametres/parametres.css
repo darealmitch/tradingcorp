@@ -71,3 +71,50 @@
   word-break: break-all;
   max-width: 420px;
 }
+
+.parametres-champ-court {
+  flex: 0 1 220px;
+}
+
+.parametres-champ textarea {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.parametres-resume {
+  padding-top: 10px;
+}
+
+.parametres-documents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  flex: 1 1 320px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.parametres-documents legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.parametres-documents label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.parametres-confirmation {
+  margin-top: 12px;
+}

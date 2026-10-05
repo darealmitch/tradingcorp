@@ -1,8 +1,8 @@
 <header class="page-tete">
   <h1 class="page-titre">Paramètres</h1>
   <p class="page-sous">
-    Ce que la plateforme applique aujourd'hui, en lecture seule. Seuls les réglages dont
-    l'application connaît réellement l'état figurent ici.
+    Ce que la plateforme applique aujourd'hui, et les envois qui se déclenchent d'ici. Seuls les
+    réglages dont l'application connaît réellement l'état figurent ici.
   </p>
 </header>
 
@@ -33,6 +33,118 @@
       </dd>
     </div>
   </dl>
+</div>
+
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">Mise à jour des conditions</h2>
+  </div>
+  <p class="cellule-discrete">
+    Prévient les utilisateurs d'une modification des conditions, comme le prévoit l'article 14 des
+    CGU : une notification dans leur espace et un e-mail. Chaque compte n'est prévenu qu'une fois
+    par date de version, même si l'envoi est relancé. Commence par un essai : il ne part qu'aux
+    comptes de test, avec un bandeau d'essai.
+  </p>
+
+  <div class="parametres-action">
+    <div class="parametres-champ parametres-champ-court">
+      <label for="annonce-date">Date de la nouvelle version</label>
+      <input
+        id="annonce-date"
+        type="date"
+        [value]="annonceDate()"
+        (input)="saisirDateAnnonce($event)"
+      />
+    </div>
+    <fieldset class="parametres-documents">
+      <legend>Documents mis à jour</legend>
+      @for (document of documentsLegaux; track document.id) {
+        <label>
+          <input
+            type="checkbox"
+            [checked]="annonceDocuments().includes(document.id)"
+            (change)="basculerDocument(document.id)"
+          />
+          {{ document.titre }}
+        </label>
+      }
+    </fieldset>
+  </div>
+
+  <div class="parametres-champ parametres-resume">
+    <label for="annonce-resume">Ce qui change</label>
+    <textarea
+      id="annonce-resume"
+      rows="7"
+      [attr.maxlength]="longueurMaxResume"
+      [value]="annonceResume()"
+      (input)="saisirResumeAnnonce($event)"
+    ></textarea>
+    <span class="cellule-discrete"
+      >Une ligne qui commence par « - » devient une puce dans l'e-mail.</span
+    >
+  </div>
+
+  <div class="parametres-action">
+    <button
+      class="btn btn-secondaire"
+      type="button"
+      [disabled]="annonceEnCours() || !annoncePrete()"
+      (click)="envoyerEssaiAnnonce()"
+    >
+      {{
+        annonceEnCours() && !confirmationAnnonce()
+          ? 'Envoi…'
+          : 'Envoyer un essai aux comptes de test'
+      }}
+    </button>
+    @if (!confirmationAnnonce()) {
+      <button
+        class="btn btn-primary"
+        type="button"
+        [disabled]="annonceEnCours() || !annoncePrete()"
+        (click)="demanderEnvoiAnnonce()"
+      >
+        Envoyer à tous les utilisateurs
+      </button>
+    }
+  </div>
+
+  @if (confirmationAnnonce()) {
+    <div class="alerte parametres-confirmation" role="alert">
+      <p>
+        Tous les comptes vont recevoir la notification et l'e-mail. Un compte déjà prévenu de cette
+        version ne recevra rien de plus.
+      </p>
+      <div class="parametres-action">
+        <button
+          class="btn btn-danger"
+          type="button"
+          [disabled]="annonceEnCours()"
+          (click)="confirmerEnvoiAnnonce()"
+        >
+          {{ annonceEnCours() ? 'Envoi…' : 'Confirmer l’envoi à tous' }}
+        </button>
+        <button
+          class="btn btn-secondaire"
+          type="button"
+          [disabled]="annonceEnCours()"
+          (click)="annulerEnvoiAnnonce()"
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (annonceResultat(); as resultat) {
+    <p class="alerte" [class.est-succes]="resultat.courriels_echoues === 0" role="status">
+      {{ bilanAnnonce(resultat) }}
+    </p>
+  }
+  @if (annonceErreur(); as message) {
+    <p class="alerte" role="status">{{ message }}</p>
+  }
 </div>
 
 <div class="panneau">
