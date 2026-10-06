@@ -157,7 +157,8 @@ export class CommunauteService {
    * élèves exige une inscription et place tout en modération, deux conditions
    * qui n'ont pas de sens pour l'équipe. `repondre_en_equipe` vérifie le rôle,
    * publie directement, pose les marqueurs `par_equipe` / `est_prive` — que la
-   * base refuse à un élève — et prévient l'élève par une notification.
+   * base refuse à un élève — et prévient l'élève par une notification, que la
+   * base double d'un e-mail.
    */
   async repondreEnEquipe(
     idCommentaire: string,
@@ -181,7 +182,8 @@ export class CommunauteService {
    * Une voie à part, comme pour l'équipe : la règle d'écriture des élèves ne
    * produit que des messages publics, en modération. `repondre_en_prive`
    * vérifie que l'élève écrit dans son propre fil, qu'un échange privé y est
-   * ouvert, publie sans modération et prévient les administrateurs.
+   * ouvert, publie sans modération et prévient les administrateurs, ainsi que
+   * les formateurs qui ont écrit dans l'échange — dans l'espace et par e-mail.
    */
   async repondreEnPrive(idCommentaire: string, contenu: string): Promise<string | null> {
     return this.acces.ecrire(
