@@ -78,15 +78,36 @@
                   <span class="liste-date">{{ datePublication(message.date_creation) }}</span>
                 </p>
                 <p class="moderation-contenu">{{ message.contenu }}</p>
-                @if (peutRendrePublic(message, echange)) {
-                  <button
-                    class="btn btn-ghost btn-compact"
-                    type="button"
-                    [disabled]="traitement()"
-                    (click)="rendrePublic(message)"
-                  >
-                    Rendre public
-                  </button>
+                @if (peutRendrePublic(message, echange) || estAdmin()) {
+                  <div class="moderation-actions">
+                    @if (peutRendrePublic(message, echange)) {
+                      <button
+                        class="btn btn-ghost btn-compact"
+                        type="button"
+                        [disabled]="traitement()"
+                        (click)="rendrePublic(message)"
+                      >
+                        Rendre public
+                      </button>
+                    }
+                    @if (estAdmin()) {
+                      @if (suppressionId() === message.id_commentaire) {
+                        <ng-container
+                          [ngTemplateOutlet]="confirmationSuppression"
+                          [ngTemplateOutletContext]="{ $implicit: message }"
+                        />
+                      } @else {
+                        <button
+                          class="btn btn-ghost btn-compact est-rejet"
+                          type="button"
+                          [disabled]="traitement()"
+                          (click)="suppressionId.set(message.id_commentaire)"
+                        >
+                          Supprimer définitivement
+                        </button>
+                      }
+                    }
+                  </div>
                 }
               </li>
             }
@@ -158,6 +179,23 @@
               Rendre public
             </button>
           }
+          @if (estAdmin()) {
+            @if (suppressionId() === echange.fil.id_commentaire) {
+              <ng-container
+                [ngTemplateOutlet]="confirmationSuppression"
+                [ngTemplateOutletContext]="{ $implicit: echange.fil }"
+              />
+            } @else {
+              <button
+                class="btn btn-ghost btn-compact est-rejet"
+                type="button"
+                [disabled]="traitement()"
+                (click)="suppressionId.set(echange.fil.id_commentaire)"
+              >
+                Supprimer tout l’échange
+              </button>
+            }
+          }
         </div>
       </article>
     }
@@ -195,25 +233,10 @@
             </a>
           }
           @if (suppressionId() === commentaire.id_commentaire) {
-            <span class="confirmation-suppression">
-              <span class="confirmation-texte">Supprimer définitivement, avec ses réponses ?</span>
-              <button
-                class="btn btn-danger btn-compact"
-                type="button"
-                [disabled]="traitement()"
-                (click)="confirmerSuppression(commentaire)"
-              >
-                {{ traitement() ? 'Suppression…' : 'Confirmer' }}
-              </button>
-              <button
-                class="btn btn-ghost btn-compact"
-                type="button"
-                [disabled]="traitement()"
-                (click)="suppressionId.set(null)"
-              >
-                Annuler
-              </button>
-            </span>
+            <ng-container
+              [ngTemplateOutlet]="confirmationSuppression"
+              [ngTemplateOutletContext]="{ $implicit: commentaire }"
+            />
           } @else {
             @for (action of actions(commentaire); track action.decision) {
               <button
@@ -284,3 +307,27 @@
     </div>
   }
 </section>
+
+<!-- La confirmation de suppression, la même partout : une ligne d'onglet, un
+     message d'échange privé, un échange entier. -->
+<ng-template #confirmationSuppression let-message>
+  <span class="confirmation-suppression">
+    <span class="confirmation-texte">{{ questionSuppression(message) }}</span>
+    <button
+      class="btn btn-danger btn-compact"
+      type="button"
+      [disabled]="traitement()"
+      (click)="confirmerSuppression(message)"
+    >
+      {{ traitement() ? 'Suppression…' : 'Confirmer' }}
+    </button>
+    <button
+      class="btn btn-ghost btn-compact"
+      type="button"
+      [disabled]="traitement()"
+      (click)="suppressionId.set(null)"
+    >
+      Annuler
+    </button>
+  </span>
+</ng-template>

@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -93,7 +94,7 @@ function lireOnglet(valeur: string | null): Onglet {
   selector: 'app-moderation',
   templateUrl: './moderation.html',
   styleUrls: ['../espace-pages.css', './moderation.css'],
-  imports: [FormsModule, Icone, RouterLink],
+  imports: [FormsModule, Icone, NgTemplateOutlet, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Moderation {
@@ -169,10 +170,24 @@ export class Moderation {
   }
 
   /**
-   * Les décisions qui ont un sens pour ce commentaire — les mêmes règles que
-   * `moderer_commentaire`, pour ne proposer que ce que le serveur acceptera.
+   * Ce que l'écran propose pour ce commentaire. La suppression définitive,
+   * réservée à l'administrateur, vaut pour tout message — publié ou non, d'un
+   * élève ou de l'équipe — sans passer par le rejet.
    */
   protected actions(c: CommentaireModere): Action[] {
+    const actions = this.decisions(c);
+    if (this.estAdmin()) {
+      actions.push({ decision: 'supprimer', libelle: 'Supprimer définitivement', retrait: true });
+    }
+    return actions;
+  }
+
+  /**
+   * Les décisions de modération qui ont un sens pour ce commentaire — les
+   * mêmes règles que `moderer_commentaire`, pour ne proposer que ce que le
+   * serveur acceptera.
+   */
+  private decisions(c: CommentaireModere): Action[] {
     if (c.par_equipe) {
       // Réponse de l'équipe : publiée d'office, seule sa visibilité change.
       const parent = c.parent;
@@ -205,10 +220,15 @@ export class Moderation {
     }
     if (c.statut !== 'rejete') {
       actions.push({ decision: 'rejeter', libelle: 'Rejeter', retrait: true });
-    } else if (this.estAdmin()) {
-      actions.push({ decision: 'supprimer', libelle: 'Supprimer définitivement', retrait: true });
     }
     return actions;
+  }
+
+  /** Un message emporte ses réponses ; une réponse part seule. */
+  protected questionSuppression(c: CommentaireModere): string {
+    return c.id_parent === null
+      ? 'Supprimer définitivement, avec ses réponses ?'
+      : 'Supprimer définitivement cette réponse ?';
   }
 
   /** Une réponse privée de l'équipe peut devenir publique si son fil l'est. */
@@ -243,9 +263,12 @@ export class Moderation {
   protected async confirmerSuppression(c: CommentaireModere): Promise<void> {
     await this.executer(() => this.moderation.supprimerDefinitivement(c.id_commentaire), {
       texte:
-        'Message supprimé définitivement, avec ses réponses. L’action est inscrite au journal.',
+        c.id_parent === null
+          ? 'Message supprimé définitivement, avec ses réponses. L’action est inscrite au journal.'
+          : 'Réponse supprimée définitivement. L’action est inscrite au journal.',
       onglet: null,
     });
+    this.suppressionId.set(null);
   }
 
   protected basculerReponse(idFil: string): void {

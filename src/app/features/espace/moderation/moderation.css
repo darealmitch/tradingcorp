@@ -142,6 +142,10 @@
   margin-top: 12px;
 }
 
+.echange-message .moderation-actions {
+  margin-top: 8px;
+}
+
 .echange-message.est-equipe .liste-titre {
   color: var(--violet-text);
 }

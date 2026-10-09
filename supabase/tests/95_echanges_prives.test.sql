@@ -8,7 +8,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(40);
+select plan(41);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Jeu d'essai : deux élèves inscrites, une formatrice, une administratrice,
@@ -320,11 +320,23 @@ select is(
   'suppression — ni par la fonction réservée à l''administrateur'
 );
 
+-- Depuis le 09/10/2026, l'administratrice supprime directement un message
+-- publié : plus besoin de le rejeter d'abord. Le journal garde son état.
 select is(
   pg_temp.erreur_sous('95000000-0000-0000-0000-0000000000ad',
     $$select public.supprimer_commentaire('c9500000-0000-0000-0000-000000000002')$$),
-  'P0001',
-  'suppression — l''administratrice ne supprime qu''un message rejeté'
+  null::text,
+  'suppression — l''administratrice supprime aussi un message publié, sans le rejeter d''abord'
+);
+
+select is(
+  (select count(*)::int from public.commentaires
+    where id_commentaire = 'c9500000-0000-0000-0000-000000000002')
+  || ' / ' || (select meta ->> 'statut' from public.journal_admin
+      where action = 'suppression_commentaire'
+        and meta ->> 'id_commentaire' = 'c9500000-0000-0000-0000-000000000002'),
+  '0 / approuve',
+  'suppression — le message publié a disparu, et le journal dit qu''il l''était'
 );
 
 select is(

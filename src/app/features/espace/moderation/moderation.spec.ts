@@ -110,20 +110,29 @@ describe.each<Role>(['formateur', 'admin'])('Moderation — %s', (role) => {
     expect(page.querySelector('.onglet.est-actif')?.textContent).toContain('Publiés');
   });
 
+  // L'administrateur peut en plus supprimer définitivement tout message.
+  const suppression = role === 'admin' ? ['Supprimer définitivement'] : [];
+
   it('propose, sous un message en attente, les trois décisions qui ont un sens', async () => {
     const { page } = await monter('/espace/moderation', role, {
       commentaires: [commentaire({})],
     });
 
-    expect(actions(page)).toEqual(['Voir dans la leçon', 'Approuver', 'Rendre privé', 'Rejeter']);
+    expect(actions(page)).toEqual([
+      'Voir dans la leçon',
+      'Approuver',
+      'Rendre privé',
+      'Rejeter',
+      ...suppression,
+    ]);
   });
 
-  it('ne propose rien sur une réponse écrite en privé par un élève', async () => {
+  it('ne propose aucune décision de modération sur une réponse écrite en privé par un élève', async () => {
     const { page } = await monter('/espace/moderation?onglet=publies', role, {
       commentaires: [commentaire({ id_parent: 'c-0', est_prive: true, statut: 'approuve' })],
     });
 
-    expect(actions(page)).toEqual(['Voir dans la leçon']);
+    expect(actions(page)).toEqual(['Voir dans la leçon', ...suppression]);
   });
 
   it('rappelle à quoi répond une réponse', async () => {
@@ -220,5 +229,81 @@ describe('Moderation — suppression définitive', () => {
     cliquer(page, 'Confirmer');
     await stabiliser(harness);
     expect(moderation.supprimerDefinitivement).toHaveBeenCalledWith('c-1');
+  });
+
+  it('la propose aussi sur un message en attente ou publié, sans rejet préalable', async () => {
+    const { harness, page, moderation } = await monter('/espace/moderation', 'admin', {
+      commentaires: [commentaire({})],
+    });
+
+    expect(actions(page)).toContain('Supprimer définitivement');
+    cliquer(page, 'Supprimer définitivement');
+    await stabiliser(harness);
+    expect(page.querySelector('.confirmation-suppression')?.textContent).toContain(
+      'avec ses réponses',
+    );
+
+    cliquer(page, 'Confirmer');
+    await stabiliser(harness);
+    expect(moderation.modererCommentaire).not.toHaveBeenCalled();
+    expect(moderation.supprimerDefinitivement).toHaveBeenCalledWith('c-1');
+  });
+
+  describe('dans les échanges privés', () => {
+    const fil = commentaire({ statut: 'approuve' });
+    const reponse = commentaire({
+      id_commentaire: 'c-2',
+      id_parent: 'c-1',
+      est_prive: true,
+      statut: 'approuve',
+      contenu: 'Une précision',
+    });
+    const echanges: EchangePrive<CommentaireModere>[] = [
+      {
+        fil,
+        filPrive: false,
+        messages: [reponse],
+        aRepondre: true,
+        derniereActivite: reponse.date_creation,
+      },
+    ];
+
+    it('supprime une réponse seule, puis tout l’échange', async () => {
+      const { harness, page, moderation } = await monter(
+        '/espace/moderation?onglet=prives',
+        'admin',
+        { echanges },
+      );
+
+      cliquer(page, 'Supprimer définitivement');
+      await stabiliser(harness);
+      expect(page.querySelector('.confirmation-suppression')?.textContent).toContain(
+        'cette réponse',
+      );
+      cliquer(page, 'Confirmer');
+      await stabiliser(harness);
+      expect(moderation.supprimerDefinitivement).toHaveBeenCalledWith('c-2');
+
+      cliquer(page, 'Supprimer tout l’échange');
+      await stabiliser(harness);
+      expect(page.querySelector('.confirmation-suppression')?.textContent).toContain(
+        'avec ses réponses',
+      );
+      cliquer(page, 'Confirmer');
+      await stabiliser(harness);
+      expect(moderation.supprimerDefinitivement).toHaveBeenCalledWith('c-1');
+    });
+
+    it('ne la propose pas au formateur', async () => {
+      const { page } = await monter('/espace/moderation?onglet=prives', 'formateur', {
+        echanges,
+      });
+
+      const libelles = [...page.querySelectorAll('.echange button')].map((b) =>
+        b.textContent?.trim(),
+      );
+      expect(libelles).not.toContain('Supprimer définitivement');
+      expect(libelles).not.toContain('Supprimer tout l’échange');
+    });
   });
 });
