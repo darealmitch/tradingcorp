@@ -35,54 +35,9 @@
   gap: 10px;
 }
 
-/* ===== Onglets =====
-   Un onglet par état : le message approuvé ou rejeté ne disparaît plus, il
-   change de place. L'onglet actif est mémorisé dans l'adresse. */
-
-.onglets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--line);
-}
-
-.onglet {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.88rem;
-  text-decoration: none;
-  transition:
-    color 0.2s,
-    border-color 0.2s;
-}
-
-.onglet:hover {
-  color: var(--text);
-}
-
-.onglet.est-actif {
-  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-  color: var(--text);
-  font-weight: 600;
-}
-
-.onglet-compte {
-  min-width: 20px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--attention) 18%, transparent);
-  color: var(--attention-text);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-align: center;
-}
+/* Les onglets (un par état, l'actif mémorisé dans l'adresse) suivent les
+   pastilles partagées d'espace-pages.css : le message approuvé ou rejeté ne
+   disparaît plus, il change de place. */
 
 /* ===== Contexte d'une réponse ===== */
 

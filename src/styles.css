@@ -423,6 +423,115 @@ h3 {
   background: var(--glass-ghost-hover);
 }
 
+/* Action positive dans une ligne de tableau (ouvrir un accès). Le bouton
+   « verre » reste réservé à l'action principale de la page : répété sur
+   chaque ligne, il écrasait le tableau. */
+.btn-accent {
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--text);
+}
+
+.btn-accent:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Bouton icône seule (corriger, supprimer) : discret au repos, il se dessine
+   au survol et au focus. Toujours accompagné d'un aria-label. */
+.btn-icone {
+  display: inline-grid;
+  place-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.btn-icone:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--glass-ghost-hover);
+  color: var(--text);
+}
+
+.btn-icone.est-danger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--down) 45%, var(--line));
+  background: color-mix(in srgb, var(--down) 10%, transparent);
+  color: var(--down-text);
+}
+
+.btn-icone:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ===== Onglets et filtres en pastilles =====
+   Une pastille par état (onglets de la modération, filtres des comptes). Le
+   compteur est ambre quand il signale ce qui attend une action, neutre quand
+   il ne fait que dénombrer. */
+
+.onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.onglet {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.88rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.onglet:hover {
+  color: var(--text);
+}
+
+.onglet.est-actif {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.onglet-compte {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--attention) 18%, transparent);
+  color: var(--attention-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.onglet-compte.est-neutre {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--muted);
+}
+
 /* ===== Bouton de fermeture des modales média (image / vidéo) =====
    Unifié pour toutes les modales : une seule taille, un seul offset, une vraie
    croix SVG (composant Icone). Le conteneur .*-inner doit rester

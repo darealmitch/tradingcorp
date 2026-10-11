@@ -1,55 +1,115 @@
-.selecteur-role {
-  padding: 8px 12px;
+/* =============================================================================
+   Utilisateurs — gestion des comptes
+   -----------------------------------------------------------------------------
+   Une seule action principale par écran (« Nouveau compte ») ; les actions de
+   ligne restent secondaires et alignées. Seules les exceptions se signalent :
+   « Sans accès » et « Activation en attente » en ambre, le reste se tait. La
+   liste suit la largeur de son panneau (requête de conteneur) et passe en
+   cartes quand un tableau ne tiendrait plus sans défilement horizontal.
+   ========================================================================== */
+
+/* ===== En-tête ===== */
+
+.tete-utilisateurs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+
+.tete-texte {
+  min-width: 0;
+}
+
+.bouton-nouveau-compte {
+  flex-shrink: 0;
+}
+
+/* ===== Champs (création, correction, recherche, rôle) ===== */
+
+.selecteur,
+.champ input,
+.correction input,
+.recherche input {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
   color: var(--text);
   font: inherit;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
-.selecteur-role:disabled {
+.selecteur {
+  height: 38px;
+  padding: 0 12px;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.selecteur:disabled {
   opacity: 0.6;
+  cursor: not-allowed;
 }
 
-/* ===== Création de compte ===== */
+/* Le focus se lit au contour du champ plutôt qu'à l'anneau global, décalé et
+   arrondi pour des boutons. */
+.selecteur:focus-visible,
+.champ input:focus-visible,
+.correction input:focus-visible,
+.recherche input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ===== Création d'un compte ===== */
+
+.creation + .compte-cree {
+  margin-top: 24px;
+}
 
 .creation-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  align-items: flex-start;
 }
 
 .creation-champs {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  width: 100%;
+  gap: 18px 20px;
 }
 
-.champ-creation {
+.champ {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
-.champ-creation label {
+.champ label,
+.creation-note {
   font-size: 0.82rem;
   color: var(--muted);
 }
 
-.champ-creation input {
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
+.champ input,
+.champ .selecteur {
+  height: 44px;
+  padding: 0 14px;
+  font-size: 0.95rem;
 }
 
-.champ-creation input:focus {
-  outline: none;
-  border-color: var(--line-strong);
+.champ-requis {
+  color: var(--attention-text);
+}
+
+.champ-aide {
+  font-size: 0.78rem;
+  color: var(--muted);
 }
 
 .champ-erreur {
@@ -57,121 +117,561 @@
   color: var(--down-text);
 }
 
-.compte-cree p + p {
-  margin-top: 10px;
+.creation-pied {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.creation-note {
+  max-width: 520px;
+}
+
+.creation-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* ===== Compte créé : le mot de passe à transmettre ===== */
+
+.compte-cree {
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  border: 1px solid color-mix(in srgb, var(--up-etat) 40%, var(--line));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--up-etat) 6%, transparent);
+}
+
+.compte-cree-tete {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.compte-cree-icone {
+  display: grid;
+  place-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--up-etat) 14%, transparent);
+  color: var(--up-text);
+}
+
+.compte-cree-texte {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.compte-cree-titre {
+  margin-bottom: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: break-word;
 }
 
 .compte-mdp {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  margin-top: 16px;
+  padding-left: 52px;
 }
 
 .compte-mdp code {
-  padding: 8px 14px;
+  padding: 9px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
-  color: var(--text);
   font-size: 0.95rem;
   letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
 }
 
-/* ===== Accès à la formation ===== */
+/* ===== Liste des comptes : outils ===== */
+
+.comptes {
+  container: comptes / inline-size;
+}
+
+.comptes-outils {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-bottom: 18px;
+}
+
+.recherche {
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 340px;
+}
+
+.recherche app-icone {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  display: flex;
+  color: var(--muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.recherche input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px 0 40px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+/* Les filtres reprennent les pastilles partagées, sans leur filet : ici ils
+   vivent dans la barre d'outils, pas au-dessus d'un contenu. */
+.filtres {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Collés sous la barre de navigation pendant le défilement : une action menée
+   en bas d'une longue liste voit son résultat sans remonter. */
+.comptes-retours {
+  position: sticky;
+  top: 86px;
+  z-index: 5;
+}
+
+.comptes-retours .alerte {
+  margin-bottom: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.comptes-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 36px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ===== Liste des comptes : tableau ===== */
+
+.tableau-comptes th,
+.tableau-comptes td {
+  padding-inline: 12px;
+  vertical-align: middle;
+}
+
+.colonne-role,
+.cellule-role .selecteur {
+  width: 150px;
+}
+
+.colonne-acces {
+  width: 236px;
+}
+
+.colonne-test,
+.cellule-test {
+  width: 52px;
+  text-align: center;
+}
+
+.colonne-actions {
+  width: 84px;
+}
+
+.ligne-compte {
+  transition: background-color 0.2s;
+}
+
+.ligne-compte:hover {
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+
+/* La ligne qu'on vient de modifier s'éclaire un instant. */
+.ligne-compte.est-modifie {
+  animation: ligne-modifiee 1.6s var(--ease-out);
+}
+
+@keyframes ligne-modifiee {
+  from {
+    background-color: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ligne-compte.est-modifie {
+    animation: none;
+  }
+}
+
+/* La confirmation s'accroche à sa ligne : pas de filet entre les deux. */
+.ligne-compte.a-confirmation td {
+  border-bottom-color: transparent;
+}
+
+/* --- Compte --- */
+
+.compte {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.compte-initiales {
+  display: grid;
+  place-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.compte-identite {
+  min-width: 0;
+}
+
+.compte-nom,
+.compte-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.compte-nom {
+  font-weight: 500;
+}
+
+.compte-email {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  overflow-wrap: break-word;
+}
+
+.compte-meta {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.compte-date {
+  white-space: nowrap;
+}
+
+.compte-meta .badge-statut {
+  padding: 2px 9px;
+  font-size: 0.66rem;
+}
+
+.etiquette {
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* --- Correction du nom --- */
+
+.correction,
+.correction-actions,
+.actions-ligne,
+.confirmation-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.correction {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.correction input {
+  flex: 1 1 120px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+}
+
+/* --- Rôle et accès --- */
+
+.role-fixe,
+.acces-equipe {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
 
 .acces-liste {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
+/* L'état à gauche, l'action à droite : d'une ligne à l'autre, les boutons
+   tombent dans la même colonne. */
 .acces-ligne {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.acces-etat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .acces-formation {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--muted);
 }
 
-.case-test {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--violet);
-}
-
-/* ===== Correction nom/prénom ===== */
-
-.nom-cellule {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.lien-corriger {
-  border: 0;
-  background: none;
-  color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.lien-corriger:hover {
-  color: var(--accent);
-}
-
-/* Même traitement que .lien-corriger, en teinte d'alerte au survol : la
-   suppression reste discrète tant qu'elle n'est pas visée. */
-.lien-supprimer {
-  border: 0;
-  background: none;
-  color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.lien-supprimer:hover {
-  color: var(--down-text);
-}
-
-.confirmation-suppression {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.confirmation-texte {
-  color: var(--down-text);
-  font-size: 0.85rem;
+.cellule-acces .btn-compact,
+.confirmation .btn-compact,
+.correction .btn-compact {
+  height: 36px;
+  padding-inline: 16px;
   white-space: nowrap;
 }
 
-.correction {
+/* Un bouton de ligne ne bondit pas au survol : le tableau reste immobile. */
+.tableau-comptes .btn:hover {
+  transform: none;
+}
+
+/* --- Compte de test et actions --- */
+
+.case-test {
+  display: inline-grid;
+  place-content: center;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+}
+
+.case-test input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--violet);
+  cursor: inherit;
+}
+
+.actions-ligne {
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.btn-icone-vide {
+  width: 38px;
+  flex-shrink: 0;
+}
+
+/* --- Confirmations (retrait d'un accès, suppression d'un compte) --- */
+
+.ligne-confirmation td {
+  padding-top: 0;
+}
+
+.confirmation {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--down) 35%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--down) 6%, transparent);
 }
 
-.correction input {
-  width: 120px;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
+.confirmation-texte {
+  flex: 1 1 320px;
+  font-size: 0.9rem;
 }
 
-.correction input:focus {
-  outline: none;
-  border-color: var(--line-strong);
+.confirmation-detail {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ===== Petites largeurs : chaque compte devient une carte =====
+   Le tableau garde sa sémantique pour les lecteurs d'écran ; seule sa mise en
+   page change. Chaque réglage reçoit son libellé, et les cibles passent à
+   44 px pour le doigt. */
+
+@container comptes (max-width: 860px) {
+  .tableau-comptes thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tableau-comptes,
+  .tableau-comptes tr {
+    display: block;
+  }
+
+  .tableau-comptes tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .tableau-comptes td {
+    display: block;
+    width: auto;
+    padding: 0;
+    border: 0;
+  }
+
+  .tableau-comptes .ligne-compte {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px 8px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: none;
+  }
+
+  .ligne-compte.a-confirmation {
+    border-color: color-mix(in srgb, var(--down) 35%, var(--line));
+  }
+
+  .cellule-actions {
+    grid-area: 1 / 2;
+  }
+
+  .tableau-comptes .cellule-role,
+  .tableau-comptes .cellule-acces,
+  .tableau-comptes .cellule-test {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    width: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .cellule-role::before,
+  .cellule-acces::before,
+  .cellule-test::before {
+    content: attr(data-libelle);
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .cellule-acces .acces-liste {
+    flex: 1 1 220px;
+  }
+
+  .cellule-role .selecteur {
+    width: auto;
+    min-width: 160px;
+  }
+
+  .btn-icone-vide {
+    display: none;
+  }
+
+  .selecteur,
+  .cellule-acces .btn-compact,
+  .confirmation .btn-compact,
+  .correction .btn-compact {
+    height: 44px;
+  }
+
+  .btn-icone,
+  .case-test {
+    width: 44px;
+    height: 44px;
+  }
+
+  .confirmation-actions,
+  .comptes-outils .recherche {
+    width: 100%;
+    max-width: none;
+  }
+
+  .confirmation-actions .btn {
+    flex: 1;
+  }
+}
+
+/* Carte étroite : l'avatar cède sa place au nom et à l'adresse. */
+@container comptes (max-width: 480px) {
+  .compte-initiales {
+    display: none;
+  }
+
+  .tableau-comptes .ligne-compte {
+    padding: 14px;
+  }
+}
+
+/* Sur téléphone, panneaux et carte du mot de passe se resserrent, et les
+   messages se décollent du bouton du tiroir de navigation. */
+@media (max-width: 720px) {
+  .panneau {
+    padding: 20px 16px;
+  }
+
+  .compte-cree {
+    padding: 18px;
+  }
+
+  .compte-mdp {
+    padding-left: 0;
+  }
+
+  .comptes-retours {
+    top: 136px;
+  }
+
+  .creation-actions {
+    width: 100%;
+  }
+
+  .creation-actions .btn {
+    flex: 1;
+  }
 }

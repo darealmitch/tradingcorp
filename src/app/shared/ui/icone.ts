@@ -159,6 +159,14 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         @case ('lune') {
           <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
         }
+        @case ('plus') {
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        }
+        @case ('loupe') {
+          <circle cx="11" cy="11" r="7" />
+          <line x1="20" y1="20" x2="16.65" y2="16.65" />
+        }
       }
     </svg>
   `,

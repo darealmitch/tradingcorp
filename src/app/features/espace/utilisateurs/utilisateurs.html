@@ -1,248 +1,379 @@
-<header class="page-tete">
-  <h1 class="page-titre">Utilisateurs</h1>
-  <p class="page-sous">
-    Rôles, accès à la formation, comptes de test et création manuelle (formateur, apprenant
-    privilégié, migration d'un ancien client).
-  </p>
+<header class="page-tete tete-utilisateurs">
+  <div class="tete-texte">
+    <h1 class="page-titre">Utilisateurs</h1>
+    <p class="page-sous">
+      Comptes, rôles et accès à la formation. Crée ici le compte d'un formateur, d'un élève invité
+      ou d'un ancien client.
+    </p>
+  </div>
+  @if (!creationOuverte()) {
+    <button
+      class="btn btn-primary btn-compact bouton-nouveau-compte"
+      type="button"
+      (click)="ouvrirCreation()"
+    >
+      <app-icone nom="plus" [taille]="16" />
+      Nouveau compte
+    </button>
+  }
 </header>
 
-@if (erreur(); as message) {
-  <p class="alerte est-erreur">{{ message }}</p>
-}
-@if (succes(); as message) {
-  <p class="alerte est-succes" role="status">{{ message }}</p>
-}
-
-<section class="panneau">
-  <div class="panneau-tete">
-    <h2 class="panneau-titre">Créer un compte</h2>
-  </div>
-
-  @if (erreurCreation(); as message) {
-    <p class="alerte est-erreur">{{ message }}</p>
-  }
-
-  @if (compteCree(); as compte) {
-    <div class="alerte est-succes compte-cree">
-      <p>
-        Compte <strong>{{ compte.email }}</strong> créé. Transmets-lui ce mot de passe temporaire —
-        il n'est affiché qu'une seule fois, et devra être remplacé à la première connexion :
-      </p>
-      <p class="compte-mdp">
-        <code>{{ compte.motDePasse }}</code>
-        <button class="btn btn-ghost btn-compact" type="button" (click)="copierMotDePasse()">
-          {{ motDePasseCopie() ? 'Copié !' : 'Copier' }}
-        </button>
-      </p>
+@if (creationOuverte()) {
+  <section class="panneau creation" aria-labelledby="titre-creation">
+    <div class="panneau-tete">
+      <h2 class="panneau-titre" id="titre-creation">
+        <app-icone nom="plus" [taille]="18" />
+        Nouveau compte
+      </h2>
     </div>
-  }
 
-  <form class="creation-form" [formGroup]="formCreation" (ngSubmit)="creerCompte()" novalidate>
-    <div class="creation-champs">
-      <div class="champ-creation">
-        <label for="creation-prenom">Prénom</label>
-        <input id="creation-prenom" type="text" formControlName="prenom" autocomplete="off" />
-      </div>
-      <div class="champ-creation">
-        <label for="creation-nom">Nom</label>
-        <input id="creation-nom" type="text" formControlName="nom" autocomplete="off" />
-      </div>
-      <div class="champ-creation">
-        <label for="creation-email">E-mail *</label>
-        <input
-          id="creation-email"
-          type="email"
-          formControlName="email"
-          autocomplete="off"
-          placeholder="personne@exemple.com"
-        />
-        @if (invalideEmail()) {
-          <p class="champ-erreur">Adresse e-mail invalide.</p>
-        }
-      </div>
-      <div class="champ-creation">
-        <label for="creation-role">Rôle</label>
-        <select id="creation-role" class="selecteur-role" formControlName="role">
-          <option value="apprenant">apprenant</option>
-          <option value="formateur">formateur</option>
-        </select>
-      </div>
-      @if (formCreation.controls.role.value === 'apprenant') {
-        <div class="champ-creation">
-          <label for="creation-formation">Accès offert</label>
-          <select id="creation-formation" class="selecteur-role" formControlName="id_formation">
-            <option value="">Aucun</option>
-            @for (formation of formations(); track formation.id_formation) {
-              <option [value]="formation.id_formation">{{ formation.titre }}</option>
-            }
+    @if (erreurCreation(); as message) {
+      <p class="alerte est-erreur" role="alert">{{ message }}</p>
+    }
+
+    <form class="creation-form" [formGroup]="formCreation" (ngSubmit)="creerCompte()" novalidate>
+      <div class="creation-champs">
+        <div class="champ">
+          <label for="creation-prenom">Prénom</label>
+          <input id="creation-prenom" type="text" formControlName="prenom" autocomplete="off" />
+        </div>
+        <div class="champ">
+          <label for="creation-nom">Nom</label>
+          <input id="creation-nom" type="text" formControlName="nom" autocomplete="off" />
+        </div>
+        <div class="champ">
+          <label for="creation-email">
+            E-mail <span class="champ-requis" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="creation-email"
+            type="email"
+            formControlName="email"
+            autocomplete="off"
+            placeholder="personne@exemple.com"
+            aria-required="true"
+            [attr.aria-invalid]="invalideEmail()"
+            [attr.aria-describedby]="invalideEmail() ? 'creation-email-erreur' : null"
+          />
+          @if (invalideEmail()) {
+            <p class="champ-erreur" id="creation-email-erreur">Adresse e-mail invalide.</p>
+          }
+        </div>
+        <div class="champ">
+          <label for="creation-role">Rôle</label>
+          <select id="creation-role" class="selecteur" formControlName="role">
+            <option value="apprenant">Apprenant</option>
+            <option value="formateur">Formateur</option>
           </select>
         </div>
+        @if (formCreation.controls.role.value === 'apprenant') {
+          <div class="champ">
+            <label for="creation-formation">Accès à la formation</label>
+            <select
+              id="creation-formation"
+              class="selecteur"
+              formControlName="id_formation"
+              aria-describedby="creation-formation-aide"
+            >
+              <option value="">Pas d'accès pour l'instant</option>
+              @for (formation of formations(); track formation.id_formation) {
+                <option [value]="formation.id_formation">{{ formation.titre }}</option>
+              }
+            </select>
+            <p class="champ-aide" id="creation-formation-aide">
+              Sans accès, l'élève ne voit pas les cours. Tu pourras l'ouvrir plus tard.
+            </p>
+          </div>
+        }
+      </div>
+
+      <div class="creation-pied">
+        <p class="creation-note">
+          Un mot de passe temporaire est généré ; il devra être remplacé à la première connexion.
+        </p>
+        <div class="creation-actions">
+          <button class="btn btn-ghost btn-compact" type="button" (click)="fermerCreation()">
+            Annuler
+          </button>
+          <button class="btn btn-primary btn-compact" type="submit" [disabled]="creationEnCours()">
+            {{ creationEnCours() ? 'Création…' : 'Créer le compte' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </section>
+}
+
+@if (compteCree(); as compte) {
+  <section class="compte-cree" role="status" aria-labelledby="titre-compte-cree">
+    <div class="compte-cree-tete">
+      <span class="compte-cree-icone"><app-icone nom="coche" [taille]="18" /></span>
+      <div class="compte-cree-texte">
+        @let adresse = compte.email.split('@');
+        <p class="compte-cree-titre" id="titre-compte-cree">
+          Compte créé : {{ adresse[0] }}@<wbr />{{ adresse.slice(1).join('@') }}
+        </p>
+        <p>
+          Transmets ce mot de passe temporaire : il n'est affiché qu'une seule fois et devra être
+          remplacé à la première connexion.
+        </p>
+      </div>
+      <button
+        class="btn-icone"
+        type="button"
+        (click)="masquerCompteCree()"
+        aria-label="Masquer le mot de passe temporaire"
+        title="Masquer"
+      >
+        <app-icone nom="fermer" [taille]="16" />
+      </button>
+    </div>
+    <div class="compte-mdp">
+      <code>{{ compte.motDePasse }}</code>
+      <button
+        class="btn btn-ghost btn-compact btn-copier"
+        type="button"
+        (click)="copierMotDePasse()"
+      >
+        {{ motDePasseCopie() ? 'Copié' : 'Copier' }}
+      </button>
+    </div>
+  </section>
+}
+
+<section class="panneau comptes" aria-labelledby="titre-comptes">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre" id="titre-comptes">
+      <app-icone nom="apprenants" [taille]="18" />
+      Comptes
+    </h2>
+  </div>
+
+  <div class="comptes-outils">
+    <div class="recherche">
+      <app-icone nom="loupe" [taille]="16" />
+      <label class="lecteur-ecran" for="recherche-comptes">Rechercher un compte</label>
+      <input
+        id="recherche-comptes"
+        type="search"
+        placeholder="Nom, prénom ou e-mail"
+        autocomplete="off"
+        [value]="recherche()"
+        (input)="recherche.set($any($event.target).value)"
+      />
+    </div>
+    <div class="onglets filtres" role="group" aria-label="Filtrer les comptes">
+      @for (f of filtres; track f.id) {
+        @let total = comptesParFiltre()[f.id];
+        <button
+          class="onglet"
+          type="button"
+          [class.est-actif]="filtre() === f.id"
+          [attr.aria-pressed]="filtre() === f.id"
+          (click)="filtre.set(f.id)"
+        >
+          {{ f.libelle }}
+          <span class="onglet-compte" [class.est-neutre]="!f.signale || total === 0">{{
+            total
+          }}</span>
+        </button>
       }
     </div>
-    <button class="btn btn-primary btn-compact" type="submit" [disabled]="creationEnCours()">
-      {{ creationEnCours() ? 'Création…' : 'Créer le compte' }}
-    </button>
-  </form>
-</section>
-
-<section class="panneau">
-  <div class="panneau-tete">
-    <h2 class="panneau-titre">Comptes</h2>
   </div>
+
+  <!-- Collés en haut de l'écran pendant le défilement : une action menée en bas
+       d'une longue liste doit voir son résultat sans remonter. -->
+  <div class="comptes-retours">
+    @if (erreur(); as message) {
+      <p class="alerte est-erreur" role="alert">{{ message }}</p>
+    }
+    @if (succes(); as message) {
+      <p class="alerte est-succes" role="status">{{ message }}</p>
+    }
+  </div>
+
   @if (chargement()) {
-    <p class="cellule-discrete">Chargement…</p>
+    <p class="cellule-discrete">Chargement des comptes…</p>
   } @else if (profils().length === 0) {
-    <p class="cellule-discrete">Aucun profil pour l'instant.</p>
+    <p class="cellule-discrete">Aucun compte pour l'instant.</p>
+  } @else if (profilsAffiches().length === 0) {
+    <div class="comptes-vide">
+      <p>Aucun compte ne correspond à cette recherche.</p>
+      <button class="btn btn-ghost btn-compact" type="button" (click)="effacerFiltres()">
+        Effacer les filtres
+      </button>
+    </div>
   } @else {
     <div class="tableau-defile">
-      <table class="tableau">
+      <table class="tableau tableau-comptes">
+        <caption class="lecteur-ecran">
+          Comptes de la plateforme :
+          {{
+            profilsAffiches().length
+          }}
+          affichés
+        </caption>
         <thead>
           <tr>
-            <th>Utilisateur</th>
-            <th>E-mail</th>
-            <th>Inscrit le</th>
-            <th>Rôle</th>
-            <th>Accès</th>
-            <th>Statut</th>
-            <th>Test</th>
-            <th><span class="lecteur-ecran">Actions</span></th>
+            <th scope="col">Compte</th>
+            <th scope="col" class="colonne-role">Rôle</th>
+            <th scope="col" class="colonne-acces">Accès à la formation</th>
+            <th
+              scope="col"
+              class="colonne-test"
+              title="Compte de test : tout le contenu ouvert, exclu des statistiques"
+            >
+              Test
+            </th>
+            <th scope="col" class="colonne-actions"><span class="lecteur-ecran">Actions</span></th>
           </tr>
         </thead>
         <tbody>
-          @for (profil of profils(); track profil) {
-            <tr>
-              <td>
+          @for (profil of profilsAffiches(); track profil.id_profil) {
+            @let estMoi = profil.id_profil === auth.profil()?.id_profil;
+            @let enRetrait = formationEnRetrait(profil);
+            @let enSuppression = suppressionId() === profil.id_profil;
+            <tr
+              class="ligne-compte"
+              [class.est-modifie]="derniereModification() === profil.id_profil"
+              [class.a-confirmation]="enRetrait !== null || enSuppression"
+            >
+              <td class="cellule-compte">
                 @if (correctionId() === profil.id_profil) {
                   <form
                     class="correction"
                     [formGroup]="formCorrection"
                     (ngSubmit)="enregistrerCorrection(profil)"
+                    (keydown.escape)="annulerCorrection(profil)"
                   >
                     <input type="text" formControlName="prenom" aria-label="Prénom" />
                     <input type="text" formControlName="nom" aria-label="Nom" />
-                    <button
-                      class="btn btn-primary btn-compact"
-                      type="submit"
-                      [disabled]="enregistrement()"
-                    >
-                      OK
-                    </button>
-                    <button
-                      class="btn btn-ghost btn-compact"
-                      type="button"
-                      (click)="annulerCorrection()"
-                    >
-                      Annuler
-                    </button>
+                    <div class="correction-actions">
+                      <button
+                        class="btn btn-ghost btn-compact"
+                        type="button"
+                        (click)="annulerCorrection(profil)"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        class="btn btn-accent btn-compact"
+                        type="submit"
+                        [disabled]="enregistrement()"
+                      >
+                        Enregistrer
+                      </button>
+                    </div>
                   </form>
                 } @else {
-                  <span class="nom-cellule">
-                    {{ profil.prenom }} {{ profil.nom }}
-                    <button
-                      class="lien-corriger"
-                      type="button"
-                      (click)="ouvrirCorrection(profil)"
-                      title="Corriger le nom"
-                      aria-label="Corriger le nom et le prénom"
-                    >
-                      <app-icone nom="crayon" [taille]="14" />
-                    </button>
-                  </span>
+                  <div class="compte">
+                    <span class="compte-initiales" aria-hidden="true">{{ initiales(profil) }}</span>
+                    <div class="compte-identite">
+                      <p class="compte-nom">
+                        {{ profil.prenom }} {{ profil.nom }}
+                        @if (estMoi) {
+                          <span class="etiquette">Toi</span>
+                        }
+                        @if (profil.est_proprietaire) {
+                          <span class="etiquette">Propriétaire</span>
+                        }
+                      </p>
+                      <!-- Une adresse trop longue se coupe après « @ », jamais au milieu d'un mot. -->
+                      @let adresse = profil.email.split('@');
+                      <p class="compte-email">
+                        {{ adresse[0] }}@<wbr />{{ adresse.slice(1).join('@') }}
+                      </p>
+                      <p class="compte-meta">
+                        <span class="compte-date">Créé le {{ inscritLe(profil) }}</span>
+                        @if (profil.doit_changer_mdp) {
+                          <span class="badge-statut est-attente">Activation en attente</span>
+                        }
+                      </p>
+                    </div>
+                  </div>
                 }
               </td>
-              <td class="cellule-discrete">{{ profil.email }}</td>
-              <td class="cellule-discrete">{{ inscritLe(profil) }}</td>
-              <td>
-                @if (profil.id_profil === auth.profil()?.id_profil) {
-                  <span class="cellule-discrete">{{ profil.role }} (toi)</span>
-                } @else if (profil.est_proprietaire) {
+
+              <td class="cellule-role" data-libelle="Rôle">
+                @if (estMoi || profil.est_proprietaire) {
                   <span
-                    class="cellule-discrete"
-                    title="Le compte propriétaire ne peut pas être modifié"
-                    >{{ profil.role }} (propriétaire)</span
+                    class="role-fixe"
+                    [title]="
+                      estMoi
+                        ? 'Tu ne peux pas modifier ton propre rôle'
+                        : 'Le compte propriétaire ne peut pas être modifié'
+                    "
                   >
+                    <app-icone nom="cadenas" [taille]="14" />
+                    {{ libelleRole(profil.role) }}
+                  </span>
                 } @else {
                   <select
-                    class="selecteur-role"
+                    class="selecteur"
                     [disabled]="enregistrement()"
                     (change)="changerRole(profil, $any($event.target).value)"
-                    [attr.aria-label]="'Rôle de ' + profil.prenom + ' ' + profil.nom"
+                    [attr.aria-label]="'Rôle de ' + nomAffiche(profil)"
                   >
                     @for (role of roles; track role) {
-                      <option [value]="role" [selected]="role === profil.role">{{ role }}</option>
+                      <option [value]="role" [selected]="role === profil.role">
+                        {{ libelleRole(role) }}
+                      </option>
                     }
                   </select>
                 }
               </td>
-              <td>
+
+              <td class="cellule-acces" data-libelle="Accès">
                 @if (profil.role !== 'apprenant') {
                   <span
-                    class="cellule-discrete"
+                    class="acces-equipe"
                     title="Formateurs et administrateurs voient tout le contenu par leur rôle"
-                    >Tout le contenu</span
                   >
+                    <app-icone nom="coche" [taille]="14" />
+                    Tout le contenu
+                  </span>
                 } @else {
                   <div class="acces-liste">
                     @for (formation of formations(); track formation.id_formation) {
                       @let etat = etatAcces(profil, formation);
                       <div class="acces-ligne">
-                        @if (formations().length > 1) {
-                          <span class="acces-formation">{{ formation.titre }}</span>
-                        }
-                        @if (retraitCle() === cleAcces(profil, formation)) {
-                          <span class="confirmation-suppression">
-                            <span class="confirmation-texte">Retirer l’accès ?</span>
-                            <button
-                              class="btn btn-danger btn-compact"
-                              type="button"
-                              [disabled]="enregistrement()"
-                              (click)="confirmerRetrait(profil, formation)"
-                            >
-                              {{ enregistrement() ? 'Retrait…' : 'Confirmer' }}
-                            </button>
-                            <button
-                              class="btn btn-ghost btn-compact"
-                              type="button"
-                              [disabled]="enregistrement()"
-                              (click)="annulerRetrait()"
-                            >
-                              Annuler
-                            </button>
-                          </span>
-                        } @else if (etat === 'active') {
-                          <span class="badge-statut est-succes">Ouvert</span>
+                        <div class="acces-etat">
+                          @if (formations().length > 1) {
+                            <span class="acces-formation">{{ formation.titre }}</span>
+                          }
+                          @switch (etat) {
+                            @case ('active') {
+                              <span class="badge-statut est-succes">Accès actif</span>
+                            }
+                            @case ('revoquee') {
+                              <span class="badge-statut">Accès retiré</span>
+                            }
+                            @default {
+                              <span class="badge-statut est-attente">Sans accès</span>
+                            }
+                          }
+                        </div>
+                        @if (etat === 'active') {
                           <button
                             class="btn btn-ghost btn-compact"
                             type="button"
+                            [attr.data-action]="'retirer-' + cleAcces(profil, formation)"
                             [disabled]="enregistrement()"
                             (click)="demanderRetrait(profil, formation)"
                             [attr.aria-label]="
-                              'Retirer l’accès de ' +
-                              profil.prenom +
-                              ' ' +
-                              profil.nom +
-                              ' à ' +
-                              formation.titre
+                              'Retirer l’accès de ' + nomAffiche(profil) + ' à ' + formation.titre
                             "
                           >
                             Retirer
                           </button>
                         } @else {
-                          <span class="badge-statut" [class.est-echec]="etat === 'revoquee'">
-                            {{ etat === 'revoquee' ? 'Retiré' : 'Aucun' }}
-                          </span>
                           <button
-                            class="btn btn-primary btn-compact"
+                            class="btn btn-accent btn-compact"
                             type="button"
                             [disabled]="enregistrement()"
                             (click)="donnerAcces(profil, formation)"
                             [attr.aria-label]="
-                              'Donner l’accès à ' +
-                              formation.titre +
-                              ' à ' +
-                              profil.prenom +
-                              ' ' +
-                              profil.nom
+                              'Donner l’accès à ' + formation.titre + ' à ' + nomAffiche(profil)
                             "
                           >
                             Donner l’accès
@@ -253,67 +384,126 @@
                   </div>
                 }
               </td>
-              <td>
-                @if (profil.doit_changer_mdp) {
-                  <span class="badge-statut est-attente">Activation en attente</span>
-                } @else {
-                  <span class="badge-statut est-succes">Actif</span>
-                }
+
+              <td class="cellule-test" data-libelle="Compte de test">
+                <label class="case-test">
+                  <input
+                    type="checkbox"
+                    [checked]="profil.est_test"
+                    [disabled]="enregistrement()"
+                    (change)="basculerTest(profil, $any($event.target).checked)"
+                  />
+                  <span class="lecteur-ecran">Compte de test : {{ nomAffiche(profil) }}</span>
+                </label>
               </td>
-              <td>
-                <input
-                  type="checkbox"
-                  class="case-test"
-                  [checked]="profil.est_test"
-                  [disabled]="enregistrement()"
-                  (change)="basculerTest(profil, $any($event.target).checked)"
-                  [attr.aria-label]="'Compte de test : ' + profil.prenom + ' ' + profil.nom"
-                />
-              </td>
-              <td>
-                @if (!peutSupprimer(profil)) {
-                  <span
-                    class="cellule-discrete"
-                    [title]="
-                      profil.id_profil === auth.profil()?.id_profil
-                        ? 'Tu ne peux pas supprimer ton propre compte'
-                        : 'Seul le propriétaire de la plateforme peut supprimer un administrateur'
-                    "
-                    >—</span
-                  >
-                } @else if (suppressionId() === profil.id_profil) {
-                  <span class="confirmation-suppression">
-                    <span class="confirmation-texte">Supprimer définitivement ?</span>
-                    <button
-                      class="btn btn-danger btn-compact"
-                      type="button"
-                      [disabled]="suppressionEnCours()"
-                      (click)="confirmerSuppression(profil)"
-                    >
-                      {{ suppressionEnCours() ? 'Suppression…' : 'Confirmer' }}
-                    </button>
-                    <button
-                      class="btn btn-ghost btn-compact"
-                      type="button"
-                      [disabled]="suppressionEnCours()"
-                      (click)="annulerSuppression()"
-                    >
-                      Annuler
-                    </button>
-                  </span>
-                } @else {
+
+              <td class="cellule-actions">
+                <div class="actions-ligne">
                   <button
-                    class="lien-supprimer"
+                    class="btn-icone"
                     type="button"
-                    (click)="demanderSuppression(profil)"
-                    title="Supprimer le compte"
-                    [attr.aria-label]="'Supprimer le compte de ' + profil.prenom + ' ' + profil.nom"
+                    [attr.data-action]="'corriger-' + profil.id_profil"
+                    (click)="ouvrirCorrection(profil)"
+                    [attr.aria-label]="'Corriger le nom de ' + nomAffiche(profil)"
+                    title="Corriger le nom"
                   >
-                    <app-icone nom="corbeille" [taille]="14" />
+                    <app-icone nom="crayon" [taille]="16" />
                   </button>
-                }
+                  @if (peutSupprimer(profil)) {
+                    <button
+                      class="btn-icone est-danger"
+                      type="button"
+                      [attr.data-action]="'supprimer-' + profil.id_profil"
+                      (click)="demanderSuppression(profil)"
+                      [attr.aria-label]="'Supprimer le compte de ' + nomAffiche(profil)"
+                      title="Supprimer le compte"
+                    >
+                      <app-icone nom="corbeille" [taille]="16" />
+                    </button>
+                  } @else {
+                    <!-- Place gardée : les crayons restent alignés d'une ligne à l'autre. -->
+                    <span class="btn-icone-vide" aria-hidden="true"></span>
+                  }
+                </div>
               </td>
             </tr>
+
+            @if (enRetrait; as formation) {
+              <tr class="ligne-confirmation" (keydown.escape)="annulerRetrait(profil, formation)">
+                <td colspan="5">
+                  <div
+                    class="confirmation"
+                    role="group"
+                    aria-label="Confirmer le retrait de l’accès"
+                  >
+                    <p class="confirmation-texte">
+                      Retirer l’accès de <strong>{{ nomAffiche(profil) }}</strong> à «
+                      {{ formation.titre }} » ?
+                      <span class="confirmation-detail">
+                        Sa progression est conservée et reviendra avec l’accès.
+                      </span>
+                    </p>
+                    <div class="confirmation-actions">
+                      <button
+                        class="btn btn-ghost btn-compact btn-annuler"
+                        type="button"
+                        [disabled]="enregistrement()"
+                        (click)="annulerRetrait(profil, formation)"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        class="btn btn-danger btn-compact"
+                        type="button"
+                        [disabled]="enregistrement()"
+                        (click)="confirmerRetrait(profil, formation)"
+                      >
+                        {{ enregistrement() ? 'Retrait…' : 'Retirer l’accès' }}
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+
+            @if (enSuppression) {
+              <tr class="ligne-confirmation" (keydown.escape)="annulerSuppression(profil)">
+                <td colspan="5">
+                  <div
+                    class="confirmation"
+                    role="group"
+                    aria-label="Confirmer la suppression du compte"
+                  >
+                    <p class="confirmation-texte">
+                      Supprimer définitivement le compte de
+                      <strong>{{ nomAffiche(profil) }}</strong> ?
+                      <span class="confirmation-detail">
+                        Ses données sont effacées ; ses paiements sont conservés, détachés du
+                        compte.
+                      </span>
+                    </p>
+                    <div class="confirmation-actions">
+                      <button
+                        class="btn btn-ghost btn-compact btn-annuler"
+                        type="button"
+                        [disabled]="suppressionEnCours()"
+                        (click)="annulerSuppression(profil)"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        class="btn btn-danger btn-compact"
+                        type="button"
+                        [disabled]="suppressionEnCours()"
+                        (click)="confirmerSuppression(profil)"
+                      >
+                        {{ suppressionEnCours() ? 'Suppression…' : 'Supprimer le compte' }}
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
