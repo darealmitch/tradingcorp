@@ -1,6 +1,9 @@
+import { WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
+import { AuthService } from '../auth/auth.service';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { NotificationsService } from './notifications.service';
+import { ECART_RAFRAICHISSEMENT_MS, NotificationsService } from './notifications.service';
 
 /**
  * La mise à jour optimiste est un bon réflexe — le clic répond tout de suite —
@@ -31,6 +34,13 @@ const LIGNES = [
   },
 ];
 
+/** Ce que le service lit de la session : l'identifiant du compte. */
+type SessionDouble = { user: { id: string } } | null;
+
+function session(id: string): SessionDouble {
+  return { user: { id } };
+}
+
 /** Double d'`AccesDonnees` : c'est lui qui décide du sort de l'écriture. */
 function accesDouble(erreurEcriture: string | null = null) {
   return {
@@ -56,9 +66,11 @@ async function creerService(erreurEcriture: string | null = null) {
     providers: [
       NotificationsService,
       { provide: AccesDonnees, useValue: accesDouble(erreurEcriture) },
+      { provide: AuthService, useValue: { session: signal(session('lea')) } },
     ],
   });
   const service = TestBed.inject(NotificationsService);
+  TestBed.tick();
   await service.recharger();
   return service;
 }
@@ -109,5 +121,171 @@ describe('NotificationsService', () => {
 
       expect(service.nonLues()).toBe(2);
     });
+  });
+});
+
+/**
+ * La déconnexion ne recharge pas la page : la liste vit au-delà du compte qui
+ * l'a lue. Le compte suivant du même onglet — deux élèves sur un ordinateur
+ * partagé — ne doit jamais voir les notifications du précédent. Le serveur
+ * répond ici quand le test le décide, et dans l'ordre qu'il choisit.
+ */
+describe('NotificationsService — suit le compte connecté', () => {
+  let compte: WritableSignal<SessionDouble>;
+  let lectures: ((lignes: unknown) => void)[];
+  let ecritures: ((erreur: string | null) => void)[];
+  let visibilite: DocumentVisibilityState;
+
+  function monter(): NotificationsService {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthService, useValue: { session: compte } },
+        {
+          provide: AccesDonnees,
+          useValue: {
+            table: () => ({
+              select: () => ({ order: () => ({ limit: () => null }) }),
+              update: () => ({ eq: () => ({ is: () => null }), is: () => null }),
+            }),
+            lire: () => new Promise((resoudre) => lectures.push(resoudre)),
+            ecrire: () => new Promise((resoudre) => ecritures.push(resoudre)),
+          },
+        },
+      ],
+    });
+    const service = TestBed.inject(NotificationsService);
+    TestBed.tick();
+    return service;
+  }
+
+  /** Le serveur répond à la lecture n° `rang` (0 : la première envoyée). */
+  async function repondre(rang: number, lignes: unknown): Promise<void> {
+    lectures[rang](lignes);
+    for (let i = 0; i < 3; i++) {
+      await Promise.resolve();
+    }
+  }
+
+  function revenirSurLOnglet(): void {
+    visibilite = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    compte = signal(session('lea'));
+    lectures = [];
+    ecritures = [];
+    visibilite = 'visible';
+    // jsdom annonce un document « prerender » : on reprend la main dessus.
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => visibilite,
+    });
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.useRealTimers();
+    Reflect.deleteProperty(document, 'visibilityState');
+  });
+
+  it('vide la liste à la déconnexion, sans rien relire', async () => {
+    const service = monter();
+    await repondre(0, LIGNES);
+    expect(service.liste()).toHaveLength(2);
+
+    compte.set(null);
+    TestBed.tick();
+
+    expect(service.liste()).toEqual([]);
+    expect(lectures).toHaveLength(1);
+  });
+
+  it('ne montre jamais au compte suivant les notifications du précédent', async () => {
+    const service = monter();
+    await repondre(0, LIGNES);
+
+    compte.set(session('tom'));
+    TestBed.tick();
+    // Vidée dès le changement, sans attendre la réponse du serveur.
+    expect(service.liste()).toEqual([]);
+
+    await repondre(1, [LIGNES[1]]);
+    expect(service.liste().map((n) => n.id_notification)).toEqual(['n-2']);
+  });
+
+  it('écarte une réponse arrivée après un changement de compte', async () => {
+    const service = monter();
+    compte.set(session('tom'));
+    TestBed.tick();
+
+    await repondre(1, [LIGNES[1]]);
+    // La lecture lancée pour Léa répond en dernier : elle ne s'affiche pas.
+    await repondre(0, LIGNES);
+
+    expect(service.liste().map((n) => n.id_notification)).toEqual(['n-2']);
+  });
+
+  it('ne relit rien quand seul le jeton de session est renouvelé', async () => {
+    const service = monter();
+    await repondre(0, LIGNES);
+
+    compte.set(session('lea'));
+    TestBed.tick();
+
+    expect(lectures).toHaveLength(1);
+    expect(service.liste()).toHaveLength(2);
+  });
+
+  it('se rafraîchit au retour sur l’onglet, une seule fois par retour', async () => {
+    monter();
+    await repondre(0, LIGNES);
+
+    visibilite = 'hidden';
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(lectures).toHaveLength(1);
+
+    revenirSurLOnglet();
+    // Le même retour, vu par la fenêtre : pas de seconde lecture.
+    window.dispatchEvent(new Event('focus'));
+    expect(lectures).toHaveLength(2);
+
+    vi.advanceTimersByTime(ECART_RAFRAICHISSEMENT_MS);
+    window.dispatchEvent(new Event('focus'));
+    expect(lectures).toHaveLength(3);
+  });
+
+  it('ne lit rien au retour sur l’onglet sans compte connecté', () => {
+    compte.set(null);
+    monter();
+
+    revenirSurLOnglet();
+
+    expect(lectures).toHaveLength(0);
+  });
+
+  it('garde la liste affichée quand un rafraîchissement échoue', async () => {
+    const service = monter();
+    await repondre(0, LIGNES);
+
+    revenirSurLOnglet();
+    // `lire` rend la valeur de repli, null, quand la lecture échoue.
+    await repondre(1, null);
+
+    expect(service.liste()).toHaveLength(2);
+  });
+
+  it('ne rend pas au compte suivant la liste du précédent après une écriture en échec', async () => {
+    const service = monter();
+    await repondre(0, LIGNES);
+
+    const marquage = service.marquerLue('n-1');
+    compte.set(session('tom'));
+    TestBed.tick();
+    ecritures[0]('La notification n’a pas pu être marquée comme lue.');
+    await marquage;
+
+    expect(service.liste()).toEqual([]);
   });
 });

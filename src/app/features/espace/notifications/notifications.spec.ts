@@ -29,6 +29,7 @@ function notification(champs: Partial<Notification>): Notification {
 
 async function monter(liste: Notification[]) {
   const marquerLue = vi.fn(() => Promise.resolve(null));
+  const recharger = vi.fn(() => Promise.resolve());
   const lignes = signal(liste);
   TestBed.configureTestingModule({
     providers: [
@@ -42,6 +43,7 @@ async function monter(liste: Notification[]) {
           urgentesNonLues: computed(() => 0),
           suivi: computed(() => lignes().filter((n) => n.priorite !== 'urgente')),
           marquerLue,
+          recharger,
           toutMarquerLues: () => Promise.resolve(null),
         },
       },
@@ -53,11 +55,17 @@ async function monter(liste: Notification[]) {
   fixture.detectChanges();
   await fixture.whenStable();
   const page = fixture.nativeElement as HTMLElement;
-  return { page, marquerLue, naviguer };
+  return { page, marquerLue, naviguer, recharger };
 }
 
 describe('Notifications', () => {
   afterEach(() => TestBed.resetTestingModule());
+
+  it('relit les notifications à l’ouverture de la page', async () => {
+    const { recharger } = await monter([]);
+
+    expect(recharger).toHaveBeenCalledTimes(1);
+  });
 
   it('ouvre l’échange visé et marque la notification comme lue', async () => {
     const lien = '/parcours/s-1/lecon/l-1#echanges';

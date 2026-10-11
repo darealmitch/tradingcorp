@@ -21,6 +21,12 @@ export class Notifications {
     () => this.notifications.suivi().filter((n) => !n.lue).length,
   );
 
+  constructor() {
+    // Ouvrir cette page, c'est vouloir l'état du moment : une notification
+    // arrivée depuis l'ouverture de l'espace doit y figurer.
+    void this.notifications.recharger();
+  }
+
   /**
    * Un clic marque la notification comme lue et, quand elle concerne une page
    * — la leçon d'une réponse de l'équipe, la liste des apprenants —, l'ouvre :
