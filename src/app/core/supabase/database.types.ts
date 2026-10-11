@@ -795,6 +795,10 @@ export type Database = {
         Args: { p_id_profil: string; p_nom: string; p_prenom: string };
         Returns: undefined;
       };
+      definir_acces_formation: {
+        Args: { p_actif: boolean; p_id_formation: string; p_id_profil: string };
+        Returns: undefined;
+      };
       definir_compte_test: {
         Args: { p_est_test: boolean; p_id_profil: string };
         Returns: undefined;

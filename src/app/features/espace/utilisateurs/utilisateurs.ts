@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ComptesService } from '../../../core/comptes/comptes.service';
-import { ProfilAdmin } from '../../../core/comptes/comptes.model';
+import { AccesFormation, ProfilAdmin } from '../../../core/comptes/comptes.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
@@ -28,8 +28,13 @@ export class Utilisateurs {
   protected readonly chargement = signal(true);
   protected readonly profils = signal<ProfilAdmin[]>([]);
   protected readonly formations = signal<Formation[]>([]);
+  protected readonly acces = signal<AccesFormation[]>([]);
   protected readonly enregistrement = signal(false);
   protected readonly erreur = signal<string | null>(null);
+  protected readonly succes = signal<string | null>(null);
+
+  // Retrait d'un accès : confirmation exigée sur la ligne concernée.
+  protected readonly retraitCle = signal<string | null>(null);
 
   protected readonly creationEnCours = signal(false);
   protected readonly erreurCreation = signal<string | null>(null);
@@ -60,13 +65,82 @@ export class Utilisateurs {
   }
 
   private async charger(): Promise<void> {
-    const [profils, formations] = await Promise.all([
+    const [profils, formations, acces] = await Promise.all([
       this.comptes.lister(),
       this.commerce.chargerFormations(),
+      this.comptes.listerAcces(),
     ]);
     this.profils.set(profils);
     this.formations.set(formations);
+    this.acces.set(acces);
     this.chargement.set(false);
+  }
+
+  /** L'accès d'un élève à une formation : ouvert, retiré, ou jamais donné. */
+  protected etatAcces(profil: ProfilAdmin, formation: Formation): 'active' | 'revoquee' | 'aucun' {
+    return (
+      this.acces().find(
+        (a) => a.id_profil === profil.id_profil && a.id_formation === formation.id_formation,
+      )?.statut ?? 'aucun'
+    );
+  }
+
+  protected cleAcces(profil: ProfilAdmin, formation: Formation): string {
+    return `${profil.id_profil}:${formation.id_formation}`;
+  }
+
+  /** Donner l'accès se rattrape d'un clic : pas de confirmation. */
+  protected donnerAcces(profil: ProfilAdmin, formation: Formation): Promise<void> {
+    return this.definirAcces(profil, formation, true);
+  }
+
+  protected demanderRetrait(profil: ProfilAdmin, formation: Formation): void {
+    this.erreur.set(null);
+    this.succes.set(null);
+    this.retraitCle.set(this.cleAcces(profil, formation));
+  }
+
+  protected annulerRetrait(): void {
+    this.retraitCle.set(null);
+  }
+
+  protected async confirmerRetrait(profil: ProfilAdmin, formation: Formation): Promise<void> {
+    await this.definirAcces(profil, formation, false);
+    this.retraitCle.set(null);
+  }
+
+  private async definirAcces(
+    profil: ProfilAdmin,
+    formation: Formation,
+    actif: boolean,
+  ): Promise<void> {
+    this.erreur.set(null);
+    this.succes.set(null);
+    this.enregistrement.set(true);
+    const erreur = await this.comptes.definirAcces(profil.id_profil, formation.id_formation, actif);
+    if (erreur) {
+      this.erreur.set(erreur);
+      // L'autre administrateur a pu agir entre-temps : on se réaligne sur la base.
+      this.acces.set(await this.comptes.listerAcces());
+    } else {
+      this.acces.update((liste) => [
+        ...liste.filter(
+          (a) => !(a.id_profil === profil.id_profil && a.id_formation === formation.id_formation),
+        ),
+        {
+          id_profil: profil.id_profil,
+          id_formation: formation.id_formation,
+          statut: actif ? 'active' : 'revoquee',
+        },
+      ]);
+      const nom = `${profil.prenom} ${profil.nom}`.trim() || profil.email;
+      this.succes.set(
+        actif
+          ? `Accès ouvert : ${nom} peut suivre « ${formation.titre} » dès maintenant.`
+          : `Accès retiré : ${nom} ne voit plus « ${formation.titre} ». Sa progression est conservée et reviendra avec l’accès.`,
+      );
+    }
+    this.enregistrement.set(false);
   }
 
   protected async creerCompte(): Promise<void> {

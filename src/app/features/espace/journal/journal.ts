@@ -7,6 +7,8 @@ const LIBELLES_ACTIONS: Record<string, string> = {
   creation_compte: 'Création de compte',
   correction_identite: 'Correction du nom',
   information_conditions: 'Annonce d’une mise à jour des conditions',
+  octroi_acces: 'Accès à une formation donné',
+  retrait_acces: 'Accès à une formation retiré',
   suppression_commentaire: 'Suppression d’un commentaire',
   suppression_compte: 'Suppression de compte',
 };

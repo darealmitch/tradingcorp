@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Role } from '../auth/profil.model';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { CreationCompte, ProfilAdmin } from './comptes.model';
+import { AccesFormation, CreationCompte, ProfilAdmin } from './comptes.model';
 
 /**
  * Cycle de vie des comptes utilisateurs : lister, créer, corriger, promouvoir,
@@ -59,6 +59,36 @@ export class ComptesService {
         p_nom: nom,
       }),
       'La correction a échoué. Réessaie.',
+    );
+  }
+
+  /** Les accès aux formations de tous les comptes (RLS : lisibles par l'équipe seule). */
+  async listerAcces(): Promise<AccesFormation[]> {
+    return this.acces.lire<AccesFormation[]>(
+      'lecture des accès aux formations',
+      this.acces.table('inscriptions').select('id_profil, id_formation, statut'),
+      [],
+    );
+  }
+
+  /**
+   * Ouvre ou ferme l'accès d'un élève à une formation (RPC réservée aux
+   * administrateurs, journalisée). Fermer n'efface rien : la progression reste,
+   * et l'accès se rend tel qu'il était.
+   */
+  async definirAcces(
+    idProfil: string,
+    idFormation: string,
+    actif: boolean,
+  ): Promise<string | null> {
+    return this.acces.ecrire(
+      actif ? 'ouverture d’un accès' : 'retrait d’un accès',
+      this.acces.appel('definir_acces_formation', {
+        p_id_profil: idProfil,
+        p_id_formation: idFormation,
+        p_actif: actif,
+      }),
+      'La mise à jour de l’accès a échoué. Réessaie.',
     );
   }
 

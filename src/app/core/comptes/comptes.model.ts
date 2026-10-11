@@ -24,6 +24,16 @@ export interface ProfilAdmin {
   est_proprietaire: boolean;
 }
 
+/**
+ * Accès d'un compte à une formation : une ligne d'`inscriptions`. Un accès
+ * retiré reste « révoqué » plutôt que supprimé — il se rend tel qu'il était.
+ */
+export interface AccesFormation {
+  id_profil: string;
+  id_formation: string;
+  statut: 'active' | 'revoquee';
+}
+
 /** Données de création d'un compte par un administrateur. */
 export interface CreationCompte {
   email: string;

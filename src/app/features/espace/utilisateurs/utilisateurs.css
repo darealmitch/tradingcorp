@@ -77,6 +77,26 @@
   letter-spacing: 0.06em;
 }
 
+/* ===== Accès à la formation ===== */
+
+.acces-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acces-ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.acces-formation {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 .case-test {
   width: 18px;
   height: 18px;

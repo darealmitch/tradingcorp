@@ -96,7 +96,10 @@ function socle(): (Provider | EnvironmentProviders)[] {
     },
     {
       provide: ComptesService,
-      useValue: tracer('comptes', { lister: () => Promise.resolve(PROFILS) }),
+      useValue: tracer('comptes', {
+        lister: () => Promise.resolve(PROFILS),
+        listerAcces: () => Promise.resolve([]),
+      }),
     },
     {
       provide: FinanceService,

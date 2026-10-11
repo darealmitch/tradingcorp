@@ -1,13 +1,16 @@
 <header class="page-tete">
   <h1 class="page-titre">Utilisateurs</h1>
   <p class="page-sous">
-    Rôles, comptes de test et création manuelle (formateur, apprenant privilégié, migration d'un
-    ancien client).
+    Rôles, accès à la formation, comptes de test et création manuelle (formateur, apprenant
+    privilégié, migration d'un ancien client).
   </p>
 </header>
 
 @if (erreur(); as message) {
   <p class="alerte est-erreur">{{ message }}</p>
+}
+@if (succes(); as message) {
+  <p class="alerte est-succes" role="status">{{ message }}</p>
 }
 
 <section class="panneau">
@@ -99,6 +102,7 @@
             <th>E-mail</th>
             <th>Inscrit le</th>
             <th>Rôle</th>
+            <th>Accès</th>
             <th>Statut</th>
             <th>Test</th>
             <th><span class="lecteur-ecran">Actions</span></th>
@@ -168,6 +172,85 @@
                       <option [value]="role" [selected]="role === profil.role">{{ role }}</option>
                     }
                   </select>
+                }
+              </td>
+              <td>
+                @if (profil.role !== 'apprenant') {
+                  <span
+                    class="cellule-discrete"
+                    title="Formateurs et administrateurs voient tout le contenu par leur rôle"
+                    >Tout le contenu</span
+                  >
+                } @else {
+                  <div class="acces-liste">
+                    @for (formation of formations(); track formation.id_formation) {
+                      @let etat = etatAcces(profil, formation);
+                      <div class="acces-ligne">
+                        @if (formations().length > 1) {
+                          <span class="acces-formation">{{ formation.titre }}</span>
+                        }
+                        @if (retraitCle() === cleAcces(profil, formation)) {
+                          <span class="confirmation-suppression">
+                            <span class="confirmation-texte">Retirer l’accès ?</span>
+                            <button
+                              class="btn btn-danger btn-compact"
+                              type="button"
+                              [disabled]="enregistrement()"
+                              (click)="confirmerRetrait(profil, formation)"
+                            >
+                              {{ enregistrement() ? 'Retrait…' : 'Confirmer' }}
+                            </button>
+                            <button
+                              class="btn btn-ghost btn-compact"
+                              type="button"
+                              [disabled]="enregistrement()"
+                              (click)="annulerRetrait()"
+                            >
+                              Annuler
+                            </button>
+                          </span>
+                        } @else if (etat === 'active') {
+                          <span class="badge-statut est-succes">Ouvert</span>
+                          <button
+                            class="btn btn-ghost btn-compact"
+                            type="button"
+                            [disabled]="enregistrement()"
+                            (click)="demanderRetrait(profil, formation)"
+                            [attr.aria-label]="
+                              'Retirer l’accès de ' +
+                              profil.prenom +
+                              ' ' +
+                              profil.nom +
+                              ' à ' +
+                              formation.titre
+                            "
+                          >
+                            Retirer
+                          </button>
+                        } @else {
+                          <span class="badge-statut" [class.est-echec]="etat === 'revoquee'">
+                            {{ etat === 'revoquee' ? 'Retiré' : 'Aucun' }}
+                          </span>
+                          <button
+                            class="btn btn-primary btn-compact"
+                            type="button"
+                            [disabled]="enregistrement()"
+                            (click)="donnerAcces(profil, formation)"
+                            [attr.aria-label]="
+                              'Donner l’accès à ' +
+                              formation.titre +
+                              ' à ' +
+                              profil.prenom +
+                              ' ' +
+                              profil.nom
+                            "
+                          >
+                            Donner l’accès
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
                 }
               </td>
               <td>
