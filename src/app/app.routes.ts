@@ -89,6 +89,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/verification/verification').then((m) => m.Verification),
     title: 'TradingCorp — Vérifier un certificat',
   },
+  // Désinscription des nouveautés depuis un e-mail : AUCUNE garde. La personne
+  // n'est pas connectée, et ne doit pas avoir à l'être pour s'opposer.
+  {
+    path: 'desinscription',
+    loadComponent: () =>
+      import('./features/desinscription/desinscription').then((m) => m.Desinscription),
+    title: 'TradingCorp — Désinscription',
+  },
 
   // Pages légales : publiques et SANS AUCUN GARDE, volontairement.
   //

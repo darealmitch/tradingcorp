@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthService } from '../../core/auth/auth.service';
 import { Role } from '../../core/auth/profil.model';
+import { ContenuService } from '../../core/contenu/contenu.service';
 import { ModerationService } from '../../core/moderation/moderation.service';
 import { NotificationsService } from '../../core/notifications/notifications.service';
 import { EspaceLayout } from './espace-layout';
@@ -42,6 +43,10 @@ describe('EspaceLayout — tiroir mobile', () => {
         {
           provide: ModerationService,
           useValue: { aTraiter: signal(0), rafraichirCompteurs: () => Promise.resolve() },
+        },
+        {
+          provide: ContenuService,
+          useValue: { accueillirEnDecouverte: () => Promise.resolve(false) },
         },
       ],
     }).compileComponents();
@@ -142,8 +147,10 @@ describe('EspaceLayout — tiroir mobile', () => {
 describe('EspaceLayout — ce qui attend l’équipe', () => {
   afterEach(() => TestBed.resetTestingModule());
 
-  async function monter(role: Role, aTraiter: number) {
+  async function monter(role: Role, aTraiter: number, bienvenuePosee = false) {
     const rafraichirCompteurs = vi.fn(() => Promise.resolve());
+    const accueillirEnDecouverte = vi.fn(() => Promise.resolve(bienvenuePosee));
+    const recharger = vi.fn(() => Promise.resolve());
     await TestBed.configureTestingModule({
       imports: [EspaceLayout],
       providers: [
@@ -156,11 +163,12 @@ describe('EspaceLayout — ce qui attend l’équipe', () => {
             estFormateurOuAdmin: signal(role !== 'apprenant'),
           },
         },
-        { provide: NotificationsService, useValue: { nonLues: signal(0) } },
+        { provide: NotificationsService, useValue: { nonLues: signal(0), recharger } },
         {
           provide: ModerationService,
           useValue: { aTraiter: signal(aTraiter), rafraichirCompteurs },
         },
+        { provide: ContenuService, useValue: { accueillirEnDecouverte } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(EspaceLayout);
@@ -170,7 +178,7 @@ describe('EspaceLayout — ce qui attend l’équipe', () => {
     const lienModeration = [...page.querySelectorAll('.lateral-lien')].find((l) =>
       l.textContent?.includes('Modération'),
     );
-    return { lienModeration, rafraichirCompteurs };
+    return { lienModeration, rafraichirCompteurs, accueillirEnDecouverte, recharger };
   }
 
   it.each<Role>(['formateur', 'admin'])(
@@ -194,5 +202,57 @@ describe('EspaceLayout — ce qui attend l’équipe', () => {
 
     expect(lienModeration).toBeUndefined();
     expect(rafraichirCompteurs).not.toHaveBeenCalled();
+  });
+});
+
+describe('EspaceLayout — bienvenue en accès découverte', () => {
+  afterEach(() => TestBed.resetTestingModule());
+
+  async function monter(role: Role, bienvenuePosee: boolean) {
+    const accueillirEnDecouverte = vi.fn(() => Promise.resolve(bienvenuePosee));
+    const recharger = vi.fn(() => Promise.resolve());
+    await TestBed.configureTestingModule({
+      imports: [EspaceLayout],
+      providers: [
+        provideRouter([]),
+        {
+          provide: AuthService,
+          useValue: {
+            role: signal(role),
+            profil: signal(null),
+            estFormateurOuAdmin: signal(role !== 'apprenant'),
+          },
+        },
+        { provide: NotificationsService, useValue: { nonLues: signal(0), recharger } },
+        {
+          provide: ModerationService,
+          useValue: { aTraiter: signal(0), rafraichirCompteurs: () => Promise.resolve() },
+        },
+        { provide: ContenuService, useValue: { accueillirEnDecouverte } },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(EspaceLayout);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return { accueillirEnDecouverte, recharger };
+  }
+
+  it('demande la bienvenue pour un élève, et relit la cloche quand elle vient d’être posée', async () => {
+    const { accueillirEnDecouverte, recharger } = await monter('apprenant', true);
+
+    expect(accueillirEnDecouverte).toHaveBeenCalledTimes(1);
+    expect(recharger).toHaveBeenCalled();
+  });
+
+  it('ne relit rien quand il n’y avait pas de bienvenue à poser', async () => {
+    const { recharger } = await monter('apprenant', false);
+
+    expect(recharger).not.toHaveBeenCalled();
+  });
+
+  it('ne demande rien pour l’équipe', async () => {
+    const { accueillirEnDecouverte } = await monter('admin', false);
+
+    expect(accueillirEnDecouverte).not.toHaveBeenCalled();
   });
 });

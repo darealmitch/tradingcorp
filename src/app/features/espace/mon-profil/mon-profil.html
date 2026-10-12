@@ -95,6 +95,35 @@
   }
 </div>
 
+<!-- Accord aux e-mails de nouveautés : un consentement, aussi simple à retirer
+     qu'à donner. Les e-mails du compte et des échanges n'en dépendent pas. -->
+<div class="panneau">
+  <div class="panneau-tete">
+    <h2 class="panneau-titre">E-mails</h2>
+  </div>
+
+  <label class="profil-case">
+    <input
+      type="checkbox"
+      [checked]="auth.profil()?.accepte_nouveautes ?? false"
+      [disabled]="nouveautesEnCours()"
+      (change)="basculerNouveautes($event)"
+    />
+    <span>
+      Recevoir par e-mail les nouveautés et les offres de TradingCorp (nouvelles leçons offertes,
+      actualités de la formation).
+    </span>
+  </label>
+
+  @if (messageNouveautes(); as message) {
+    <p class="message-erreur" role="alert">{{ message }}</p>
+  }
+
+  <p class="cellule-discrete">
+    Les e-mails liés à ton compte et à tes échanges avec l'équipe ne dépendent pas de ce réglage.
+  </p>
+</div>
+
 <!-- ─────────────────────────────────────────────────────────────────────────
      Droits RGPD. Accès, portabilité et effacement sont exerçables ici même ;
      les autres droits passent par le contact indiqué, faute de sens

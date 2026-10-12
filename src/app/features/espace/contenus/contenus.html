@@ -113,6 +113,72 @@
       Seul un administrateur peut changer ce réglage.
     }
   </p>
+
+  <!-- Annonce des leçons offertes : dans l'espace de chaque compte sans achat,
+       et par e-mail pour qui a accepté les nouveautés. Un essai d'abord, sur
+       les comptes de test ; l'envoi à tous demande un second clic. -->
+  @if (estAdmin() && nombreOffertes() > 0) {
+    <div class="annonce-decouverte">
+      <p class="cellule-discrete">
+        Prévenir les comptes sans achat : une notification dans leur espace, et un e-mail pour ceux
+        qui ont accepté les nouveautés. Une même sélection de leçons ne s'annonce qu'une fois.
+      </p>
+      <div class="annonce-actions">
+        <button
+          class="btn btn-ghost btn-compact"
+          type="button"
+          [disabled]="annonceEnCours()"
+          (click)="annoncer(true)"
+        >
+          Envoyer un essai aux comptes de test
+        </button>
+        @if (!confirmationAnnonce()) {
+          <button
+            class="btn btn-primary btn-compact"
+            type="button"
+            [disabled]="annonceEnCours()"
+            (click)="demanderAnnonce()"
+          >
+            Prévenir les comptes sans achat
+          </button>
+        }
+      </div>
+
+      @if (confirmationAnnonce()) {
+        <div class="alerte" role="alert">
+          <p>
+            Tous les comptes sans achat vont recevoir la notification ; ceux qui ont accepté les
+            nouveautés recevront aussi l'e-mail.
+          </p>
+          <div class="annonce-actions">
+            <button
+              class="btn btn-danger btn-compact"
+              type="button"
+              [disabled]="annonceEnCours()"
+              (click)="confirmerAnnonce()"
+            >
+              {{ annonceEnCours() ? 'Envoi…' : 'Confirmer l’envoi' }}
+            </button>
+            <button
+              class="btn btn-ghost btn-compact"
+              type="button"
+              [disabled]="annonceEnCours()"
+              (click)="annulerAnnonce()"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (bilanAnnonce(); as bilan) {
+        <p class="alerte est-succes" role="status">{{ bilan }}</p>
+      }
+      @if (erreurAnnonce(); as erreur) {
+        <p class="alerte est-erreur" role="alert">{{ erreur }}</p>
+      }
+    </div>
+  }
 }
 
 @for (module of modules(); track module.id_section) {

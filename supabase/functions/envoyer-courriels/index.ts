@@ -2,7 +2,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { envoyer } from '../_partages/courriel.ts';
-import { type Courriel, html, texte } from './message.ts';
+import { type Courriel, envoyable, html, texte } from './message.ts';
 
 // Envoi des e-mails des échanges — ceux que la base a rangés dans `courriels`,
 // dans la transaction même de l'action, en doublant une notification.
@@ -86,13 +86,17 @@ Deno.serve(async (req) => {
         if (envoyes + echecs > 0) {
           await pause(PAUSE_ENTRE_ENVOIS_MS);
         }
-        const parti = await envoyer({
-          destinataire: c.destinataire,
-          destinataireNom: c.prenom,
-          objet: c.objet,
-          html: html(c, c.prenom, adresseSite),
-          texte: texte(c, c.prenom, adresseSite),
-        });
+        // Une annonce sans lien de désinscription n'a pas le droit de partir :
+        // elle compte comme un échec, et sera abandonnée après ses reprises.
+        const parti =
+          envoyable(c, adresseSite) &&
+          (await envoyer({
+            destinataire: c.destinataire,
+            destinataireNom: c.prenom,
+            objet: c.objet,
+            html: html(c, c.prenom, adresseSite),
+            texte: texte(c, c.prenom, adresseSite),
+          }));
         // Un identifiant dans le journal, jamais une adresse.
         const { error: erreurConclusion } = await admin.rpc('conclure_courriel', {
           p_id_courriel: c.id_courriel,

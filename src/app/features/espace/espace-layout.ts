@@ -12,6 +12,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { ContenuService } from '../../core/contenu/contenu.service';
 import { ModerationService } from '../../core/moderation/moderation.service';
 import { NotificationsService } from '../../core/notifications/notifications.service';
 import { Role } from '../../core/auth/profil.model';
@@ -73,6 +74,7 @@ export class EspaceLayout {
   protected readonly auth = inject(AuthService);
   protected readonly notifications = inject(NotificationsService);
   private readonly moderation = inject(ModerationService);
+  private readonly contenu = inject(ContenuService);
 
   /** Latérale réduite à ses icônes — réglage volontaire, sur grand écran. */
   protected readonly replie = signal(false);
@@ -104,6 +106,16 @@ export class EspaceLayout {
       }
     });
 
+    // Accès découverte : un élève sans achat est accueilli une fois, dans son
+    // espace et par e-mail, s'il a des leçons offertes. La base en décide et
+    // ne pose la notification qu'une fois ; la cloche est relue dans la foulée,
+    // faute de quoi elle ne la montrerait qu'au prochain retour sur l'onglet.
+    effect(() => {
+      if (this.auth.role() === 'apprenant') {
+        untracked(() => void this.accueillirEnDecouverte());
+      }
+    });
+
     // Naviguer referme le tiroir : sans cela il masquerait la page qu'on vient
     // justement de demander.
     this.router.events
@@ -112,6 +124,12 @@ export class EspaceLayout {
         takeUntilDestroyed(),
       )
       .subscribe(() => this.tiroirOuvert.set(false));
+  }
+
+  private async accueillirEnDecouverte(): Promise<void> {
+    if (await this.contenu.accueillirEnDecouverte()) {
+      await this.notifications.recharger();
+    }
   }
 
   protected basculer(): void {

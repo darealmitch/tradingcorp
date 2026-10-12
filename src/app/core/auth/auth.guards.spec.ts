@@ -44,6 +44,7 @@ function unProfil(champs: Partial<Profil> = {}): Profil {
     doit_changer_mdp: false,
     est_test: false,
     est_proprietaire: false,
+    accepte_nouveautes: false,
     ...champs,
   };
 }

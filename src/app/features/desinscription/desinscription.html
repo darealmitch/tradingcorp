@@ -1,0 +1,48 @@
+<div class="verif-page">
+  <div class="verif-carte">
+    <app-logo class="verif-logo" [taille]="26" />
+    <h1 class="verif-titre">Nouveautés par e-mail</h1>
+
+    @if (!jeton) {
+      <p class="verif-sous">
+        Ce lien de désinscription est incomplet. Tu peux aussi régler tes e-mails depuis ton profil,
+        une fois connecté.
+      </p>
+      <a class="btn btn-primary" routerLink="/connexion">Me connecter</a>
+    } @else {
+      @switch (etat()) {
+        @case ('fait') {
+          <p class="verif-sous" role="status">
+            C'est fait : tu ne recevras plus les nouveautés et les offres de TradingCorp par e-mail.
+            Tu peux changer d'avis à tout moment depuis ton profil.
+          </p>
+        }
+        @case ('inconnu') {
+          <p class="verif-sous" role="status">
+            Ce lien n'est plus valable : le compte auquel il se rapporte n'existe plus.
+          </p>
+        }
+        @default {
+          <p class="verif-sous">
+            Tu ne recevras plus les nouveautés et les offres de TradingCorp par e-mail. Les e-mails
+            liés à ton compte et à tes échanges avec l'équipe continueront.
+          </p>
+          @if (etat() === 'echec') {
+            <p class="verif-sous" role="alert">
+              La désinscription n'a pas pu aboutir. Réessaie dans un instant, ou écris-nous à
+              mailtradingcorp&#64;gmail.com.
+            </p>
+          }
+          <button
+            class="btn btn-primary"
+            type="button"
+            [disabled]="etat() === 'en_cours'"
+            (click)="desinscrire()"
+          >
+            {{ etat() === 'en_cours' ? 'Désinscription…' : 'Me désinscrire' }}
+          </button>
+        }
+      }
+    }
+  </div>
+</div>

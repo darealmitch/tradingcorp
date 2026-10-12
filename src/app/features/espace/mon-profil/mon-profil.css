@@ -123,3 +123,21 @@
 .panneau-danger .panneau-titre {
   color: var(--down-text);
 }
+
+/* Case de réglage : même dessin que les cases de consentement de l'inscription. */
+.profil-case {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.profil-case input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}

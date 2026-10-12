@@ -51,6 +51,31 @@ export class DonneesPersonnellesService {
   }
 
   /**
+   * Accord aux e-mails de nouveautés et d'offres — un consentement, donc aussi
+   * simple à retirer qu'à donner (art. 7). Borné à `auth.uid()` côté serveur.
+   */
+  async definirMesNouveautes(accepte: boolean): Promise<string | null> {
+    return this.acces.ecrire(
+      accepte ? 'accord aux nouveautés' : 'retrait de l’accord aux nouveautés',
+      this.acces.appel('definir_mes_nouveautes', { p_accepte: accepte }),
+      'Le réglage n’a pas pu être enregistré. Réessaie.',
+    );
+  }
+
+  /**
+   * Désinscription d'un clic, depuis le lien d'un e-mail d'annonce : sans
+   * connexion, le jeton désigne le compte. Rend vrai si le jeton est reconnu,
+   * faux sinon, et null si la base n'a pas répondu.
+   */
+  async desinscrireNouveautes(jeton: string): Promise<boolean | null> {
+    return this.acces.lire<boolean | null>(
+      'désinscription des nouveautés',
+      this.acces.appel('desinscrire_nouveautes', { p_jeton: jeton }),
+      null,
+    );
+  }
+
+  /**
    * Suppression définitive du compte (droit à l'effacement, art. 17).
    *
    * Aucun identifiant n'est transmis : l'Edge Function supprime le compte de

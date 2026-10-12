@@ -8,5 +8,6 @@ Disallow: /auth/
 Disallow: /nouveau-mot-de-passe
 Disallow: /date-de-naissance
 Disallow: /facteurs
+Disallow: /desinscription
 
 Sitemap: https://tradingcorp.fr/sitemap.xml

@@ -108,3 +108,21 @@
   opacity: 0.5;
   cursor: progress;
 }
+
+/* ===== Annonce des leçons offertes ===== */
+
+.annonce-decouverte {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.annonce-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.annonce-decouverte .alerte p {
+  margin: 0 0 12px;
+}

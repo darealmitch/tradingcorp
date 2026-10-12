@@ -15,6 +15,7 @@ function unProfil(surcharge: Partial<Profil> = {}): Profil {
     doit_changer_mdp: false,
     est_test: false,
     est_proprietaire: false,
+    accepte_nouveautes: false,
     date_creation: '2026-01-01',
     ...surcharge,
   } as Profil;

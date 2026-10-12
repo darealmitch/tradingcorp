@@ -40,13 +40,14 @@ export interface ResultatAnnonce {
  * chaque envoi.
  */
 export const DERNIERE_MISE_A_JOUR: MiseAJourConditions = {
-  date: '2026-10-05',
+  date: '2026-10-12',
   documents: ['cgu', 'confidentialite'],
   resume: [
     '- Vos commentaires publiés apparaissent désormais aux autres élèves sous votre prénom et l’initiale de votre nom (par exemple « Léa M. »).',
     '- L’équipe peut vous répondre en privé, ou rendre privé l’un de vos commentaires : seuls vous et l’équipe voyez alors l’échange, et vous pouvez y répondre.',
     '- Vous voyez l’état de chacun de vos commentaires (en attente, publié ou non publié) et pouvez le supprimer à tout moment.',
     '- La politique de confidentialité précise qui voit vos commentaires et vos échanges privés.',
+    '- Si vous l’acceptez, nous pouvons vous envoyer nos nouveautés et nos offres par e-mail. Cet accord est facultatif et se retire à tout moment, depuis votre profil ou d’un clic dans chacun de ces e-mails.',
   ].join('\n'),
 };
 

@@ -468,6 +468,7 @@ export type Database = {
       };
       profils: {
         Row: {
+          accepte_nouveautes: boolean;
           date_creation: string;
           date_modification: string;
           date_naissance: string | null;
@@ -475,11 +476,14 @@ export type Database = {
           est_proprietaire: boolean;
           est_test: boolean;
           id_profil: string;
+          jeton_nouveautes: string;
           nom: string;
+          nouveautes_reglees_le: string | null;
           prenom: string;
           role: string;
         };
         Insert: {
+          accepte_nouveautes?: boolean;
           date_creation?: string;
           date_modification?: string;
           date_naissance?: string | null;
@@ -487,11 +491,14 @@ export type Database = {
           est_proprietaire?: boolean;
           est_test?: boolean;
           id_profil: string;
+          jeton_nouveautes?: string;
           nom?: string;
+          nouveautes_reglees_le?: string | null;
           prenom?: string;
           role?: string;
         };
         Update: {
+          accepte_nouveautes?: boolean;
           date_creation?: string;
           date_modification?: string;
           date_naissance?: string | null;
@@ -499,7 +506,9 @@ export type Database = {
           est_proprietaire?: boolean;
           est_test?: boolean;
           id_profil?: string;
+          jeton_nouveautes?: string;
           nom?: string;
+          nouveautes_reglees_le?: string | null;
           prenom?: string;
           role?: string;
         };
@@ -786,6 +795,11 @@ export type Database = {
         Returns: boolean;
       };
       acces_demo: { Args: never; Returns: boolean };
+      accueillir_en_decouverte: { Args: never; Returns: boolean };
+      annoncer_lecons_offertes: {
+        Args: { p_essai?: boolean };
+        Returns: { notifies: number; par_courriel: number }[];
+      };
       changer_role: {
         Args: { p_id_profil: string; p_role: string };
         Returns: undefined;
@@ -811,10 +825,12 @@ export type Database = {
         Args: { p_actif: boolean; p_id_lecon: string };
         Returns: undefined;
       };
+      definir_mes_nouveautes: { Args: { p_accepte: boolean }; Returns: undefined };
       delivrer_certificat: {
         Args: { p_id_formation: string; p_id_profil: string };
         Returns: string;
       };
+      desinscrire_nouveautes: { Args: { p_jeton: string }; Returns: boolean };
       eleves_connectes: {
         Args: never;
         Returns: {

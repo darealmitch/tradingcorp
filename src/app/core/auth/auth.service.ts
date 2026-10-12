@@ -148,11 +148,21 @@ export class AuthService {
     prenom: string,
     nom: string,
     dateNaissance: string,
+    accepteNouveautes = false,
   ): Promise<ResultatAuth> {
+    // `accepte_nouveautes` : la case facultative du formulaire. Le trigger
+    // `handle_new_user` n'y voit un accord que si elle vaut `true`.
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password: mdp,
-      options: { data: { prenom, nom, date_naissance: dateNaissance } },
+      options: {
+        data: {
+          prenom,
+          nom,
+          date_naissance: dateNaissance,
+          accepte_nouveautes: accepteNouveautes,
+        },
+      },
     });
     if (error) {
       return { ok: false, erreur: this.messageErreur(error) };

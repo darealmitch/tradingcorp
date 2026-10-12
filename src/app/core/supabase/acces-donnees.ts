@@ -192,6 +192,27 @@ export class AccesDonnees {
   }
 
   /**
+   * RPC dont on veut à la fois le résultat et, en cas de refus, le message du
+   * serveur : un envoi qui rend son bilan, mais peut aussi être refusé avec
+   * une raison à afficher (« Aucune leçon n'est offerte… »).
+   */
+  async appelerAvecBilan<T>(
+    operation: string,
+    requete: PromiseLike<ReponseSupabase>,
+    echec = ECHEC_GENERIQUE,
+  ): Promise<{ donnees: T | null; erreur: string | null }> {
+    const { data, error } = await this.executer(requete);
+    if (error) {
+      this.signaler(operation, error);
+      return {
+        donnees: null,
+        erreur: error.code === CODE_EXCEPTION_METIER ? error.message : echec,
+      };
+    }
+    return { donnees: (data as T | null) ?? null, erreur: null };
+  }
+
+  /**
    * Écriture dont on veut la preuve qu'elle a porté sur quelque chose.
    *
    * Un UPDATE ou un DELETE qu'une policy écarte ne lève AUCUNE erreur : il ne

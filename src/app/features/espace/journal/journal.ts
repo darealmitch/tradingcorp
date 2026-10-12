@@ -3,6 +3,7 @@ import { EntreeJournal } from '../../../core/audit/audit.model';
 import { AuditService } from '../../../core/audit/audit.service';
 
 const LIBELLES_ACTIONS: Record<string, string> = {
+  annonce_decouverte: 'Annonce des leçons offertes',
   changement_role: 'Changement de rôle',
   creation_compte: 'Création de compte',
   correction_identite: 'Correction du nom',

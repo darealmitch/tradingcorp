@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AccesDonnees } from '../supabase/acces-donnees';
 import {
+  BilanAnnonceDecouverte,
   Certificat,
   CertificatVerifie,
   LeconEtape,
@@ -117,6 +118,37 @@ export class ContenuService {
       this.acces.appel('definir_lecon_decouverte', { p_id_lecon: idLecon, p_actif: offerte }),
       'Le réglage n’a pas pu être enregistré. Réessaie.',
     );
+  }
+
+  /**
+   * Bienvenue en accès découverte : une notification « Tes leçons offertes
+   * t'attendent », doublée d'un e-mail, une seule fois par compte. La base
+   * décide de tout — compte sans achat, leçons offertes, déjà accueilli ou
+   * non — et rend vrai si elle vient de la poser.
+   */
+  async accueillirEnDecouverte(): Promise<boolean> {
+    const posee = await this.acces.lire<boolean>(
+      'accueil en découverte',
+      this.acces.appel('accueillir_en_decouverte'),
+      false,
+    );
+    return posee === true;
+  }
+
+  /**
+   * Prévient les comptes sans achat des leçons offertes : dans leur espace, et
+   * par e-mail pour ceux qui ont accepté les nouveautés. L'essai ne touche que
+   * les comptes de test. Réservé aux administrateurs, côté base.
+   */
+  async annoncerLeconsOffertes(
+    essai: boolean,
+  ): Promise<{ resultat: BilanAnnonceDecouverte | null; erreur: string | null }> {
+    const { donnees, erreur } = await this.acces.appelerAvecBilan<BilanAnnonceDecouverte[]>(
+      essai ? 'essai d’annonce des leçons offertes' : 'annonce des leçons offertes',
+      this.acces.appel('annoncer_lecons_offertes', { p_essai: essai }),
+      'L’annonce n’a pas pu partir. Réessaie.',
+    );
+    return { resultat: donnees?.[0] ?? null, erreur };
   }
 
   /** Étapes d'un module avec leur état (RPC `etats_lecons` — stepper/timeline). */

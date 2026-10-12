@@ -1,5 +1,9 @@
 /**
- * L'e-mail qui double une notification des échanges : HTML et texte brut.
+ * L'e-mail qui double une notification : HTML et texte brut. Il en existe deux
+ * genres, que distingue la famille de la notification : ceux des échanges
+ * (réponse, publication, message à modérer…) et ceux de l'accès découverte
+ * (bienvenue, annonce de leçons offertes). Seuls changent le bouton, la phrase
+ * qui dit où lire la suite et le pied — la mise en page est commune.
  *
  * Fonctions pures, sans accès à la base ni au réseau. Le texte est celui de la
  * notification, écrit par la base au moment de l'action : il dit ce qui s'est
@@ -19,6 +23,10 @@ export interface Courriel {
   objet: string;
   message: string | null;
   lien: string | null;
+  /** Famille de la notification : le début de sa clé (`publication`, `decouverte_annonce`…). */
+  famille?: string | null;
+  /** Jeton de désinscription en un clic — les annonces seulement. */
+  jeton?: string | null;
 }
 
 /** Couleurs du thème clair du site, et le dégradé de la marque. */
@@ -47,6 +55,69 @@ const CONFIDENTIALITE =
 const PIED =
   'Message automatique de TradingCorp : tu le reçois parce qu’une action sur les échanges ' +
   'des formations te concerne.';
+
+/** Ce qui distingue un genre d'e-mail d'un autre. */
+interface Habillage {
+  bouton: string;
+  /** Où se lit la suite, sur TradingCorp. */
+  ouLire: string;
+  /** Mention sous le trait — la confidentialité des échanges — ou rien. */
+  mention: string | null;
+  /** Pourquoi on reçoit ce message. */
+  pied: string;
+}
+
+/** La bienvenue : un message de service, envoyé une fois à l'ouverture du compte. */
+const ACCUEIL: Habillage = {
+  bouton: 'Commencer mes leçons offertes',
+  ouLire: 'Rien à installer : tout se suit en ligne, sur TradingCorp.',
+  mention: null,
+  pied: 'Message automatique de TradingCorp : tu le reçois parce que tu viens d’ouvrir ton compte.',
+};
+
+/**
+ * L'annonce : de la prospection, envoyée seulement à qui l'a acceptée. Le pied
+ * le rappelle, et le lien de désinscription l'accompagne toujours.
+ */
+const ANNONCE: Habillage = {
+  bouton: 'Voir les leçons offertes',
+  ouLire: 'Elles t’attendent dans ton parcours, sur TradingCorp.',
+  mention: null,
+  pied: 'Tu reçois cet e-mail parce que tu as accepté d’être prévenu des nouveautés de TradingCorp.',
+};
+
+export function habillage(c: Courriel): Habillage {
+  if (c.famille === 'decouverte_accueil') {
+    return ACCUEIL;
+  }
+  if (c.famille === 'decouverte_annonce') {
+    return ANNONCE;
+  }
+  return {
+    bouton: libelleBouton(c.lien),
+    ouLire: ouLire(c.lien),
+    mention: CONFIDENTIALITE,
+    pied: PIED,
+  };
+}
+
+/**
+ * Le lien de désinscription, d'un clic et sans connexion. La loi l'exige dans
+ * chaque message de prospection : une annonce qui n'en a pas ne part pas (voir
+ * `envoyable`). Le jeton est vérifié avant d'entrer dans l'adresse — il vient
+ * de la base, mais l'adresse part signée TradingCorp.
+ */
+export function lienDesinscription(c: Courriel, adresseSite: string): string | null {
+  if (c.famille !== 'decouverte_annonce' || !c.jeton) {
+    return null;
+  }
+  return /^[0-9a-f-]{36}$/i.test(c.jeton) ? `${adresseSite}/desinscription?jeton=${c.jeton}` : null;
+}
+
+/** Faux pour une annonce sans lien de désinscription valable : elle ne doit pas partir. */
+export function envoyable(c: Courriel, adresseSite: string): boolean {
+  return c.famille !== 'decouverte_annonce' || lienDesinscription(c, adresseSite) !== null;
+}
 
 /**
  * Le texte cite des prénoms et des titres de leçon saisis par des personnes :
@@ -102,6 +173,8 @@ export function ouLire(lien: string | null): string {
 }
 
 export function html(c: Courriel, prenom: string | null, adresseSite: string): string {
+  const h = habillage(c);
+  const desinscription = lienDesinscription(c, adresseSite);
   const cible = echapper(adresse(c.lien, adresseSite));
   const objet = echapper(c.objet);
   const message = echapper(c.message ?? c.objet);
@@ -143,11 +216,11 @@ export function html(c: Courriel, prenom: string | null, adresseSite: string): s
             <h1 class="tc-titre" style="margin:32px 0 16px;font-family:${POLICE};font-size:22px;line-height:1.3;font-weight:700;color:${COULEUR.titre}">${objet}</h1>
             <p style="${paragraphe}">${salutation}</p>
             <p style="${paragraphe}">${message}</p>
-            <p style="${paragraphe};margin-bottom:28px">${echapper(ouLire(c.lien))}</p>
+            <p style="${paragraphe};margin-bottom:28px">${echapper(h.ouLire)}</p>
             <table role="presentation" class="tc-bouton" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td style="border-radius:8px;background:${COULEUR.bouton}">
-                  <a href="${cible}" style="display:inline-block;padding:14px 28px;font-family:${POLICE};font-size:16px;font-weight:600;line-height:1.2;color:#ffffff;text-decoration:none;border-radius:8px">${libelleBouton(c.lien)}</a>
+                  <a href="${cible}" style="display:inline-block;padding:14px 28px;font-family:${POLICE};font-size:16px;font-weight:600;line-height:1.2;color:#ffffff;text-decoration:none;border-radius:8px">${echapper(h.bouton)}</a>
                 </td>
               </tr>
             </table>
@@ -155,14 +228,22 @@ export function html(c: Courriel, prenom: string | null, adresseSite: string): s
               Si le bouton ne s’ouvre pas, copie cette adresse dans ton navigateur :<br>
               <a href="${cible}" style="color:${COULEUR.lien};word-break:break-all">${cible}</a>
             </p>
-            <hr style="border:0;border-top:1px solid ${COULEUR.bordure};margin:28px 0 20px">
-            <p style="margin:0;font-size:13px;line-height:1.5;color:${COULEUR.discret}">${CONFIDENTIALITE}</p>
+            ${
+              h.mention
+                ? `<hr style="border:0;border-top:1px solid ${COULEUR.bordure};margin:28px 0 20px">
+            <p style="margin:0;font-size:13px;line-height:1.5;color:${COULEUR.discret}">${echapper(h.mention)}</p>`
+                : ''
+            }
           </td>
         </tr>
         <tr>
           <td align="center" style="padding:20px 12px;font-family:${POLICE};font-size:12px;line-height:1.5;color:${COULEUR.discret}">
-            ${PIED}<br>
-            Une question ? <a href="mailto:mailtradingcorp@gmail.com" style="color:${COULEUR.discret}">mailtradingcorp@gmail.com</a>
+            ${echapper(h.pied)}<br>
+            ${
+              desinscription
+                ? `Ne plus recevoir ces e-mails : <a href="${echapper(desinscription)}" style="color:${COULEUR.discret}">se désinscrire</a><br>`
+                : ''
+            }Une question ? <a href="mailto:mailtradingcorp@gmail.com" style="color:${COULEUR.discret}">mailtradingcorp@gmail.com</a>
           </td>
         </tr>
       </table>
@@ -175,20 +256,22 @@ export function html(c: Courriel, prenom: string | null, adresseSite: string): s
 
 /** Le même message en texte brut, pour les messageries qui n'affichent pas le HTML. */
 export function texte(c: Courriel, prenom: string | null, adresseSite: string): string {
+  const h = habillage(c);
+  const desinscription = lienDesinscription(c, adresseSite);
   return [
     c.objet,
     '',
     `Bonjour${prenom ? ` ${prenom}` : ''},`,
     '',
     c.message ?? c.objet,
-    ouLire(c.lien),
+    h.ouLire,
     '',
-    `${libelleBouton(c.lien)} : ${adresse(c.lien, adresseSite)}`,
-    '',
-    CONFIDENTIALITE,
+    `${h.bouton} : ${adresse(c.lien, adresseSite)}`,
+    ...(h.mention ? ['', h.mention] : []),
     '',
     '—',
-    PIED,
+    h.pied,
+    ...(desinscription ? [`Ne plus recevoir ces e-mails : ${desinscription}`] : []),
     'Une question ? mailtradingcorp@gmail.com',
   ].join('\n');
 }

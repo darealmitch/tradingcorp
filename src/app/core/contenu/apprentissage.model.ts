@@ -250,6 +250,15 @@ export interface ModuleParcours {
   lecons_offertes: number;
 }
 
+/**
+ * Ce qu'une annonce des leçons offertes a réellement fait : les comptes
+ * prévenus dans leur espace, et ceux, parmi eux, qui ont accepté l'e-mail.
+ */
+export interface BilanAnnonceDecouverte {
+  notifies: number;
+  par_courriel: number;
+}
+
 /** Parcours complet d'un apprenant : formation + modules ordonnés. */
 export interface Parcours {
   id_formation: string;

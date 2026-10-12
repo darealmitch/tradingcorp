@@ -4,11 +4,17 @@ import { CommerceService } from '../../../core/commerce/commerce.service';
 import { FormationStaff } from '../../../core/commerce/formation.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import {
+  BilanAnnonceDecouverte,
   LeconResume,
   Module,
   RessourceResume,
   TypeRessource,
 } from '../../../core/contenu/apprentissage.model';
+
+/** « 1 compte », « 3 comptes ». */
+function nombre(n: number, singulier: string, pluriel = `${singulier}s`): string {
+  return `${n} ${n > 1 ? pluriel : singulier}`;
+}
 
 /** Libellés compacts : la colonne Médias est étroite. */
 const TYPES_COURTS: Record<TypeRessource, string> = {
@@ -49,6 +55,13 @@ export class Contenus {
 
   /** Leçon dont l'offre part vers le serveur — sa case est figée le temps de l'aller-retour. */
   protected readonly decouverteEnCours = signal<string | null>(null);
+
+  // ----- Annonce des leçons offertes -----
+  protected readonly annonceEnCours = signal(false);
+  /** L'envoi à tous ne part qu'au second clic : il touche chaque compte sans achat. */
+  protected readonly confirmationAnnonce = signal(false);
+  protected readonly bilanAnnonce = signal<string | null>(null);
+  protected readonly erreurAnnonce = signal<string | null>(null);
 
   protected readonly nombreOffertes = computed(
     () =>
@@ -100,6 +113,63 @@ export class Contenus {
       this.erreurReglage.set(erreur);
     }
     this.enregistrement.set(null);
+  }
+
+  protected demanderAnnonce(): void {
+    this.bilanAnnonce.set(null);
+    this.erreurAnnonce.set(null);
+    this.confirmationAnnonce.set(true);
+  }
+
+  protected annulerAnnonce(): void {
+    this.confirmationAnnonce.set(false);
+  }
+
+  protected async confirmerAnnonce(): Promise<void> {
+    await this.annoncer(false);
+    this.confirmationAnnonce.set(false);
+  }
+
+  /**
+   * Prévient les comptes sans achat — ou, en essai, les seuls comptes de test.
+   * La base fait le tri : un compte déjà prévenu de cette sélection de leçons
+   * ne reçoit rien de plus, et l'e-mail ne part qu'avec l'accord de chacun.
+   */
+  protected async annoncer(essai: boolean): Promise<void> {
+    if (this.annonceEnCours()) {
+      return;
+    }
+    if (essai) {
+      this.confirmationAnnonce.set(false);
+    }
+    this.annonceEnCours.set(true);
+    this.bilanAnnonce.set(null);
+    this.erreurAnnonce.set(null);
+
+    const { resultat, erreur } = await this.contenu.annoncerLeconsOffertes(essai);
+
+    this.annonceEnCours.set(false);
+    if (erreur || !resultat) {
+      this.erreurAnnonce.set(erreur ?? 'L’annonce n’a pas pu partir. Réessaie.');
+      return;
+    }
+    this.bilanAnnonce.set(this.bilan(resultat, essai));
+  }
+
+  /** Ce que l'envoi a réellement fait, chiffres à l'appui. */
+  private bilan(r: BilanAnnonceDecouverte, essai: boolean): string {
+    if (essai) {
+      return r.notifies === 0
+        ? 'Aucun compte de test : l’essai n’est parti nulle part.'
+        : `Essai envoyé à ${nombre(r.notifies, 'compte de test', 'comptes de test')} : notification et e-mail.`;
+    }
+    if (r.notifies === 0) {
+      return 'Tous les comptes sans achat avaient déjà été prévenus de ces leçons : rien n’est reparti.';
+    }
+    return (
+      `${nombre(r.notifies, 'compte sans achat prévenu', 'comptes sans achat prévenus')} dans leur espace, ` +
+      `dont ${nombre(r.par_courriel, 'par e-mail', 'par e-mail')} — seuls ceux qui ont accepté les nouveautés le reçoivent.`
+    );
   }
 
   /** Un quiz demande une inscription : seules les vidéos et les lectures s'offrent. */

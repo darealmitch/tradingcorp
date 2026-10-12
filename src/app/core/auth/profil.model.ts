@@ -16,4 +16,9 @@ export interface Profil {
   est_test: boolean;
   /** Compte propriétaire : seul habilité à supprimer un administrateur. */
   est_proprietaire: boolean;
+  /**
+   * Accord aux e-mails de nouveautés et d'offres. Jamais donné d'office :
+   * recueilli à l'inscription, réglable depuis le profil.
+   */
+  accepte_nouveautes: boolean;
 }

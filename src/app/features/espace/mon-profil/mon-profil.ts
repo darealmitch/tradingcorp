@@ -55,10 +55,35 @@ export class MonProfil {
   protected readonly exportEnCours = signal(false);
   protected readonly messageExport = signal<string | null>(null);
 
+  // ----- Nouveautés par e-mail -----
+  protected readonly nouveautesEnCours = signal(false);
+  protected readonly messageNouveautes = signal<string | null>(null);
+
   // ----- Suppression -----
   protected readonly suppressionDemandee = signal(false);
   protected readonly suppressionEnCours = signal(false);
   protected readonly messageSuppression = signal<string | null>(null);
+
+  /**
+   * Donne ou retire l'accord aux nouveautés. En cas d'échec, la case revient à
+   * ce que dit la base : laisser croire qu'on est désinscrit alors que les
+   * e-mails continueraient serait la pire issue.
+   */
+  protected async basculerNouveautes(evenement: Event): Promise<void> {
+    const caseNouveautes = evenement.target as HTMLInputElement;
+    const voulu = caseNouveautes.checked;
+    this.nouveautesEnCours.set(true);
+    this.messageNouveautes.set(null);
+
+    const erreur = await this.donnees.definirMesNouveautes(voulu);
+    if (erreur) {
+      caseNouveautes.checked = !voulu;
+      this.messageNouveautes.set(erreur);
+    } else {
+      await this.auth.rechargerProfil();
+    }
+    this.nouveautesEnCours.set(false);
+  }
 
   protected membreDepuis(): string {
     const date = this.auth.profil()?.date_creation;

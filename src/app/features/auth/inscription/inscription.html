@@ -141,10 +141,25 @@
           }
         </div>
 
+        <!-- Facultative, jamais pré-cochée : c'est un consentement, pas une
+             condition du compte. Il se retire depuis le profil ou d'un clic
+             dans chaque e-mail. -->
+        <div class="champ champ-consentement">
+          <label class="case-consentement">
+            <input type="checkbox" formControlName="nouveautes" />
+            <span>
+              Je souhaite recevoir par e-mail les nouveautés et les offres de TradingCorp (nouvelles
+              leçons offertes, actualités de la formation). Facultatif : tu peux changer d'avis à
+              tout moment.
+            </span>
+          </label>
+        </div>
+
         <p class="mention-rgpd">
           Tes données servent à créer ton compte, te donner accès à la formation et suivre ta
-          progression. Elles sont hébergées en France et ne sont jamais revendues. Tu peux à tout
-          moment y accéder, les corriger, les exporter ou supprimer ton compte depuis ton profil.
+          progression ; ton adresse sert aussi à t'envoyer nos nouveautés, si tu l'as accepté. Elles
+          sont hébergées en France et ne sont jamais revendues. Tu peux à tout moment y accéder, les
+          corriger, les exporter ou supprimer ton compte depuis ton profil.
           <a routerLink="/confidentialite" target="_blank">En savoir plus</a>.
         </p>
 

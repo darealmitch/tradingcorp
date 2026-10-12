@@ -79,6 +79,10 @@ export class Inscription {
       // comme un consentement laisserait croire qu'il est révocable à tout
       // moment — ce qu'une acceptation contractuelle n'est pas.
       conditions: [false, [Validators.requiredTrue]],
+      // Les e-mails de nouveautés et d'offres, eux, relèvent bien d'un
+      // consentement (CPCE art. L34-5) : case facultative, jamais pré-cochée,
+      // et sans effet sur la création du compte.
+      nouveautes: [false],
     },
     { validators: mdpIdentiques },
   );
@@ -94,13 +98,14 @@ export class Inscription {
     this.chargement.set(true);
     this.erreur.set(null);
 
-    const { prenom, nom, dateNaissance, email, mdp } = this.form.getRawValue();
+    const { prenom, nom, dateNaissance, email, mdp, nouveautes } = this.form.getRawValue();
     const resultat = await this.auth.inscription(
       email,
       mdp,
       prenom.trim(),
       nom.trim(),
       dateNaissance,
+      nouveautes,
     );
 
     if (!resultat.ok) {

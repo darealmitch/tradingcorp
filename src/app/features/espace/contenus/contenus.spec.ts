@@ -129,3 +129,102 @@ describe('Contenus — accès découverte', () => {
     expect(texte(page)).toContain('Seul un administrateur peut changer ce réglage.');
   });
 });
+
+describe('Contenus — annonce des leçons offertes', () => {
+  afterEach(() => TestBed.resetTestingModule());
+
+  /** Une leçon déjà offerte : c'est ce qui fait paraître l'annonce. */
+  async function monterAvecOffre(
+    role: 'admin' | 'formateur',
+    reponse: { resultat: { notifies: number; par_courriel: number } | null; erreur: string | null },
+  ) {
+    const annoncerLeconsOffertes = vi.fn(() => Promise.resolve(reponse));
+    const module = structuredClone(MODULE);
+    module.lecons[0].est_decouverte = true;
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: ContenuService,
+          useValue: {
+            chargerStructure: () => Promise.resolve([module]),
+            definirDecouverte: () => Promise.resolve(null),
+            annoncerLeconsOffertes,
+          },
+        },
+        {
+          provide: CommerceService,
+          useValue: { listerFormationsStaff: () => Promise.resolve([]) },
+        },
+        { provide: AuthService, useValue: { role: signal(role) } },
+      ],
+    });
+    const fixture = TestBed.createComponent(Contenus);
+    await stabiliser(fixture);
+    const page = fixture.nativeElement as HTMLElement;
+    return { fixture, page, annoncerLeconsOffertes };
+  }
+
+  function bouton(page: HTMLElement, libelle: string): HTMLButtonElement {
+    const trouve = [...page.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.textContent?.trim() === libelle,
+    );
+    if (!trouve) {
+      throw new Error(`Bouton « ${libelle} » introuvable`);
+    }
+    return trouve;
+  }
+
+  it('envoie un essai aux comptes de test, et le dit', async () => {
+    const { fixture, page, annoncerLeconsOffertes } = await monterAvecOffre('admin', {
+      resultat: { notifies: 1, par_courriel: 1 },
+      erreur: null,
+    });
+
+    bouton(page, 'Envoyer un essai aux comptes de test').click();
+    await stabiliser(fixture);
+
+    expect(annoncerLeconsOffertes).toHaveBeenCalledWith(true);
+    expect(page.querySelector('.alerte.est-succes')?.textContent).toContain(
+      'Essai envoyé à 1 compte de test',
+    );
+  });
+
+  it('ne prévient tout le monde qu’au second clic, puis donne le bilan', async () => {
+    const { fixture, page, annoncerLeconsOffertes } = await monterAvecOffre('admin', {
+      resultat: { notifies: 4, par_courriel: 1 },
+      erreur: null,
+    });
+
+    bouton(page, 'Prévenir les comptes sans achat').click();
+    await stabiliser(fixture);
+    expect(annoncerLeconsOffertes).not.toHaveBeenCalled();
+
+    bouton(page, 'Confirmer l’envoi').click();
+    await stabiliser(fixture);
+
+    expect(annoncerLeconsOffertes).toHaveBeenCalledWith(false);
+    expect(texte(page)).toContain(
+      '4 comptes sans achat prévenus dans leur espace, dont 1 par e-mail',
+    );
+  });
+
+  it('affiche le refus de la base', async () => {
+    const { fixture, page } = await monterAvecOffre('admin', {
+      resultat: null,
+      erreur: 'Aucune leçon n’est offerte : coche-en d’abord dans le tableau.',
+    });
+
+    bouton(page, 'Envoyer un essai aux comptes de test').click();
+    await stabiliser(fixture);
+
+    expect(page.querySelector('.alerte.est-erreur')?.textContent).toContain(
+      'Aucune leçon n’est offerte',
+    );
+  });
+
+  it('ne montre pas l’annonce à un formateur', async () => {
+    const { page } = await monterAvecOffre('formateur', { resultat: null, erreur: null });
+
+    expect(texte(page)).not.toContain('Prévenir les comptes sans achat');
+  });
+});

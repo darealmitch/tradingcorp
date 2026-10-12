@@ -28,6 +28,7 @@ function unProfil(champs: Partial<Profil> = {}): Profil {
     doit_changer_mdp: false,
     est_test: false,
     est_proprietaire: false,
+    accepte_nouveautes: false,
     ...champs,
   };
 }
@@ -163,6 +164,26 @@ describe('AuthService', () => {
         email: 'ada@exemple.fr',
         options: { data: { prenom: 'Ada', nom: 'Lovelace', date_naissance: '1990-05-04' } },
       });
+    });
+
+    it('transmet l’accord aux nouveautés, refusé quand la case n’est pas cochée', async () => {
+      // L'accord est un consentement : le trigger n'y voit qu'un `true`
+      // explicite. Un oubli côté client vaudrait refus, jamais accord tacite.
+      const { service, double } = await creerService();
+
+      await service.inscription('ada@exemple.fr', 'mdp-long-1234', 'Ada', 'Lovelace', '1990-05-04');
+      await service.inscription(
+        'bob@exemple.fr',
+        'mdp-long-1234',
+        'Bob',
+        'Martin',
+        '1990-05-04',
+        true,
+      );
+
+      const [sansCase, avecCase] = double.appels.filter((a) => a.nom === 'signUp');
+      expect(sansCase?.params).toMatchObject({ options: { data: { accepte_nouveautes: false } } });
+      expect(avecCase?.params).toMatchObject({ options: { data: { accepte_nouveautes: true } } });
     });
 
     it('traduit le refus de majorité renvoyé par le trigger', async () => {
