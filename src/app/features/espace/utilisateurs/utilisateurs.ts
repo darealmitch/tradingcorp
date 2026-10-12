@@ -11,7 +11,12 @@ import {
 } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ComptesService } from '../../../core/comptes/comptes.service';
-import { AccesFormation, EssaiAccorde, ProfilAdmin } from '../../../core/comptes/comptes.model';
+import {
+  AccesFormation,
+  EssaiAccorde,
+  EtatEssai,
+  ProfilAdmin,
+} from '../../../core/comptes/comptes.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
@@ -88,8 +93,10 @@ export class Utilisateurs {
   // Retrait d'un accès : confirmation exigée sur la ligne concernée.
   protected readonly retraitCle = signal<string | null>(null);
 
-  // Essai : confirmation exigée, puisqu'un e-mail part aussitôt.
+  // Essai : confirmation exigée pour l'accorder, puisqu'un e-mail part
+  // aussitôt, et pour le retirer, puisque les leçons offertes se ferment.
   protected readonly essaiId = signal<string | null>(null);
+  protected readonly retraitEssaiId = signal<string | null>(null);
 
   protected readonly creationOuverte = signal(false);
   protected readonly creationEnCours = signal(false);
@@ -164,10 +171,15 @@ export class Utilisateurs {
         return profil.role === 'apprenant';
       case 'equipe':
         return profil.role !== 'apprenant';
-      // Un élève à qui l'on a accordé un essai a reçu le geste qu'on lui
-      // destinait : il n'attend plus rien de l'administrateur.
+      // Un élève dont l'essai est en cours a reçu le geste qu'on lui
+      // destinait : il n'attend plus rien de l'administrateur. Un essai
+      // retiré, lui, le laisse de nouveau sans rien.
       case 'sans-acces':
-        return profil.role === 'apprenant' && !this.aUnAcces(profil) && !this.essaiDe(profil);
+        return (
+          profil.role === 'apprenant' &&
+          !this.aUnAcces(profil) &&
+          !['en_cours', 'programme'].includes(this.etatEssai(profil))
+        );
       case 'en-attente':
         return profil.doit_changer_mdp;
       default:
@@ -264,10 +276,17 @@ export class Utilisateurs {
     return this.definirAcces(profil, formation, true);
   }
 
+  /** Une seule confirmation ouverte à la fois, quelle que soit la ligne. */
+  private fermerConfirmations(): void {
+    this.retraitCle.set(null);
+    this.essaiId.set(null);
+    this.retraitEssaiId.set(null);
+    this.suppressionId.set(null);
+  }
+
   protected demanderRetrait(profil: ProfilAdmin, formation: Formation): void {
     this.reinitialiserRetours();
-    this.suppressionId.set(null);
-    this.essaiId.set(null);
+    this.fermerConfirmations();
     this.retraitCle.set(this.cleAcces(profil, formation));
     this.focaliser('.ligne-confirmation .btn-annuler');
   }
@@ -324,35 +343,50 @@ export class Utilisateurs {
     return this.essais().find((e) => e.id_profil === profil.id_profil);
   }
 
-  /**
-   * L'essai n'a de sens que pour un élève sans accès complet, qui n'en a pas
-   * déjà reçu : un compte de test voit tout. Reflet des refus de la base, qui
-   * reste l'autorité — l'écran évite seulement un refus prévisible.
-   */
-  protected peutAccorderEssai(profil: ProfilAdmin): boolean {
-    return (
-      profil.role === 'apprenant' &&
-      !profil.est_test &&
-      !this.aUnAcces(profil) &&
-      !this.essaiDe(profil)
-    );
+  protected etatEssai(profil: ProfilAdmin): EtatEssai {
+    const essai = this.essaiDe(profil);
+    if (!essai) {
+      return 'aucun';
+    }
+    if (essai.retire_le) {
+      return 'retire';
+    }
+    return essai.annonce_le ? 'en_cours' : 'programme';
   }
 
-  /** Sous la pastille : quand l'essai a été annoncé, ou qu'il attend encore. */
-  protected detailEssai(essai: EssaiAccorde): string {
-    if (!essai.annonce_le) {
-      return 'E-mail à la mise en production';
+  /**
+   * La ligne de l'essai n'a de sens que pour un élève sans accès complet :
+   * l'accès complet contient l'essai. Un compte de test voit déjà tout, et la
+   * base lui refuse un essai — mais celui qu'il avait avant d'être coché reste
+   * affiché, et retirable : l'écran dit ce qui est en base.
+   */
+  protected afficherEssai(profil: ProfilAdmin): boolean {
+    if (profil.role !== 'apprenant' || this.aUnAcces(profil)) {
+      return false;
     }
-    const date = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(
-      new Date(essai.annonce_le),
-    );
-    return `E-mail envoyé le ${date}`;
+    return !profil.est_test || ['en_cours', 'programme'].includes(this.etatEssai(profil));
+  }
+
+  /** Sous la pastille : quand l'essai a été annoncé, qu'il attend, ou qu'il a pris fin. */
+  protected detailEssai(profil: ProfilAdmin): string {
+    const essai = this.essaiDe(profil);
+    const date = (iso: string) =>
+      new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(iso));
+    switch (this.etatEssai(profil)) {
+      case 'en_cours':
+        return `E-mail envoyé le ${date(essai!.annonce_le!)}`;
+      case 'programme':
+        return 'E-mail à la mise en production';
+      case 'retire':
+        return `Retiré le ${date(essai!.retire_le!)}`;
+      default:
+        return '';
+    }
   }
 
   protected demanderEssai(profil: ProfilAdmin): void {
     this.reinitialiserRetours();
-    this.retraitCle.set(null);
-    this.suppressionId.set(null);
+    this.fermerConfirmations();
     this.essaiId.set(profil.id_profil);
     this.focaliser('.ligne-confirmation .btn-annuler');
   }
@@ -373,10 +407,16 @@ export class Utilisateurs {
       // Un autre administrateur a pu l'accorder entre-temps : on se réaligne.
       this.essais.set(await this.comptes.listerEssais());
     } else {
+      // Un essai retiré reprend : sa ligne est remplacée, pas doublée.
       const maintenant = new Date().toISOString();
       this.essais.update((liste) => [
-        ...liste,
-        { id_profil: profil.id_profil, accorde_le: maintenant, annonce_le: maintenant },
+        ...liste.filter((e) => e.id_profil !== profil.id_profil),
+        {
+          id_profil: profil.id_profil,
+          accorde_le: maintenant,
+          annonce_le: maintenant,
+          retire_le: null,
+        },
       ]);
       this.signalerSucces(
         `Essai accordé : ${this.nomAffiche(profil)} reçoit l’e-mail qui explique son essai. Seules les leçons offertes lui sont ouvertes.`,
@@ -384,6 +424,42 @@ export class Utilisateurs {
       this.marquerModifie(profil.id_profil);
     }
     this.essaiId.set(null);
+    this.enregistrement.set(false);
+  }
+
+  protected demanderRetraitEssai(profil: ProfilAdmin): void {
+    this.reinitialiserRetours();
+    this.fermerConfirmations();
+    this.retraitEssaiId.set(profil.id_profil);
+    this.focaliser('.ligne-confirmation .btn-annuler');
+  }
+
+  protected annulerRetraitEssai(profil?: ProfilAdmin): void {
+    this.retraitEssaiId.set(null);
+    if (profil) {
+      this.focaliser(`[data-action="retirer-essai-${profil.id_profil}"]`);
+    }
+  }
+
+  protected async confirmerRetraitEssai(profil: ProfilAdmin): Promise<void> {
+    this.reinitialiserRetours();
+    this.enregistrement.set(true);
+    const erreur = await this.comptes.retirerEssai(profil.id_profil);
+    if (erreur) {
+      this.erreur.set(erreur);
+      // Un autre administrateur a pu le retirer entre-temps : on se réaligne.
+      this.essais.set(await this.comptes.listerEssais());
+    } else {
+      const maintenant = new Date().toISOString();
+      this.essais.update((liste) =>
+        liste.map((e) => (e.id_profil === profil.id_profil ? { ...e, retire_le: maintenant } : e)),
+      );
+      this.signalerSucces(
+        `Essai retiré : ${this.nomAffiche(profil)} n’a plus accès aux leçons offertes. Sa progression est conservée, et aucun e-mail n’est parti.`,
+      );
+      this.marquerModifie(profil.id_profil);
+    }
+    this.retraitEssaiId.set(null);
     this.enregistrement.set(false);
   }
 
@@ -559,8 +635,7 @@ export class Utilisateurs {
 
   protected demanderSuppression(profil: ProfilAdmin): void {
     this.reinitialiserRetours();
-    this.retraitCle.set(null);
-    this.essaiId.set(null);
+    this.fermerConfirmations();
     this.suppressionId.set(profil.id_profil);
     this.focaliser('.ligne-confirmation .btn-annuler');
   }

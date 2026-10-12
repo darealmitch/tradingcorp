@@ -15,6 +15,7 @@ const LIBELLES_ACTIONS: Record<string, string> = {
   octroi_essai: 'Essai accordé (leçons offertes seulement)',
   retrait_acces: 'Accès à une formation retiré',
   retrait_compte_test: 'Compte retiré des comptes de test',
+  retrait_essai: 'Essai retiré (leçons offertes fermées)',
   suppression_commentaire: 'Suppression d’un commentaire',
   suppression_compte: 'Suppression de compte',
 };

@@ -234,10 +234,13 @@
             @let enRetrait = formationEnRetrait(profil);
             @let enSuppression = suppressionId() === profil.id_profil;
             @let enEssai = essaiId() === profil.id_profil;
+            @let enRetraitEssai = retraitEssaiId() === profil.id_profil;
             <tr
               class="ligne-compte"
               [class.est-modifie]="derniereModification() === profil.id_profil"
-              [class.a-confirmation]="enRetrait !== null || enSuppression || enEssai"
+              [class.a-confirmation]="
+                enRetrait !== null || enSuppression || enEssai || enRetraitEssai
+              "
             >
               <td class="cellule-compte">
                 @if (correctionId() === profil.id_profil) {
@@ -334,23 +337,27 @@
                     Tout le contenu
                   </span>
                 } @else {
+                  <!-- Deux lignes construites pareil : l'intitulé et l'état à gauche,
+                       l'action à droite. L'essai ne crée aucune inscription : il a
+                       sa propre ligne, pour qu'on ne le confonde jamais avec l'accès
+                       complet. -->
                   <div class="acces-liste">
                     @for (formation of formations(); track formation.id_formation) {
                       @let etat = etatAcces(profil, formation);
                       <div class="acces-ligne">
                         <div class="acces-etat">
-                          @if (formations().length > 1) {
-                            <span class="acces-formation">{{ formation.titre }}</span>
-                          }
+                          <span class="intitule-statut">{{
+                            formations().length > 1 ? formation.titre : 'Accès complet'
+                          }}</span>
                           @switch (etat) {
                             @case ('active') {
-                              <span class="badge-statut est-succes">Accès actif</span>
+                              <span class="badge-statut est-succes">Actif</span>
                             }
                             @case ('revoquee') {
-                              <span class="badge-statut">Accès retiré</span>
+                              <span class="badge-statut">Retiré</span>
                             }
                             @default {
-                              <span class="badge-statut est-attente">Sans accès</span>
+                              <span class="badge-statut est-attente">Aucun</span>
                             }
                           }
                         </div>
@@ -386,35 +393,57 @@
                         }
                       </div>
                     }
-                    <!-- L'essai ne crée aucune inscription : il vit sur sa propre
-                         ligne, sous l'accès complet, pour qu'on ne les confonde pas. -->
-                    @let essai = essaiDe(profil);
-                    @if (essai && !aUnAcces(profil)) {
+                    @if (afficherEssai(profil)) {
+                      @let essai = etatEssai(profil);
                       <div class="acces-ligne">
                         <div class="acces-etat">
-                          <span
-                            class="badge-statut est-essai"
-                            title="Leçons offertes seulement, sans inscription"
-                          >
-                            {{ essai.annonce_le ? 'Essai accordé' : 'Essai programmé' }}
-                          </span>
-                          <span class="acces-formation">{{ detailEssai(essai) }}</span>
+                          <span class="intitule-statut">Essai gratuit</span>
+                          @switch (essai) {
+                            @case ('en_cours') {
+                              <span class="badge-statut est-essai">En cours</span>
+                            }
+                            @case ('programme') {
+                              <span class="badge-statut est-essai">Programmé</span>
+                            }
+                            @case ('retire') {
+                              <span class="badge-statut">Retiré</span>
+                            }
+                            @default {
+                              <span class="detail-statut">Aucun</span>
+                            }
+                          }
                         </div>
+                        @if (essai === 'en_cours' || essai === 'programme') {
+                          <button
+                            class="btn btn-ghost btn-compact"
+                            type="button"
+                            title="Ferme les leçons offertes à ce compte ; sa progression reste"
+                            [attr.data-action]="'retirer-essai-' + profil.id_profil"
+                            [disabled]="enregistrement()"
+                            (click)="demanderRetraitEssai(profil)"
+                            [attr.aria-label]="'Retirer l’essai de ' + nomAffiche(profil)"
+                          >
+                            Retirer l’essai
+                          </button>
+                        } @else {
+                          <button
+                            class="btn btn-ghost btn-compact"
+                            type="button"
+                            title="Leçons offertes seulement, sans inscription, avec un e-mail qui l’explique"
+                            [attr.data-action]="'essai-' + profil.id_profil"
+                            [disabled]="enregistrement()"
+                            (click)="demanderEssai(profil)"
+                            [attr.aria-label]="'Accorder un essai à ' + nomAffiche(profil)"
+                          >
+                            Accorder un essai
+                          </button>
+                        }
                       </div>
-                    } @else if (peutAccorderEssai(profil)) {
-                      <div class="acces-ligne acces-ligne-essai">
-                        <button
-                          class="btn btn-ghost btn-compact"
-                          type="button"
-                          title="Leçons offertes seulement, sans inscription, avec un e-mail qui l’explique"
-                          [attr.data-action]="'essai-' + profil.id_profil"
-                          [disabled]="enregistrement()"
-                          (click)="demanderEssai(profil)"
-                          [attr.aria-label]="'Accorder un essai à ' + nomAffiche(profil)"
-                        >
-                          Accorder un essai
-                        </button>
-                      </div>
+                      <!-- La date court sous toute la ligne : coincée à gauche du
+                           bouton, elle passait sur deux lignes. -->
+                      @if (essai !== 'aucun') {
+                        <p class="detail-statut acces-detail">{{ detailEssai(profil) }}</p>
+                      }
                     }
                   </div>
                 }
@@ -508,7 +537,7 @@
                     <p class="confirmation-texte">
                       Accorder un essai à <strong>{{ nomAffiche(profil) }}</strong> ?
                       <span class="confirmation-detail">
-                        Aucune inscription n’est créée : seules les leçons offertes restent
+                        Aucune inscription n’est créée : seules les leçons offertes lui sont
                         ouvertes. Un e-mail part aussitôt pour expliquer l’essai — ce qu’il
                         comprend, ce qu’il ne comprend pas, et qu’il est gratuit.
                       </span>
@@ -529,6 +558,44 @@
                         (click)="confirmerEssai(profil)"
                       >
                         {{ enregistrement() ? 'Envoi…' : 'Accorder l’essai' }}
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+
+            @if (enRetraitEssai) {
+              <tr class="ligne-confirmation" (keydown.escape)="annulerRetraitEssai(profil)">
+                <td colspan="5">
+                  <div
+                    class="confirmation"
+                    role="group"
+                    aria-label="Confirmer le retrait de l’essai"
+                  >
+                    <p class="confirmation-texte">
+                      Retirer l’essai de <strong>{{ nomAffiche(profil) }}</strong> ?
+                      <span class="confirmation-detail">
+                        Les leçons offertes ne lui seront plus ouvertes. Sa progression est
+                        conservée ; la fin de l’essai s’affiche dans son espace, sans e-mail.
+                      </span>
+                    </p>
+                    <div class="confirmation-actions">
+                      <button
+                        class="btn btn-ghost btn-compact btn-annuler"
+                        type="button"
+                        [disabled]="enregistrement()"
+                        (click)="annulerRetraitEssai(profil)"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        class="btn btn-danger btn-compact"
+                        type="button"
+                        [disabled]="enregistrement()"
+                        (click)="confirmerRetraitEssai(profil)"
+                      >
+                        {{ enregistrement() ? 'Retrait…' : 'Retirer l’essai' }}
                       </button>
                     </div>
                   </div>

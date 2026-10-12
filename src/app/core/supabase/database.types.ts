@@ -131,18 +131,24 @@ export type Database = {
           accorde_par: string | null;
           annonce_le: string | null;
           id_profil: string;
+          retire_le: string | null;
+          retire_par: string | null;
         };
         Insert: {
           accorde_le?: string;
           accorde_par?: string | null;
           annonce_le?: string | null;
           id_profil: string;
+          retire_le?: string | null;
+          retire_par?: string | null;
         };
         Update: {
           accorde_le?: string;
           accorde_par?: string | null;
           annonce_le?: string | null;
           id_profil?: string;
+          retire_le?: string | null;
+          retire_par?: string | null;
         };
         Relationships: [];
       };
@@ -1028,6 +1034,7 @@ export type Database = {
         Args: { p_contenu: string; p_id_commentaire: string };
         Returns: string;
       };
+      retirer_essai: { Args: { p_id_profil: string }; Returns: undefined };
       revoquer_pour_remboursement: {
         Args: { p_motif?: string; p_reference: string };
         Returns: boolean;

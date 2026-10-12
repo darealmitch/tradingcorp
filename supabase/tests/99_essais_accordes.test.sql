@@ -215,7 +215,7 @@ select is(
   (select titre || ' | ' || lien || ' | ' || replace(message, chr(160), ' ')
      from public.notifications
     where id_profil = 'e5500000-0000-0000-0000-0000000000a1'
-      and cle_evenement = 'essai_accorde'),
+      and cle_evenement like 'essai_accorde:%'),
   'Ton accès d''essai à TradingCorp est ouvert | /espace | '
   || 'Tu peux suivre gratuitement une leçon de « Formation d''essai » : « Vidéo A ».',
   'essai — la notification dit ce que l''essai ouvre, et mène à l''espace'
@@ -228,7 +228,7 @@ select ok(
           and position(' :' in message) = 0
      from public.notifications
     where id_profil = 'e5500000-0000-0000-0000-0000000000a1'
-      and cle_evenement = 'essai_accorde'),
+      and cle_evenement like 'essai_accorde:%'),
   'essai — guillemets et deux-points à espaces insécables : aucun ne finit seul une ligne'
 );
 
@@ -236,7 +236,7 @@ select is(
   (select c.statut from public.courriels c
      join public.notifications n on n.id_notification = c.id_notification
     where n.id_profil = 'e5500000-0000-0000-0000-0000000000a1'
-      and n.cle_evenement = 'essai_accorde'),
+      and n.cle_evenement like 'essai_accorde:%'),
   'a_envoyer',
   'e-mail — il part, même quand les e-mails sont en mode essai'
 );
@@ -247,7 +247,7 @@ select is(
       select c.id_courriel from public.courriels c
         join public.notifications n on n.id_notification = c.id_notification
        where n.id_profil = 'e5500000-0000-0000-0000-0000000000a1'
-         and n.cle_evenement = 'essai_accorde')),
+         and n.cle_evenement like 'essai_accorde:%')),
   'essai_accorde | https://dev.tradingcorp.fr',
   'e-mail — la fonction d''envoi sait qu''elle écrit un e-mail d''essai, et vers quel site mène son bouton'
 );
@@ -262,7 +262,7 @@ select is(
 select is(
   (select count(*)::int from public.notifications
     where id_profil = 'e5500000-0000-0000-0000-0000000000a1'
-      and cle_evenement = 'essai_accorde'),
+      and cle_evenement like 'essai_accorde:%'),
   1,
   'essai — le second geste refusé n''a rien envoyé'
 );
@@ -402,7 +402,7 @@ select is(
      from public.notifications n
      join public.courriels c on c.id_notification = n.id_notification
     where n.id_profil = 'e5500000-0000-0000-0000-0000000000a3'
-      and n.cle_evenement = 'essai_accorde'),
+      and n.cle_evenement like 'essai_accorde:%'),
   'Tu peux suivre gratuitement 2 leçons de « Formation d''essai » : « Vidéo A » et « Vidéo B ». | a_envoyer | nul',
   'mise en production — Paul est prévenu, avec les leçons offertes alors ; son bouton garde l''adresse par défaut'
 );
@@ -438,7 +438,7 @@ select lives_ok(
 select is(
   (select count(*)::int from public.notifications
     where id_profil = 'e5500000-0000-0000-0000-0000000000a3'
-      and cle_evenement = 'essai_accorde'),
+      and cle_evenement like 'essai_accorde:%'),
   1,
   'mise en production — rejouée, elle ne prévient personne deux fois'
 );
@@ -448,7 +448,7 @@ select is(
     where id_profil in ('e5500000-0000-0000-0000-0000000000a2',
                         'e5500000-0000-0000-0000-0000000000b5',
                         'e5500000-0000-0000-0000-0000000000e6')
-      and cle_evenement = 'essai_accorde'),
+      and cle_evenement like 'essai_accorde:%'),
   0,
   'mise en production — aucun essai annoncé à qui n''en a pas reçu'
 );

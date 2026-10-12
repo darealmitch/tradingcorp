@@ -283,7 +283,7 @@
 }
 
 .colonne-acces {
-  width: 236px;
+  width: 330px;
 }
 
 .colonne-test,
@@ -437,13 +437,23 @@
   gap: 10px;
 }
 
-/* L'état à gauche, l'action à droite : d'une ligne à l'autre, les boutons
-   tombent dans la même colonne. */
+/* Une ligne par droit — l'accès complet, puis l'essai : l'état à gauche,
+   l'action à droite. Les boutons ont tous la même largeur, et tombent dans
+   la même colonne d'une ligne à l'autre. */
 .acces-ligne {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.acces-ligne + .acces-ligne {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.acces-detail {
+  margin-top: -6px;
 }
 
 .acces-etat {
@@ -453,14 +463,8 @@
   gap: 4px;
 }
 
-.acces-formation {
-  font-size: 0.78rem;
-  color: var(--muted);
-}
-
-/* L'essai seul sur sa ligne : son bouton tombe sous « Donner l'accès ». */
-.acces-ligne-essai {
-  justify-content: flex-end;
+.cellule-acces .btn-compact {
+  min-width: 156px;
 }
 
 .cellule-acces .btn-compact,

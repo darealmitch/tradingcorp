@@ -59,6 +59,7 @@ async function monter(
   const listerAcces = vi.fn(() => Promise.resolve(acces));
   const listerEssais = vi.fn(() => Promise.resolve(essais));
   const accorderEssai = vi.fn(() => Promise.resolve(refus));
+  const retirerEssai = vi.fn(() => Promise.resolve(refus));
   const creer = vi.fn(() => Promise.resolve({ motDePasse: 'Temp-1234' }));
   TestBed.configureTestingModule({
     providers: [
@@ -70,6 +71,7 @@ async function monter(
           definirAcces,
           listerEssais,
           accorderEssai,
+          retirerEssai,
           creer,
         },
       },
@@ -86,7 +88,16 @@ async function monter(
   const fixture = TestBed.createComponent(Utilisateurs);
   await stabiliser(fixture);
   const page = fixture.nativeElement as HTMLElement;
-  return { fixture, page, definirAcces, listerAcces, listerEssais, accorderEssai, creer };
+  return {
+    fixture,
+    page,
+    definirAcces,
+    listerAcces,
+    listerEssais,
+    accorderEssai,
+    retirerEssai,
+    creer,
+  };
 }
 
 /** La cellule « Accès » de la première ligne de la liste. */
@@ -94,12 +105,31 @@ function acces(page: HTMLElement): string {
   return page.querySelector('tbody .ligne-compte .cellule-acces')?.textContent ?? '';
 }
 
-/** La cellule « Accès » de la ligne du compte qui porte ce nom. */
-function accesDe(page: HTMLElement, nom: string): string {
+/**
+ * Les deux lignes de droits du compte qui porte ce nom : l'accès complet,
+ * puis l'essai — vide quand l'écran ne la propose pas.
+ */
+function droits(page: HTMLElement, nom = 'Léa'): { complet: string; essai: string } {
   const ligne = [...page.querySelectorAll('tbody .ligne-compte')].find((l) =>
     l.querySelector('.compte-nom')?.textContent?.includes(nom),
   );
-  return ligne?.querySelector('.cellule-acces')?.textContent?.replace(/\s+/g, ' ') ?? '';
+  const [complet = '', essai = ''] = [...(ligne?.querySelectorAll('.acces-ligne') ?? [])].map(
+    (l) => l.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+  );
+  // La date de l'essai court sous sa ligne, et en fait partie.
+  const detail = ligne?.querySelector('.acces-detail')?.textContent?.trim() ?? '';
+  return { complet, essai: essai && detail ? `${essai} ${detail}` : essai };
+}
+
+/** Le bouton qui valide la confirmation ouverte : il répète souvent l'action du tableau. */
+function confirmer(page: HTMLElement): void {
+  const bouton = page.querySelector<HTMLButtonElement>(
+    '.ligne-confirmation .btn-danger, .ligne-confirmation .btn-accent',
+  );
+  if (!bouton) {
+    throw new Error('Aucune confirmation ouverte');
+  }
+  bouton.click();
 }
 
 /** Les noms des comptes affichés, dans l'ordre. */
@@ -140,13 +170,13 @@ describe('Utilisateurs — accès à la formation', () => {
 
   it('ouvre d’un clic l’accès d’une élève qui ne l’a pas', async () => {
     const { fixture, page, definirAcces } = await monter([profil({})]);
-    expect(acces(page)).toContain('Sans accès');
+    expect(droits(page).complet).toContain('Aucun');
 
     cliquer(page, 'Donner l’accès');
     await stabiliser(fixture);
 
     expect(definirAcces).toHaveBeenCalledWith('lea', 'f-1', true);
-    expect(acces(page)).toContain('Accès actif');
+    expect(droits(page).complet).toContain('Actif');
     expect(page.querySelector('.alerte.est-succes')?.textContent).toContain('Accès ouvert');
   });
 
@@ -167,7 +197,7 @@ describe('Utilisateurs — accès à la formation', () => {
     cliquer(page, 'Retirer l’accès');
     await stabiliser(fixture);
     expect(definirAcces).toHaveBeenCalledWith('lea', 'f-1', false);
-    expect(acces(page)).toContain('Accès retiré');
+    expect(droits(page).complet).toContain('Retiré');
     expect(page.querySelector('.ligne-confirmation')).toBeNull();
   });
 
@@ -184,7 +214,7 @@ describe('Utilisateurs — accès à la formation', () => {
 
     expect(definirAcces).not.toHaveBeenCalled();
     expect(page.querySelector('.ligne-confirmation')).toBeNull();
-    expect(acces(page)).toContain('Accès actif');
+    expect(droits(page).complet).toContain('Actif');
   });
 
   it('rend un accès retiré', async () => {
@@ -192,13 +222,13 @@ describe('Utilisateurs — accès à la formation', () => {
       [profil({})],
       [{ id_profil: 'lea', id_formation: 'f-1', statut: 'revoquee' }],
     );
-    expect(acces(page)).toContain('Accès retiré');
+    expect(droits(page).complet).toContain('Retiré');
 
     cliquer(page, 'Donner l’accès');
     await stabiliser(fixture);
 
     expect(definirAcces).toHaveBeenCalledWith('lea', 'f-1', true);
-    expect(acces(page)).toContain('Accès actif');
+    expect(droits(page).complet).toContain('Actif');
   });
 
   it('ne propose rien pour l’équipe, qui voit déjà tout le contenu', async () => {
@@ -222,14 +252,15 @@ describe('Utilisateurs — accès à la formation', () => {
       'Réservé aux administrateurs',
     );
     expect(listerAcces).toHaveBeenCalledTimes(2);
-    expect(acces(page)).toContain('Sans accès');
+    expect(droits(page).complet).toContain('Aucun');
   });
 });
 
 /**
  * Un élève à qui l'on voulait offrir un essai a reçu l'accès complet, faute
- * d'autre bouton. L'essai a maintenant le sien, sur sa propre ligne : il ne
- * crée aucune inscription, et confirme avant d'envoyer l'e-mail qui l'explique.
+ * d'autre bouton. L'essai a maintenant sa ligne, sous l'accès complet : il ne
+ * crée aucune inscription, et chaque geste — l'accorder, le retirer — passe
+ * par une confirmation qui dit ses conséquences.
  */
 describe('Utilisateurs — essai', () => {
   afterEach(() => TestBed.resetTestingModule());
@@ -242,15 +273,35 @@ describe('Utilisateurs — essai', () => {
     est_test: true,
   });
 
+  const EN_COURS: EssaiAccorde = {
+    id_profil: 'lea',
+    accorde_le: '2026-10-12T12:00:00Z',
+    annonce_le: '2026-10-12T12:00:00Z',
+    retire_le: null,
+  };
+
+  it('montre, retirable, l’essai d’un élève coché « Test » après coup', async () => {
+    const { page } = await monter([TESS], [], null, [{ ...EN_COURS, id_profil: 'tess' }]);
+
+    expect(droits(page, 'Tess').essai).toContain('En cours');
+    expect(droits(page, 'Tess').essai).toContain('Retirer l’essai');
+    expect(droits(page, 'Tess').essai).not.toContain('Accorder un essai');
+  });
+
   it('ne le propose qu’à l’élève sans accès complet, hors compte de test', async () => {
     const { page } = await monter(
       [profil({}), TOM, TESS],
       [{ id_profil: 'tom', id_formation: 'f-1', statut: 'active' }],
+      null,
+      [{ ...EN_COURS, id_profil: 'tom' }],
     );
 
-    expect(accesDe(page, 'Léa')).toContain('Accorder un essai');
-    expect(accesDe(page, 'Tom')).not.toContain('Accorder un essai');
-    expect(accesDe(page, 'Tess')).not.toContain('Accorder un essai');
+    expect(droits(page).essai).toContain('Essai gratuit');
+    expect(droits(page).essai).toContain('Aucun');
+    expect(droits(page).essai).toContain('Accorder un essai');
+    // L'accès complet contient l'essai ; un compte de test voit déjà tout.
+    expect(droits(page, 'Tom').essai).toBe('');
+    expect(droits(page, 'Tess').essai).toBe('');
   });
 
   it('demande confirmation, puis l’accorde sans ouvrir l’accès complet', async () => {
@@ -264,15 +315,15 @@ describe('Utilisateurs — essai', () => {
     expect(confirmation).toContain('Aucune inscription n’est créée');
     expect(confirmation).toContain('Un e-mail part aussitôt');
 
-    cliquer(page, 'Accorder l’essai');
+    confirmer(page);
     await stabiliser(fixture);
 
     expect(accorderEssai).toHaveBeenCalledWith('lea');
     expect(definirAcces).not.toHaveBeenCalled();
-    expect(accesDe(page, 'Léa')).toContain('Sans accès');
-    expect(accesDe(page, 'Léa')).toContain('Essai accordé');
-    expect(accesDe(page, 'Léa')).toContain('E-mail envoyé le');
-    expect(accesDe(page, 'Léa')).not.toContain('Accorder un essai');
+    expect(droits(page).complet).toContain('Aucun');
+    expect(droits(page).essai).toContain('En cours');
+    expect(droits(page).essai).toContain('E-mail envoyé le');
+    expect(droits(page).essai).toContain('Retirer l’essai');
     expect(page.querySelector('.ligne-confirmation')).toBeNull();
     expect(page.querySelector('.alerte.est-succes')?.textContent).toContain('Essai accordé');
   });
@@ -287,25 +338,93 @@ describe('Utilisateurs — essai', () => {
 
     expect(accorderEssai).not.toHaveBeenCalled();
     expect(page.querySelector('.ligne-confirmation')).toBeNull();
-    expect(accesDe(page, 'Léa')).toContain('Accorder un essai');
+    expect(droits(page).essai).toContain('Accorder un essai');
   });
 
-  it('montre l’essai envoyé, ou programmé pour la mise en production', async () => {
-    const { page } = await monter([profil({}), TOM], [], null, [
-      { id_profil: 'lea', accorde_le: '2026-10-12T12:00:00Z', annonce_le: '2026-10-12T12:00:00Z' },
-      { id_profil: 'tom', accorde_le: '2026-10-12T12:00:00Z', annonce_le: null },
+  it('montre l’essai en cours, programmé ou retiré, avec sa date', async () => {
+    const { page } = await monter(
+      [profil({}), TOM, profil({ id_profil: 'jade', prenom: 'Jade', nom: 'Petit' })],
+      [],
+      null,
+      [
+        EN_COURS,
+        { ...EN_COURS, id_profil: 'tom', annonce_le: null },
+        { ...EN_COURS, id_profil: 'jade', retire_le: '2026-10-13T08:00:00Z' },
+      ],
+    );
+
+    expect(droits(page).essai).toContain('En cours');
+    expect(droits(page).essai).toContain('E-mail envoyé le 12 oct. 2026');
+    expect(droits(page).essai).toContain('Retirer l’essai');
+    expect(droits(page, 'Tom').essai).toContain('Programmé');
+    expect(droits(page, 'Tom').essai).toContain('E-mail à la mise en production');
+    expect(droits(page, 'Tom').essai).toContain('Retirer l’essai');
+    expect(droits(page, 'Jade').essai).toContain('Retiré');
+    expect(droits(page, 'Jade').essai).toContain('Retiré le 13 oct. 2026');
+    expect(droits(page, 'Jade').essai).toContain('Accorder un essai');
+  });
+
+  it('retire l’essai après confirmation, sans toucher à l’accès complet', async () => {
+    const { fixture, page, retirerEssai, definirAcces } = await monter([profil({})], [], null, [
+      EN_COURS,
     ]);
 
-    expect(accesDe(page, 'Léa')).toContain('Essai accordé');
-    expect(accesDe(page, 'Léa')).toContain('E-mail envoyé le 12 oct. 2026');
-    expect(accesDe(page, 'Tom')).toContain('Essai programmé');
-    expect(accesDe(page, 'Tom')).toContain('E-mail à la mise en production');
-    expect(page.textContent).not.toContain('Accorder un essai');
+    cliquer(page, 'Retirer l’essai');
+    await stabiliser(fixture);
+    expect(retirerEssai).not.toHaveBeenCalled();
+    const confirmation = page.querySelector('.ligne-confirmation')?.textContent ?? '';
+    expect(confirmation).toContain('Retirer l’essai de');
+    expect(confirmation).toContain('Léa Martin');
+    expect(confirmation).toContain('ne lui seront plus ouvertes');
+    expect(confirmation).toContain('Sa progression est conservée');
+    expect(confirmation).toContain('sans e-mail');
+
+    confirmer(page);
+    await stabiliser(fixture);
+
+    expect(retirerEssai).toHaveBeenCalledWith('lea');
+    expect(definirAcces).not.toHaveBeenCalled();
+    expect(droits(page).complet).toContain('Aucun');
+    expect(droits(page).essai).toContain('Retiré');
+    expect(droits(page).essai).toContain('Retiré le');
+    expect(droits(page).essai).toContain('Accorder un essai');
+    expect(page.querySelector('.ligne-confirmation')).toBeNull();
+    expect(page.querySelector('.alerte.est-succes')?.textContent).toContain('Essai retiré');
+    expect(page.querySelector('.ligne-compte.est-modifie')).not.toBeNull();
   });
 
-  it('ne compte plus l’élève en essai parmi les « Sans accès »', async () => {
+  it('referme la confirmation du retrait sans rien retirer', async () => {
+    const { fixture, page, retirerEssai } = await monter([profil({})], [], null, [EN_COURS]);
+
+    cliquer(page, 'Retirer l’essai');
+    await stabiliser(fixture);
+    cliquer(page, 'Annuler');
+    await stabiliser(fixture);
+
+    expect(retirerEssai).not.toHaveBeenCalled();
+    expect(page.querySelector('.ligne-confirmation')).toBeNull();
+    expect(droits(page).essai).toContain('En cours');
+  });
+
+  it('réaccorde un essai retiré', async () => {
+    const { fixture, page, accorderEssai } = await monter([profil({})], [], null, [
+      { ...EN_COURS, retire_le: '2026-10-13T08:00:00Z' },
+    ]);
+
+    cliquer(page, 'Accorder un essai');
+    await stabiliser(fixture);
+    confirmer(page);
+    await stabiliser(fixture);
+
+    expect(accorderEssai).toHaveBeenCalledWith('lea');
+    expect(droits(page).essai).toContain('En cours');
+    expect(droits(page).essai).not.toContain('Retiré');
+  });
+
+  it('compte parmi les « Sans accès » l’élève dont l’essai est retiré, pas celui en essai', async () => {
     const { page } = await monter([profil({}), TOM], [], null, [
-      { id_profil: 'tom', accorde_le: '2026-10-12T12:00:00Z', annonce_le: '2026-10-12T12:00:00Z' },
+      { ...EN_COURS, retire_le: '2026-10-13T08:00:00Z' },
+      { ...EN_COURS, id_profil: 'tom' },
     ]);
 
     expect(filtre(page, 'Sans accès').textContent).toContain('1');
@@ -320,11 +439,30 @@ describe('Utilisateurs — essai', () => {
 
     cliquer(page, 'Accorder un essai');
     await stabiliser(fixture);
-    cliquer(page, 'Accorder l’essai');
+    confirmer(page);
     await stabiliser(fixture);
 
     expect(page.querySelector('.alerte.est-erreur')?.textContent).toContain(
       'Un essai a déjà été accordé à cet élève',
+    );
+    expect(listerEssais).toHaveBeenCalledTimes(2);
+  });
+
+  it('relaie le refus d’un retrait et se réaligne', async () => {
+    const { fixture, page, listerEssais } = await monter(
+      [profil({})],
+      [],
+      'Aucun essai en cours pour cet élève',
+      [EN_COURS],
+    );
+
+    cliquer(page, 'Retirer l’essai');
+    await stabiliser(fixture);
+    confirmer(page);
+    await stabiliser(fixture);
+
+    expect(page.querySelector('.alerte.est-erreur')?.textContent).toContain(
+      'Aucun essai en cours pour cet élève',
     );
     expect(listerEssais).toHaveBeenCalledTimes(2);
   });

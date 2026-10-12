@@ -96,7 +96,7 @@ export class ComptesService {
   async listerEssais(): Promise<EssaiAccorde[]> {
     return this.acces.lire<EssaiAccorde[]>(
       'lecture des essais accordés',
-      this.acces.table('essais').select('id_profil, accorde_le, annonce_le'),
+      this.acces.table('essais').select('id_profil, accorde_le, annonce_le, retire_le'),
       [],
     );
   }
@@ -113,6 +113,20 @@ export class ComptesService {
       'octroi d’un essai',
       this.acces.appel('accorder_essai', { p_id_profil: idProfil }),
       'L’essai n’a pas pu être accordé. Réessaie.',
+    );
+  }
+
+  /**
+   * Retire l'essai en cours d'un élève (RPC réservée aux administrateurs,
+   * journalisée). Les leçons offertes lui sont fermées ; son accès complet
+   * éventuel et sa progression restent. Aucun e-mail : la fin de l'essai
+   * s'affiche dans son espace.
+   */
+  async retirerEssai(idProfil: string): Promise<string | null> {
+    return this.acces.ecrire(
+      'retrait d’un essai',
+      this.acces.appel('retirer_essai', { p_id_profil: idProfil }),
+      'L’essai n’a pas pu être retiré. Réessaie.',
     );
   }
 
