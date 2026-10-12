@@ -241,6 +241,34 @@ jobs:
           command: pages deploy site --project-name=tradingcorp --branch=main
 
   # ───────────────────────────────────────────────────────────────────────────
+  # ANNONCES DE MISE EN PRODUCTION
+  #
+  # Un administrateur peut programmer l'annonce d'un essai : l'élève n'est
+  # prévenu qu'une fois en ligne le site ET la fonction d'envoi que l'e-mail
+  # décrit — d'où l'attente des deux publications. La base fait le reste
+  # (`annoncer_essais_programmes`) : rejouée, elle ne prévient personne deux
+  # fois. Sans le secret, l'étape s'ignore et les annonces attendent la
+  # publication suivante.
+  # ───────────────────────────────────────────────────────────────────────────
+  annonces-mise-en-production:
+    needs: [deploy, fonctions-deploiement]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prévenir les élèves dont l'essai attendait la mise en production
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "⏭  SUPABASE_DB_URL absent — les annonces attendent la publication suivante."
+            exit 0
+          fi
+          prevenus=$(psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -Atc \
+            "select public.annoncer_essais_programmes()")
+          echo "Élèves prévenus de leur essai : $prevenus"
+
+  # ───────────────────────────────────────────────────────────────────────────
   # VERSION DE DÉMONSTRATION — GitHub Pages
   #
   # Même code, autre adresse : elle sert à montrer le projet sans donner

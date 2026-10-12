@@ -140,6 +140,14 @@
   color: var(--down-text);
 }
 
+/* L'essai porte la couleur des leçons offertes, et non le vert d'un accès
+   acquis : ce n'en est pas un. */
+.badge-statut.est-essai {
+  border-color: color-mix(in srgb, var(--accent-etat) 45%, transparent);
+  background: color-mix(in srgb, var(--accent-etat) 10%, transparent);
+  color: var(--accent);
+}
+
 /* ===== Listes d'activité ===== */
 
 .ligne-liste {

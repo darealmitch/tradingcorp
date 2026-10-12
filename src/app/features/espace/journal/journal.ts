@@ -11,7 +11,10 @@ const LIBELLES_ACTIONS: Record<string, string> = {
   decouverte_retiree: 'Leçon retirée de la découverte',
   information_conditions: 'Annonce d’une mise à jour des conditions',
   octroi_acces: 'Accès à une formation donné',
+  octroi_compte_test: 'Compte marqué « test »',
+  octroi_essai: 'Essai accordé (leçons offertes seulement)',
   retrait_acces: 'Accès à une formation retiré',
+  retrait_compte_test: 'Compte retiré des comptes de test',
   suppression_commentaire: 'Suppression d’un commentaire',
   suppression_compte: 'Suppression de compte',
 };

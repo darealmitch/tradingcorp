@@ -458,6 +458,11 @@
   color: var(--muted);
 }
 
+/* L'essai seul sur sa ligne : son bouton tombe sous « Donner l'accès ». */
+.acces-ligne-essai {
+  justify-content: flex-end;
+}
+
 .cellule-acces .btn-compact,
 .confirmation .btn-compact,
 .correction .btn-compact {

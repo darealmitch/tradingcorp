@@ -34,6 +34,18 @@ export interface AccesFormation {
   statut: 'active' | 'revoquee';
 }
 
+/**
+ * Essai accordé par un administrateur : une ligne d'`essais`. Il n'ouvre aucun
+ * droit de plus que la découverte — les leçons offertes —, mais l'élève a reçu
+ * l'e-mail qui le lui explique. `annonce_le` reste nul tant que l'annonce
+ * attend la mise en production.
+ */
+export interface EssaiAccorde {
+  id_profil: string;
+  accorde_le: string;
+  annonce_le: string | null;
+}
+
 /** Données de création d'un compte par un administrateur. */
 export interface CreationCompte {
   email: string;

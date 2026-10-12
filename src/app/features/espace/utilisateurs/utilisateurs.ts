@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ComptesService } from '../../../core/comptes/comptes.service';
-import { AccesFormation, ProfilAdmin } from '../../../core/comptes/comptes.model';
+import { AccesFormation, EssaiAccorde, ProfilAdmin } from '../../../core/comptes/comptes.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
@@ -74,6 +74,7 @@ export class Utilisateurs {
   protected readonly profils = signal<ProfilAdmin[]>([]);
   protected readonly formations = signal<Formation[]>([]);
   protected readonly acces = signal<AccesFormation[]>([]);
+  protected readonly essais = signal<EssaiAccorde[]>([]);
   protected readonly enregistrement = signal(false);
   protected readonly erreur = signal<string | null>(null);
   protected readonly succes = signal<string | null>(null);
@@ -86,6 +87,9 @@ export class Utilisateurs {
 
   // Retrait d'un accès : confirmation exigée sur la ligne concernée.
   protected readonly retraitCle = signal<string | null>(null);
+
+  // Essai : confirmation exigée, puisqu'un e-mail part aussitôt.
+  protected readonly essaiId = signal<string | null>(null);
 
   protected readonly creationOuverte = signal(false);
   protected readonly creationEnCours = signal(false);
@@ -139,14 +143,16 @@ export class Utilisateurs {
   }
 
   private async charger(): Promise<void> {
-    const [profils, formations, acces] = await Promise.all([
+    const [profils, formations, acces, essais] = await Promise.all([
       this.comptes.lister(),
       this.commerce.chargerFormations(),
       this.comptes.listerAcces(),
+      this.comptes.listerEssais(),
     ]);
     this.profils.set(profils);
     this.formations.set(formations);
     this.acces.set(acces);
+    this.essais.set(essais);
     this.chargement.set(false);
   }
 
@@ -158,8 +164,10 @@ export class Utilisateurs {
         return profil.role === 'apprenant';
       case 'equipe':
         return profil.role !== 'apprenant';
+      // Un élève à qui l'on a accordé un essai a reçu le geste qu'on lui
+      // destinait : il n'attend plus rien de l'administrateur.
       case 'sans-acces':
-        return profil.role === 'apprenant' && !this.aUnAcces(profil);
+        return profil.role === 'apprenant' && !this.aUnAcces(profil) && !this.essaiDe(profil);
       case 'en-attente':
         return profil.doit_changer_mdp;
       default:
@@ -168,7 +176,7 @@ export class Utilisateurs {
   }
 
   /** Un élève a accès dès qu'une formation lui est ouverte. */
-  private aUnAcces(profil: ProfilAdmin): boolean {
+  protected aUnAcces(profil: ProfilAdmin): boolean {
     return this.acces().some((a) => a.id_profil === profil.id_profil && a.statut === 'active');
   }
 
@@ -259,6 +267,7 @@ export class Utilisateurs {
   protected demanderRetrait(profil: ProfilAdmin, formation: Formation): void {
     this.reinitialiserRetours();
     this.suppressionId.set(null);
+    this.essaiId.set(null);
     this.retraitCle.set(this.cleAcces(profil, formation));
     this.focaliser('.ligne-confirmation .btn-annuler');
   }
@@ -306,6 +315,75 @@ export class Utilisateurs {
       );
       this.marquerModifie(profil.id_profil);
     }
+    this.enregistrement.set(false);
+  }
+
+  // ===== Essai =====
+
+  protected essaiDe(profil: ProfilAdmin): EssaiAccorde | undefined {
+    return this.essais().find((e) => e.id_profil === profil.id_profil);
+  }
+
+  /**
+   * L'essai n'a de sens que pour un élève sans accès complet, qui n'en a pas
+   * déjà reçu : un compte de test voit tout. Reflet des refus de la base, qui
+   * reste l'autorité — l'écran évite seulement un refus prévisible.
+   */
+  protected peutAccorderEssai(profil: ProfilAdmin): boolean {
+    return (
+      profil.role === 'apprenant' &&
+      !profil.est_test &&
+      !this.aUnAcces(profil) &&
+      !this.essaiDe(profil)
+    );
+  }
+
+  /** Sous la pastille : quand l'essai a été annoncé, ou qu'il attend encore. */
+  protected detailEssai(essai: EssaiAccorde): string {
+    if (!essai.annonce_le) {
+      return 'E-mail à la mise en production';
+    }
+    const date = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(
+      new Date(essai.annonce_le),
+    );
+    return `E-mail envoyé le ${date}`;
+  }
+
+  protected demanderEssai(profil: ProfilAdmin): void {
+    this.reinitialiserRetours();
+    this.retraitCle.set(null);
+    this.suppressionId.set(null);
+    this.essaiId.set(profil.id_profil);
+    this.focaliser('.ligne-confirmation .btn-annuler');
+  }
+
+  protected annulerEssai(profil?: ProfilAdmin): void {
+    this.essaiId.set(null);
+    if (profil) {
+      this.focaliser(`[data-action="essai-${profil.id_profil}"]`);
+    }
+  }
+
+  protected async confirmerEssai(profil: ProfilAdmin): Promise<void> {
+    this.reinitialiserRetours();
+    this.enregistrement.set(true);
+    const erreur = await this.comptes.accorderEssai(profil.id_profil);
+    if (erreur) {
+      this.erreur.set(erreur);
+      // Un autre administrateur a pu l'accorder entre-temps : on se réaligne.
+      this.essais.set(await this.comptes.listerEssais());
+    } else {
+      const maintenant = new Date().toISOString();
+      this.essais.update((liste) => [
+        ...liste,
+        { id_profil: profil.id_profil, accorde_le: maintenant, annonce_le: maintenant },
+      ]);
+      this.signalerSucces(
+        `Essai accordé : ${this.nomAffiche(profil)} reçoit l’e-mail qui explique son essai. Seules les leçons offertes lui sont ouvertes.`,
+      );
+      this.marquerModifie(profil.id_profil);
+    }
+    this.essaiId.set(null);
     this.enregistrement.set(false);
   }
 
@@ -482,6 +560,7 @@ export class Utilisateurs {
   protected demanderSuppression(profil: ProfilAdmin): void {
     this.reinitialiserRetours();
     this.retraitCle.set(null);
+    this.essaiId.set(null);
     this.suppressionId.set(profil.id_profil);
     this.focaliser('.ligne-confirmation .btn-annuler');
   }

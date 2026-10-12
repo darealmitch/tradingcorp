@@ -99,6 +99,7 @@ function socle(): (Provider | EnvironmentProviders)[] {
       useValue: tracer('comptes', {
         lister: () => Promise.resolve(PROFILS),
         listerAcces: () => Promise.resolve([]),
+        listerEssais: () => Promise.resolve([]),
       }),
     },
     {

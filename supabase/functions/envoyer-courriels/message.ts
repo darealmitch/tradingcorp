@@ -1,9 +1,11 @@
 /**
- * L'e-mail qui double une notification : HTML et texte brut. Il en existe deux
- * genres, que distingue la famille de la notification : ceux des échanges
- * (réponse, publication, message à modérer…) et ceux de l'accès découverte
- * (bienvenue, annonce de leçons offertes). Seuls changent le bouton, la phrase
- * qui dit où lire la suite et le pied — la mise en page est commune.
+ * L'e-mail qui double une notification : HTML et texte brut. Il en existe
+ * trois genres, que distingue la famille de la notification : ceux des
+ * échanges (réponse, publication, message à modérer…), ceux de l'accès
+ * découverte (bienvenue, annonce de leçons offertes) et celui de l'essai
+ * accordé par un administrateur. Seuls changent le bouton, la phrase qui dit
+ * où lire la suite, les modalités de l'essai et le pied — la mise en page est
+ * commune.
  *
  * Fonctions pures, sans accès à la base ni au réseau. Le texte est celui de la
  * notification, écrit par la base au moment de l'action : il dit ce qui s'est
@@ -56,11 +58,19 @@ const PIED =
   'Message automatique de TradingCorp : tu le reçois parce qu’une action sur les échanges ' +
   'des formations te concerne.';
 
+/** Un groupe de points, sous son intertitre : ce que l'essai comprend, par exemple. */
+interface Rubrique {
+  titre: string;
+  points: string[];
+}
+
 /** Ce qui distingue un genre d'e-mail d'un autre. */
 interface Habillage {
   bouton: string;
   /** Où se lit la suite, sur TradingCorp. */
   ouLire: string;
+  /** Les modalités, sous le message : seul l'e-mail d'essai en porte. */
+  rubriques: Rubrique[];
   /** Mention sous le trait — la confidentialité des échanges — ou rien. */
   mention: string | null;
   /** Pourquoi on reçoit ce message. */
@@ -71,9 +81,68 @@ interface Habillage {
 const ACCUEIL: Habillage = {
   bouton: 'Commencer mes leçons offertes',
   ouLire: 'Rien à installer : tout se suit en ligne, sur TradingCorp.',
+  rubriques: [],
   mention: null,
   pied: 'Message automatique de TradingCorp : tu le reçois parce que tu viens d’ouvrir ton compte.',
 };
+
+/**
+ * Les espaces insécables du français, que le texte source écrit en espaces
+ * ordinaires pour rester lisible : ni « ni deux-points ne finissent seuls une
+ * ligne.
+ */
+function insecables(texte: string): string {
+  return texte.replace(/ ([:;!?»])/g, '\u00a0$1').replace(/« /g, '«\u00a0');
+}
+
+function typographier(h: Habillage): Habillage {
+  return {
+    ...h,
+    ouLire: insecables(h.ouLire),
+    rubriques: h.rubriques.map((r) => ({
+      titre: insecables(r.titre),
+      points: r.points.map(insecables),
+    })),
+    pied: insecables(h.pied),
+  };
+}
+
+/**
+ * L'essai, accordé par un administrateur à une personne désignée. Le message
+ * de la base cite les leçons offertes ; les rubriques disent le reste, sans
+ * équivoque : ce n'est pas l'accès complet, et rien ne sera facturé. C'est un
+ * message de service — il décrit l'accès ouvert au compte, et ne propose
+ * rien : la dernière phrase dit seulement où se trouve l'accès complet.
+ */
+const ESSAI: Habillage = typographier({
+  bouton: 'Commencer mon essai',
+  ouLire: 'Tout se suit en ligne, depuis ton espace : rien à installer.',
+  rubriques: [
+    {
+      titre: 'Ce que comprend ton essai',
+      points: [
+        'Ces leçons, à suivre à ton rythme, autant de fois que tu le souhaites.',
+        'Le suivi de ta progression : chaque leçon terminée est enregistrée.',
+      ],
+    },
+    {
+      titre: 'Ce qu’il ne comprend pas',
+      points: [
+        'Le reste de la formation : les autres leçons, les quiz et le certificat.',
+        'Les échanges sous les leçons, réservés aux élèves inscrits.',
+      ],
+    },
+    {
+      titre: 'Bon à savoir',
+      points: [
+        'L’essai est gratuit et sans engagement : aucune carte bancaire n’est demandée, et rien ne te sera facturé sans un achat de ta part.',
+        'L’accès complet à la formation est payant ; il se débloque depuis ton espace, rubrique « Ma formation ».',
+      ],
+    },
+  ],
+  mention: null,
+  pied: 'Message de TradingCorp : tu le reçois parce qu’un accès d’essai vient d’être ouvert à ton compte.',
+});
 
 /**
  * L'annonce : de la prospection, envoyée seulement à qui l'a acceptée. Le pied
@@ -82,6 +151,7 @@ const ACCUEIL: Habillage = {
 const ANNONCE: Habillage = {
   bouton: 'Voir les leçons offertes',
   ouLire: 'Elles t’attendent dans ton parcours, sur TradingCorp.',
+  rubriques: [],
   mention: null,
   pied: 'Tu reçois cet e-mail parce que tu as accepté d’être prévenu des nouveautés de TradingCorp.',
 };
@@ -93,9 +163,13 @@ export function habillage(c: Courriel): Habillage {
   if (c.famille === 'decouverte_annonce') {
     return ANNONCE;
   }
+  if (c.famille === 'essai_accorde') {
+    return ESSAI;
+  }
   return {
     bouton: libelleBouton(c.lien),
     ouLire: ouLire(c.lien),
+    rubriques: [],
     mention: CONFIDENTIALITE,
     pied: PIED,
   };
@@ -172,6 +246,24 @@ export function ouLire(lien: string | null): string {
   return 'Tout se lit dans ton espace, sur TradingCorp.';
 }
 
+/**
+ * Les modalités, en intertitres et listes à puces. `ul` et `li` passent dans
+ * toutes les messageries, Outlook compris ; leurs marges sont fixées en ligne,
+ * faute de quoi chaque messagerie appliquerait les siennes.
+ */
+function rubriques(liste: Rubrique[]): string {
+  return liste
+    .map(
+      (
+        r,
+      ) => `<p style="margin:24px 0 8px;font-size:15px;line-height:1.4;font-weight:700;color:${COULEUR.titre}">${echapper(r.titre)}</p>
+            <ul style="margin:0 0 16px;padding-left:22px;font-size:15px;line-height:1.6;color:${COULEUR.texte}">
+              ${r.points.map((p) => `<li style="margin:0 0 6px">${echapper(p)}</li>`).join('\n              ')}
+            </ul>`,
+    )
+    .join('\n            ');
+}
+
 export function html(c: Courriel, prenom: string | null, adresseSite: string): string {
   const h = habillage(c);
   const desinscription = lienDesinscription(c, adresseSite);
@@ -180,6 +272,9 @@ export function html(c: Courriel, prenom: string | null, adresseSite: string): s
   const message = echapper(c.message ?? c.objet);
   const salutation = `Bonjour${prenom ? ` ${echapper(prenom)}` : ''},`;
   const paragraphe = `margin:0 0 16px;font-size:16px;line-height:1.6;color:${COULEUR.texte}`;
+  // Rien du tout quand le genre n'a pas de modalités : l'e-mail des échanges
+  // reste identique, à l'octet près.
+  const modalites = h.rubriques.length > 0 ? `\n            ${rubriques(h.rubriques)}` : '';
 
   return `<!doctype html>
 <html lang="fr">
@@ -215,7 +310,7 @@ export function html(c: Courriel, prenom: string | null, adresseSite: string): s
             </a>
             <h1 class="tc-titre" style="margin:32px 0 16px;font-family:${POLICE};font-size:22px;line-height:1.3;font-weight:700;color:${COULEUR.titre}">${objet}</h1>
             <p style="${paragraphe}">${salutation}</p>
-            <p style="${paragraphe}">${message}</p>
+            <p style="${paragraphe}">${message}</p>${modalites}
             <p style="${paragraphe};margin-bottom:28px">${echapper(h.ouLire)}</p>
             <table role="presentation" class="tc-bouton" cellpadding="0" cellspacing="0" border="0">
               <tr>
@@ -264,6 +359,8 @@ export function texte(c: Courriel, prenom: string | null, adresseSite: string): 
     `Bonjour${prenom ? ` ${prenom}` : ''},`,
     '',
     c.message ?? c.objet,
+    ...h.rubriques.flatMap((r) => ['', `${r.titre}\u00a0:`, ...r.points.map((p) => `- ${p}`)]),
+    ...(h.rubriques.length > 0 ? [''] : []),
     h.ouLire,
     '',
     `${h.bouton} : ${adresse(c.lien, adresseSite)}`,

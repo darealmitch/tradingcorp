@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Role } from '../auth/profil.model';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { AccesFormation, CreationCompte, ProfilAdmin } from './comptes.model';
+import { AccesFormation, CreationCompte, EssaiAccorde, ProfilAdmin } from './comptes.model';
 
 /**
  * Cycle de vie des comptes utilisateurs : lister, créer, corriger, promouvoir,
@@ -89,6 +89,30 @@ export class ComptesService {
         p_actif: actif,
       }),
       'La mise à jour de l’accès a échoué. Réessaie.',
+    );
+  }
+
+  /** Les essais accordés (RLS : lisibles par les administrateurs seuls). */
+  async listerEssais(): Promise<EssaiAccorde[]> {
+    return this.acces.lire<EssaiAccorde[]>(
+      'lecture des essais accordés',
+      this.acces.table('essais').select('id_profil, accorde_le, annonce_le'),
+      [],
+    );
+  }
+
+  /**
+   * Accorde un essai à un élève (RPC réservée aux administrateurs,
+   * journalisée). Aucune inscription n'est créée : l'élève garde les seules
+   * leçons offertes, et reçoit l'e-mail qui lui explique son essai. La base
+   * refuse l'élève qui a l'accès complet ou un compte de test, à qui
+   * l'e-mail mentirait.
+   */
+  async accorderEssai(idProfil: string): Promise<string | null> {
+    return this.acces.ecrire(
+      'octroi d’un essai',
+      this.acces.appel('accorder_essai', { p_id_profil: idProfil }),
+      'L’essai n’a pas pu être accordé. Réessaie.',
     );
   }
 

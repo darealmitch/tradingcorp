@@ -125,6 +125,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      essais: {
+        Row: {
+          accorde_le: string;
+          accorde_par: string | null;
+          annonce_le: string | null;
+          id_profil: string;
+        };
+        Insert: {
+          accorde_le?: string;
+          accorde_par?: string | null;
+          annonce_le?: string | null;
+          id_profil: string;
+        };
+        Update: {
+          accorde_le?: string;
+          accorde_par?: string | null;
+          annonce_le?: string | null;
+          id_profil?: string;
+        };
+        Relationships: [];
+      };
       incidents: {
         Row: {
           agent: string | null;
@@ -795,6 +816,10 @@ export type Database = {
         Returns: boolean;
       };
       acces_demo: { Args: never; Returns: boolean };
+      accorder_essai: {
+        Args: { p_id_profil: string; p_programmer?: boolean };
+        Returns: string;
+      };
       accueillir_en_decouverte: { Args: never; Returns: boolean };
       annoncer_lecons_offertes: {
         Args: { p_essai?: boolean };
