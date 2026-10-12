@@ -19,6 +19,12 @@
   margin-bottom: 20px;
 }
 
+/* Toutes les leçons offertes suivies : la phrase prend la place de la ligne
+   « Reprendre », à la même distance de la barre. */
+.offre-terminee {
+  margin-bottom: 20px;
+}
+
 .panneau-lien {
   display: inline-block;
   margin-top: 16px;

@@ -4,7 +4,13 @@
       auth.profil()?.prenom ? ' ' + auth.profil()!.prenom : ''
     }}</span>
   </h1>
-  <p class="page-sous">Voici où en est ta plateforme aujourd'hui.</p>
+  <!-- « Ta plateforme » parle à l'équipe, qui la pilote ; un élève, lui, suit
+       sa formation. -->
+  @if (auth.role() === 'apprenant') {
+    <p class="page-sous">Voici où tu en es aujourd'hui.</p>
+  } @else {
+    <p class="page-sous">Voici où en est ta plateforme aujourd'hui.</p>
+  }
 </header>
 
 @if (retourAchat() === 'succes') {
@@ -19,15 +25,58 @@
 
 @if (apprenant(); as stats) {
   @if (!possedeFormation()) {
+    <!-- Accès découverte : même disposition qu'un inscrit — la leçon à suivre,
+         la progression, le parcours —, sur les seules leçons offertes. -->
+    @if (decouverte(); as offre) {
+      <section class="panneau">
+        <div class="panneau-tete">
+          <h2 class="panneau-titre">Tes leçons offertes</h2>
+        </div>
+        @if (offre.prochaine; as lecon) {
+          <div class="reprendre">
+            <span class="liste-icone"><app-icone nom="lecture" [taille]="18" /></span>
+            <div class="liste-corps">
+              <p class="liste-titre">{{ lecon.titre }}</p>
+              <p class="liste-detail">
+                Leçon offerte {{ rangOffert(offre, lecon) }} sur {{ offre.lecons.length }}
+              </p>
+            </div>
+            <a
+              class="btn btn-primary btn-compact"
+              [routerLink]="['/parcours', lecon.id_section, 'lecon', lecon.id_lecon]"
+            >
+              {{ actionOfferte(offre, lecon) }}
+            </a>
+          </div>
+        } @else {
+          <p class="page-sous offre-terminee">
+            Tu as suivi
+            {{
+              offre.lecons.length > 1
+                ? 'les ' + offre.lecons.length + ' leçons offertes'
+                : 'la leçon offerte'
+            }}. La suite du programme t'attend dans la formation complète.
+          </p>
+        }
+        <app-barre-progression [valeur]="pourcentageOffert(offre)" />
+        <a class="panneau-lien" routerLink="/parcours">Voir mon parcours</a>
+      </section>
+    }
+
     <div class="panneau debloquer">
       <div>
         <h2>Débloque ta formation</h2>
         <p class="page-sous">
-          Accède à l'intégralité du programme : leçons vidéo, ressources, quiz et certificat.
+          @if (decouverte()) {
+            Les leçons offertes te donnent un aperçu. Accède à l'intégralité du programme : leçons
+            vidéo, ressources, quiz et certificat.
+          } @else {
+            Accède à l'intégralité du programme : leçons vidéo, ressources, quiz et certificat.
+          }
         </p>
       </div>
       <a class="btn btn-primary btn-compact" routerLink="/espace/formations">
-        Découvrir la formation
+        {{ decouverte() ? 'Débloquer la formation' : 'Découvrir la formation' }}
       </a>
     </div>
   } @else if (stats.prochaines.length === 0) {

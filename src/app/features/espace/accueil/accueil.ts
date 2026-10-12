@@ -14,7 +14,11 @@ import { FinanceService } from '../../../core/finance/finance.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/profil.model';
 import { CommerceService } from '../../../core/commerce/commerce.service';
-import { LeconResume, ProgressionResume } from '../../../core/contenu/apprentissage.model';
+import {
+  EtatLecon,
+  LeconResume,
+  ProgressionResume,
+} from '../../../core/contenu/apprentissage.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import {
   ApprenantSuivi,
@@ -33,6 +37,24 @@ import { StatCard } from '../../../shared/ui/stat-card';
 interface StatsApprenant {
   progression: ProgressionResume;
   prochaines: LeconResume[];
+}
+
+/** Une leçon offerte, telle que le tableau de bord la présente. */
+interface LeconOfferte {
+  id_lecon: string;
+  id_section: string;
+  titre: string;
+  etat: EtatLecon;
+}
+
+/**
+ * Accès découverte d'un compte sans achat : ses leçons offertes, dans l'ordre
+ * du parcours, et la première qui reste à suivre.
+ */
+interface Decouverte {
+  lecons: LeconOfferte[];
+  terminees: number;
+  prochaine: LeconOfferte | null;
 }
 
 interface StatsFormateur {
@@ -81,6 +103,8 @@ export class Accueil {
 
   protected readonly inscrites = signal<ReadonlySet<string>>(new Set());
   protected readonly apprenant = signal<StatsApprenant | null>(null);
+  /** Leçons offertes d'un compte sans achat — null s'il n'y en a aucune. */
+  protected readonly decouverte = signal<Decouverte | null>(null);
   protected readonly formateur = signal<StatsFormateur | null>(null);
   protected readonly admin = signal<StatsAdmin | null>(null);
 
@@ -140,8 +164,46 @@ export class Accueil {
       this.contenu.maProgression(),
       this.contenu.prochainesLecons(1),
     ]);
+    // Sans achat, le tableau de bord présente les leçons offertes, comme il
+    // présente « Reprendre » à un inscrit. Chargées AVANT de poser l'état
+    // apprenant : l'écran ne doit pas afficher d'abord le seul encart d'achat,
+    // puis sauter quand les leçons offertes arrivent.
+    const decouverte = inscriptions.length === 0 ? await this.chargerDecouverte() : null;
+    this.decouverte.set(decouverte);
     this.inscrites.set(new Set(inscriptions.map((i) => i.id_formation)));
     this.apprenant.set({ progression, prochaines });
+  }
+
+  /**
+   * Les leçons offertes à ce compte, avec leur état. La base en est seule
+   * juge : `etats_modules` dit quels modules en contiennent, `etats_lecons`
+   * marque chacune d'elles (`offerte`). L'écran ne recalcule rien.
+   */
+  private async chargerDecouverte(): Promise<Decouverte | null> {
+    const parcours = await this.contenu.chargerParcours();
+    const modules = (parcours?.modules ?? []).filter((m) => m.lecons_offertes > 0);
+    if (modules.length === 0) {
+      return null;
+    }
+    const etapes = await Promise.all(modules.map((m) => this.contenu.etatsLecons(m.id_section)));
+    const lecons = modules.flatMap((m, i) =>
+      etapes[i]
+        .filter((e) => e.offerte && e.type !== 'intro')
+        .map((e) => ({
+          id_lecon: e.id_lecon,
+          id_section: m.id_section,
+          titre: e.titre,
+          etat: e.etat,
+        })),
+    );
+    if (lecons.length === 0) {
+      return null;
+    }
+    return {
+      lecons,
+      terminees: lecons.filter((l) => l.etat === 'termine').length,
+      prochaine: lecons.find((l) => l.etat !== 'termine') ?? null,
+    };
   }
 
   private async chargerFormateur(): Promise<void> {
@@ -253,6 +315,20 @@ export class Accueil {
       currency: 'EUR',
       minimumFractionDigits: 0,
     }).format(centimes / 100);
+  }
+
+  /** Rang de la leçon parmi les leçons offertes : « Leçon offerte 2 sur 3 ». */
+  protected rangOffert(offre: Decouverte, lecon: LeconOfferte): number {
+    return offre.lecons.indexOf(lecon) + 1;
+  }
+
+  /** « Commencer » tant que rien n'est entamé ; « Reprendre » ensuite. */
+  protected actionOfferte(offre: Decouverte, lecon: LeconOfferte): string {
+    return offre.terminees === 0 && lecon.etat === 'debloque' ? 'Commencer' : 'Reprendre';
+  }
+
+  protected pourcentageOffert(offre: Decouverte): number {
+    return Math.round((offre.terminees / offre.lecons.length) * 100);
   }
 
   protected pourcentage(progression: ProgressionResume): number {
