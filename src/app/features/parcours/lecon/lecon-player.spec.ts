@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { convertToParamMap } from '@angular/router';
-import { LeconJouable } from '../../../core/contenu/apprentissage.model';
+import { LeconEtape, LeconJouable } from '../../../core/contenu/apprentissage.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { QuizService } from '../../../core/contenu/quiz.service';
@@ -17,6 +17,9 @@ import { LeconPlayer } from './lecon-player';
  */
 interface Interne {
   lecon: ReturnType<typeof signal<LeconJouable | null>>;
+  etapes: ReturnType<typeof signal<LeconEtape[]>>;
+  avertissement: ReturnType<typeof signal<string | null>>;
+  ouvrirEtape(e: LeconEtape): Promise<void>;
   videoFinie: ReturnType<typeof signal<boolean>>;
   urlSignee: ReturnType<typeof signal<string | null>>;
   preparationVideo: ReturnType<typeof signal<boolean>>;
@@ -53,6 +56,21 @@ function lecon(partiel: Partial<LeconJouable> = {}): LeconJouable {
     terminee_le: null,
     id_quiz: null,
     ressources: [],
+    ...partiel,
+  };
+}
+
+function etape(partiel: Partial<LeconEtape> = {}): LeconEtape {
+  return {
+    id_lecon: 'l-1',
+    titre: 'Chapitre',
+    type: 'video',
+    position: 1,
+    duree_s: 600,
+    a_pdf: false,
+    video_termine: false,
+    etat: 'debloque',
+    offerte: false,
     ...partiel,
   };
 }
@@ -355,6 +373,46 @@ describe('LeconPlayer', () => {
       interne.reprendre(l);
 
       expect(video.currentTime).toBe(45);
+    });
+  });
+  describe('accès découverte', () => {
+    /**
+     * Un compte sans achat suit les leçons offertes. Les CGU réservent les
+     * commentaires publiés aux Apprenants — les inscrits — : il ne les voit
+     * pas, et l'écran lui dit ce que débloque l'achat.
+     */
+    function poser(offerte: boolean): HTMLElement {
+      interne.lecon.set(lecon({ type: 'article', contenu: 'Texte de la leçon.' }));
+      interne.etapes.set([
+        etape({ offerte, etat: 'debloque' }),
+        etape({ id_lecon: 'l-2', titre: 'Suite', position: 2, etat: 'verrouille' }),
+      ]);
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    it('masque les échanges et invite à débloquer la formation sur une leçon offerte', () => {
+      const page = poser(true);
+
+      expect(page.querySelector('app-commentaires-lecon')).toBeNull();
+      const offre = page.querySelector('.lecon-offre');
+      expect(offre?.textContent).toContain('Leçon offerte');
+      expect(offre?.querySelector('a')?.getAttribute('href')).toBe('/espace/formations');
+    });
+
+    it('garde les échanges et n’affiche aucune offre à un élève inscrit', () => {
+      const page = poser(false);
+
+      expect(page.querySelector('app-commentaires-lecon')).not.toBeNull();
+      expect(page.querySelector('.lecon-offre')).toBeNull();
+    });
+
+    it('dit qu’une étape verrouillée fait partie de la formation complète', async () => {
+      poser(true);
+
+      await interne.ouvrirEtape(etape({ id_lecon: 'l-2', etat: 'verrouille' }));
+
+      expect(interne.avertissement()).toBe('Cette étape fait partie de la formation complète.');
     });
   });
 });

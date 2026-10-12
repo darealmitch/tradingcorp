@@ -30,6 +30,11 @@ export class Parcours {
     this.chargement.set(false);
   }
 
+  /** Total des leçons offertes à ce compte, tous modules confondus. */
+  protected offertes(p: ParcoursData): number {
+    return p.modules.reduce((total, m) => total + m.lecons_offertes, 0);
+  }
+
   /**
    * Ouvre l'introduction du module. La roadmap n'émet que pour un module
    * ouvrable : l'accès reste gouverné par le serveur (états RPC + RLS).

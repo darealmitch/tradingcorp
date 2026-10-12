@@ -6,6 +6,8 @@ const LIBELLES_ACTIONS: Record<string, string> = {
   changement_role: 'Changement de rôle',
   creation_compte: 'Création de compte',
   correction_identite: 'Correction du nom',
+  decouverte_ajoutee: 'Leçon offerte en découverte',
+  decouverte_retiree: 'Leçon retirée de la découverte',
   information_conditions: 'Annonce d’une mise à jour des conditions',
   octroi_acces: 'Accès à une formation donné',
   retrait_acces: 'Accès à une formation retiré',

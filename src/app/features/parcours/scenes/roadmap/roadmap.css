@@ -90,6 +90,20 @@
   overflow: hidden;
 }
 
+/* Accès découverte : ce que ce compte peut suivre sans acheter. */
+.module-offre {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent-etat) 40%, transparent);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
 .module-barre {
   position: relative;
   height: 4px;

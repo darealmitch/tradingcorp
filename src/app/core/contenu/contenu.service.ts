@@ -93,7 +93,7 @@ export class ContenuService {
         .table('sections')
         .select(
           'id_section, titre, description, position, est_publiee, ' +
-            'lecons(id_lecon, id_section, titre, type, position, duree_s, est_publiee, ' +
+            'lecons(id_lecon, id_section, titre, type, position, duree_s, est_publiee, est_decouverte, ' +
             // `video_url` a quitté cette liste : le privilège de lecture a été
             // retiré au client (20260912103000), et la demander ferait échouer
             // toute la requête. Les deux indicateurs générés la remplacent.
@@ -103,6 +103,19 @@ export class ContenuService {
         .order('position')
         .order('position', { referencedTable: 'lecons' }),
       [],
+    );
+  }
+
+  /**
+   * Offre une leçon aux comptes sans achat (accès découverte), ou retire
+   * l'offre. Réservé aux administrateurs et journalisé côté base ; un quiz ne
+   * s'offre pas. Rend le refus du serveur, ou null si le réglage est passé.
+   */
+  async definirDecouverte(idLecon: string, offerte: boolean): Promise<string | null> {
+    return this.acces.ecrire(
+      offerte ? 'offre d’une leçon en découverte' : 'retrait d’une leçon offerte',
+      this.acces.appel('definir_lecon_decouverte', { p_id_lecon: idLecon, p_actif: offerte }),
+      'Le réglage n’a pas pu être enregistré. Réessaie.',
     );
   }
 

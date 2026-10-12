@@ -91,6 +91,30 @@
   </div>
 }
 
+@if (modules().length > 0) {
+  <!-- Accès découverte : les cases vivent dans les tableaux de modules, au plus
+       près des leçons qu'elles ouvrent ; ce paragraphe dit ce qu'elles font. -->
+  <p class="page-sous">
+    <strong>Accès découverte.</strong> Les leçons cochées dans la colonne « Offerte » sont ouvertes
+    à tout compte créé, sans achat, pour juger la formation sur pièce. Seuls les vidéos et les
+    articles peuvent l'être.
+    @switch (nombreOffertes()) {
+      @case (0) {
+        Aucune leçon n'est offerte pour l'instant.
+      }
+      @case (1) {
+        Une leçon est offerte.
+      }
+      @default {
+        {{ nombreOffertes() }} leçons sont offertes.
+      }
+    }
+    @if (!estAdmin()) {
+      Seul un administrateur peut changer ce réglage.
+    }
+  </p>
+}
+
 @for (module of modules(); track module.id_section) {
   <section class="panneau">
     <div class="panneau-tete">
@@ -113,6 +137,7 @@
               <th>Durée</th>
               <th>Médias</th>
               <th>Statut</th>
+              <th class="colonne-case">Offerte</th>
             </tr>
           </thead>
           <tbody>
@@ -155,6 +180,20 @@
                     <span class="badge-statut est-succes">Publiée</span>
                   } @else {
                     <span class="badge-statut">Brouillon</span>
+                  }
+                </td>
+                <td class="colonne-case">
+                  @if (peutEtreOfferte(lecon)) {
+                    <input
+                      type="checkbox"
+                      class="case-certificat"
+                      [checked]="lecon.est_decouverte"
+                      [disabled]="!estAdmin() || decouverteEnCours() !== null"
+                      (change)="basculerDecouverte(lecon)"
+                      [attr.aria-label]="'Offerte en découverte : ' + lecon.titre"
+                    />
+                  } @else {
+                    <span class="cellule-discrete">—</span>
                   }
                 </td>
               </tr>

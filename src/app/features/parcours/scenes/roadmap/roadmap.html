@@ -28,6 +28,9 @@
         @if (module.description) {
           <p class="module-desc">{{ module.description }}</p>
         }
+        @if (module.lecons_offertes > 0) {
+          <span class="module-offre">{{ offre(module) }}</span>
+        }
 
         <div class="module-barre" [style.--p]="pourcent(module) + '%'" aria-hidden="true"></div>
 

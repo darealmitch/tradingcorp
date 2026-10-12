@@ -17,7 +17,7 @@
     </section>
   }
 
-  <app-parcours-cta [inscrit]="p.inscrit" />
+  <app-parcours-cta [inscrit]="p.inscrit" [offertes]="offertes(p)" />
 } @else {
   <div class="parcours-etat">
     <h2>Aucun parcours disponible</h2>

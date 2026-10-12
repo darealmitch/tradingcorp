@@ -64,6 +64,9 @@
               >
                 <app-icone [nom]="iconeEtape(e)" [taille]="16" />
                 <span class="chapitre-titre">{{ e.titre }}</span>
+                @if (e.offerte) {
+                  <span class="chapitre-type est-offerte">Offerte</span>
+                }
                 <span class="chapitre-type">{{ typeLabel(e) }}</span>
                 @if (e.etat === 'verrouille') {
                   <app-verrou [taille]="13" />
@@ -104,6 +107,24 @@
 
       @if (annonce(); as message) {
         <p class="module-annonce" role="status">{{ message }}</p>
+      }
+
+      <!-- Accès découverte : le compte n'a pas acheté la formation. Il voit ce
+           qui lui est offert, et sait ce qui reste à débloquer. -->
+      @if (m.lecons_offertes > 0) {
+        <div class="module-decouverte">
+          <p>
+            <strong>Accès découverte.</strong>
+            {{
+              m.lecons_offertes > 1
+                ? m.lecons_offertes + ' leçons de ce module te sont offertes.'
+                : 'Une leçon de ce module t’est offerte.'
+            }}
+            Le reste du parcours, les quiz et le certificat sont réservés aux élèves de la
+            formation.
+          </p>
+          <a class="btn btn-ghost" routerLink="/espace/formations">Débloquer la formation</a>
+        </div>
       }
     </section>
 

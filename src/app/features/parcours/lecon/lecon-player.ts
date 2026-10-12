@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  computed,
   effect,
   inject,
   signal,
@@ -58,6 +59,15 @@ export class LeconPlayer {
   protected readonly lecon = signal<LeconJouable | null>(null);
   protected readonly etapes = signal<LeconEtape[]>([]);
   protected readonly avertissement = signal<string | null>(null);
+
+  /**
+   * Leçon suivie au titre de l'accès découverte : le compte n'a pas acheté la
+   * formation. La base le dit étape par étape (`etats_lecons.offerte`).
+   */
+  protected readonly decouverte = computed(() => {
+    const id = this.lecon()?.id_lecon;
+    return this.etapes().some((e) => e.id_lecon === id && e.offerte);
+  });
 
   /**
    * URL de lecture signée, obtenue chapitre par chapitre auprès de
@@ -273,7 +283,9 @@ export class LeconPlayer {
       this.contenu.etatsLecons(this.idSection),
     ]);
     this.lecon.set(maj);
-    this.etapes.set(etapes);
+    // Même filtre qu'au chargement : sans lui, l'introduction réapparaissait
+    // dans la timeline dès la première validation.
+    this.etapes.set(etapes.filter((e) => e.type !== 'intro'));
   }
 
   /** Valide un chapitre article (« marquer comme lu »). */
@@ -440,7 +452,11 @@ export class LeconPlayer {
   /** Navigation directe sur une étape de la timeline — jamais une verrouillée. */
   protected async ouvrirEtape(e: LeconEtape): Promise<void> {
     if (e.etat === 'verrouille') {
-      this.signaler('Termine les étapes précédentes pour y accéder.');
+      this.signaler(
+        this.decouverte()
+          ? 'Cette étape fait partie de la formation complète.'
+          : 'Termine les étapes précédentes pour y accéder.',
+      );
       return;
     }
     await this.router.navigate(['/parcours', this.idSection, 'lecon', e.id_lecon]);

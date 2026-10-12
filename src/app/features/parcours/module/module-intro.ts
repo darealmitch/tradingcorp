@@ -178,7 +178,10 @@ export class ModuleIntro {
       }
     }
 
-    const premiere = this.chapitres()[0];
+    // La première étape ouverte : pour un élève, c'est la première du module ;
+    // en accès découverte, la première leçon offerte, qui peut venir plus loin.
+    const chapitres = this.chapitres();
+    const premiere = chapitres.find((e) => e.etat !== 'verrouille') ?? chapitres[0];
     if (premiere) {
       await this.router.navigate(['/parcours', m.id_section, 'lecon', premiere.id_lecon]);
     } else {

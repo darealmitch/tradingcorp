@@ -189,8 +189,12 @@
 
     <!-- Échanges : en fin de chapitre, une fois le contenu consulté. Rendu
          seulement quand l'étape est réellement ouverte — la RLS refuserait de
-         toute façon d'y écrire depuis un chapitre verrouillé. -->
-    <app-commentaires-lecon [idLecon]="l.id_lecon" />
+         toute façon d'y écrire depuis un chapitre verrouillé.
+         En accès découverte, ni lecture ni écriture : les CGU réservent les
+         commentaires publiés aux Apprenants, c'est-à-dire aux inscrits. -->
+    @if (!decouverte()) {
+      <app-commentaires-lecon [idLecon]="l.id_lecon" />
+    }
 
     @if (etapeSuivante(); as suivante) {
       <button
@@ -204,6 +208,17 @@
           <app-icone nom="cadenas" [taille]="14" />
         }
       </button>
+    }
+
+    @if (decouverte()) {
+      <aside class="lecon-offre" aria-label="Accès découverte">
+        <p class="lecon-offre-titre">Leçon offerte</p>
+        <p>
+          Tu suis cette leçon dans le cadre de l'accès découverte. Le reste du parcours, les quiz,
+          le certificat et les échanges avec l'équipe sont réservés aux élèves de la formation.
+        </p>
+        <a class="btn btn-primary" routerLink="/espace/formations">Débloquer la formation</a>
+      </aside>
     }
   </div>
 } @else {

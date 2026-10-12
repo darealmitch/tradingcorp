@@ -55,6 +55,8 @@ export interface LeconResume {
   position: number;
   duree_s: number | null;
   est_publiee: boolean;
+  /** Offerte aux comptes sans achat (accès découverte), au choix d'un administrateur. */
+  est_decouverte: boolean;
   video_provider: VideoProvider;
   /** public_id Cloudinary (ou id YouTube/Bunny selon le provider). */
   video_provider_id: string | null;
@@ -141,6 +143,11 @@ export interface LeconEtape {
   a_pdf: boolean;
   video_termine: boolean;
   etat: EtatLecon;
+  /**
+   * Ouverte à ce compte au seul titre de l'accès découverte : il n'a pas
+   * acheté la formation. Toujours faux pour un élève inscrit et pour l'équipe.
+   */
+  offerte: boolean;
 }
 
 /** Option de réponse publique (sans le champ `correcte`). */
@@ -239,6 +246,8 @@ export interface ModuleParcours {
   total_lecons: number;
   lecons_terminees: number;
   etat: EtatModule;
+  /** Leçons offertes dans ce module à un compte sans achat ; 0 pour un élève inscrit. */
+  lecons_offertes: number;
 }
 
 /** Parcours complet d'un apprenant : formation + modules ordonnés. */

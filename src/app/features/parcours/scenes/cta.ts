@@ -14,6 +14,15 @@ import { Reveal } from '../../../shared/reveal';
           <h2>Continue sur ta lancée</h2>
           <p>Reprends là où tu t'es arrêté — chaque étape te rapproche du certificat.</p>
           <a class="btn btn-primary cta-btn" routerLink="/espace/formations">Voir ma formation</a>
+        } @else if (offertes() > 0) {
+          <h2>Envie d'aller plus loin ?</h2>
+          <p>
+            Les leçons offertes te donnent un aperçu. Débloque la formation pour suivre le parcours
+            complet, passer les quiz et obtenir ton certificat.
+          </p>
+          <a class="btn btn-primary cta-btn" routerLink="/espace/formations"
+            >Débloquer la formation</a
+          >
         } @else {
           <h2>Prêt à commencer ?</h2>
           <p>Débloque la formation pour accéder au parcours complet, module après module.</p>
@@ -54,4 +63,6 @@ import { Reveal } from '../../../shared/reveal';
 })
 export class ParcoursCta {
   readonly inscrit = input.required<boolean>();
+  /** Leçons offertes à ce compte (accès découverte) ; 0 pour un élève inscrit. */
+  readonly offertes = input(0);
 }

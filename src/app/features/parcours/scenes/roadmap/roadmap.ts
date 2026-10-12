@@ -89,6 +89,11 @@ export class ParcoursRoadmap {
     return ETAT_ICONE[m.etat];
   }
 
+  /** « 2 leçons offertes » : ce qu'un compte sans achat peut suivre dans ce module. */
+  protected offre(m: ModuleParcours): string {
+    return m.lecons_offertes > 1 ? `${m.lecons_offertes} leçons offertes` : '1 leçon offerte';
+  }
+
   protected pourcent(m: ModuleParcours): number {
     return m.total_lecons > 0 ? Math.round((m.lecons_terminees / m.total_lecons) * 100) : 0;
   }

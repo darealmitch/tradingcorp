@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { CommerceService } from '../../../core/commerce/commerce.service';
 import { FormationStaff } from '../../../core/commerce/formation.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
@@ -30,6 +31,7 @@ const TYPES_COURTS: Record<TypeRessource, string> = {
 export class Contenus {
   private readonly contenu = inject(ContenuService);
   private readonly commerce = inject(CommerceService);
+  private readonly auth = inject(AuthService);
 
   protected readonly chargement = signal(true);
   protected readonly modules = signal<Module[]>([]);
@@ -38,6 +40,22 @@ export class Contenus {
   /** Formation dont le réglage part vers le serveur — la case est figée le temps de l'aller-retour. */
   protected readonly enregistrement = signal<string | null>(null);
   protected readonly erreurReglage = signal<string | null>(null);
+
+  /**
+   * Offrir une leçon est une décision commerciale : la base la réserve aux
+   * administrateurs. Un formateur voit les cases, sans pouvoir les changer.
+   */
+  protected readonly estAdmin = computed(() => this.auth.role() === 'admin');
+
+  /** Leçon dont l'offre part vers le serveur — sa case est figée le temps de l'aller-retour. */
+  protected readonly decouverteEnCours = signal<string | null>(null);
+
+  protected readonly nombreOffertes = computed(
+    () =>
+      this.modules()
+        .flatMap((m) => m.lecons)
+        .filter((l) => l.est_decouverte).length,
+  );
 
   constructor() {
     void this.charger();
@@ -82,6 +100,43 @@ export class Contenus {
       this.erreurReglage.set(erreur);
     }
     this.enregistrement.set(null);
+  }
+
+  /** Un quiz demande une inscription : seules les vidéos et les lectures s'offrent. */
+  protected peutEtreOfferte(lecon: LeconResume): boolean {
+    return lecon.type === 'video' || lecon.type === 'article';
+  }
+
+  /**
+   * Offre la leçon aux comptes sans achat, ou retire l'offre. Même conduite que
+   * le réglage du certificat : la case suit tout de suite, puis revient en
+   * arrière si l'écriture échoue — une leçon crue offerte alors qu'elle ne
+   * l'est pas fausserait tout ce qu'on dirait aux prospects.
+   */
+  protected async basculerDecouverte(lecon: LeconResume): Promise<void> {
+    if (this.decouverteEnCours() || !this.estAdmin()) {
+      return;
+    }
+    const avant = this.modules();
+    const voulu = !lecon.est_decouverte;
+
+    this.decouverteEnCours.set(lecon.id_lecon);
+    this.erreurReglage.set(null);
+    this.modules.update((liste) =>
+      liste.map((m) => ({
+        ...m,
+        lecons: m.lecons.map((l) =>
+          l.id_lecon === lecon.id_lecon ? { ...l, est_decouverte: voulu } : l,
+        ),
+      })),
+    );
+
+    const erreur = await this.contenu.definirDecouverte(lecon.id_lecon, voulu);
+    if (erreur) {
+      this.modules.set(avant);
+      this.erreurReglage.set(erreur);
+    }
+    this.decouverteEnCours.set(null);
   }
 
   /**

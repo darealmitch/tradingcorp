@@ -301,6 +301,7 @@ export type Database = {
           date_modification: string;
           description: string | null;
           duree_s: number | null;
+          est_decouverte: boolean;
           est_publiee: boolean;
           id_lecon: string;
           id_section: string;
@@ -321,6 +322,7 @@ export type Database = {
           date_modification?: string;
           description?: string | null;
           duree_s?: number | null;
+          est_decouverte?: boolean;
           est_publiee?: boolean;
           id_lecon?: string;
           id_section: string;
@@ -341,6 +343,7 @@ export type Database = {
           date_modification?: string;
           description?: string | null;
           duree_s?: number | null;
+          est_decouverte?: boolean;
           est_publiee?: boolean;
           id_lecon?: string;
           id_section?: string;
@@ -804,6 +807,10 @@ export type Database = {
         Returns: undefined;
       };
       definir_date_naissance: { Args: { p_date: string }; Returns: undefined };
+      definir_lecon_decouverte: {
+        Args: { p_actif: boolean; p_id_lecon: string };
+        Returns: undefined;
+      };
       delivrer_certificat: {
         Args: { p_id_formation: string; p_id_profil: string };
         Returns: string;
@@ -830,6 +837,7 @@ export type Database = {
           duree_s: number;
           etat: string;
           id_lecon: string;
+          offerte: boolean;
           position: number;
           titre: string;
           type: string;
@@ -844,6 +852,7 @@ export type Database = {
           etat: string;
           id_section: string;
           introduction: string;
+          lecons_offertes: number;
           lecons_terminees: number;
           objectifs: string[];
           position: number;
@@ -880,6 +889,7 @@ export type Database = {
         }[];
       };
       lecon_debloquee: { Args: { p_id_lecon: string }; Returns: boolean };
+      lecon_en_decouverte: { Args: { p_id_lecon: string }; Returns: boolean };
       lister_profils_admin: {
         Args: never;
         Returns: {
