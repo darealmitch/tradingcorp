@@ -4,8 +4,9 @@
 -- découverte — pas d'inscription, seules les leçons offertes ; que le geste
 -- soit réservé aux administrateurs et refuse les comptes à qui l'e-mail
 -- mentirait ; que l'e-mail parte à la personne désignée, même en mode essai
--- des e-mails, et à elle seule ; que l'annonce programmée n'écrive rien avant
--- la mise en production, puis parte une fois.
+-- des e-mails, et à elle seule ; que son bouton mène au site d'où l'essai a
+-- été accordé (dev pendant un essai) ; que l'annonce programmée n'écrive rien
+-- avant la mise en production, puis parte une fois, vers l'adresse par défaut.
 --
 -- Les assertions portent sur les comptes du jeu d'essai, jamais sur des
 -- totaux : rejoué contre la vraie base, l'annonce des essais programmés
@@ -14,7 +15,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(36);
+select plan(37);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('e5500000-0000-0000-0000-0000000000a1', 'lea-essai@essai.local',
@@ -72,6 +73,31 @@ begin
 end;
 $$;
 
+-- Comme `sous`, depuis un navigateur qui envoie ces en-têtes (`Origin`,
+-- `Referer`) : PostgREST les expose ainsi dans `request.headers`.
+create function pg_temp.sous_depuis(p_sub text, p_entetes text, p_sql text) returns text
+language plpgsql as $$
+declare r text;
+begin
+  perform set_config('request.headers', p_entetes, true);
+  r := pg_temp.sous(p_sub, p_sql);
+  perform set_config('request.headers', '', true);
+  return r;
+end;
+$$;
+
+-- Le site que la base retient pour ces en-têtes, ou « nul ».
+create function pg_temp.site_avec(p_entetes text) returns text
+language plpgsql as $$
+declare r text;
+begin
+  perform set_config('request.headers', p_entetes, true);
+  r := coalesce(public.site_de_la_requete(), 'nul');
+  perform set_config('request.headers', '', true);
+  return r;
+end;
+$$;
+
 -- Rend le code d'erreur de la requête sous l'identité donnée, ou null.
 create function pg_temp.erreur_sous(p_sub text, p_sql text) returns text
 language plpgsql as $$
@@ -101,9 +127,24 @@ select ok(
 );
 
 select ok(
-  not has_function_privilege('authenticated', 'public.annoncer_essai(uuid)', 'execute')
-  and not has_function_privilege('authenticated', 'public.annoncer_essais_programmes()', 'execute'),
+  not has_function_privilege('authenticated', 'public.annoncer_essai(uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.annoncer_essais_programmes()', 'execute')
+  and not has_function_privilege('authenticated', 'public.site_de_la_requete()', 'execute'),
   'droits — ni l''annonce d''un essai, ni celle des essais programmés, ne s''appellent depuis le site'
+);
+
+-- Le site retenu pour le bouton de l'e-mail : l'origine https annoncée par le
+-- navigateur, à défaut celle du Referer ; rien d'autre.
+select is(
+  concat_ws(',',
+    pg_temp.site_avec('{"origin": "https://dev.tradingcorp.fr"}'),
+    pg_temp.site_avec('{"referer": "https://dev.tradingcorp.fr/espace/utilisateurs"}'),
+    pg_temp.site_avec('{"origin": "http://pirate.example"}'),
+    pg_temp.site_avec('{"origin": "https://pirate.example/chemin"}'),
+    pg_temp.site_avec('{}'),
+    pg_temp.site_avec('')),
+  'https://dev.tradingcorp.fr,https://dev.tradingcorp.fr,nul,nul,nul,nul',
+  'site — l''origine https du navigateur, à défaut celle du Referer ; ni http, ni chemin, ni rien'
 );
 
 select is(
@@ -143,10 +184,11 @@ select is(
 -- ─────────────────────────────────────────────────────────────────────────────
 
 select is(
-  pg_temp.sous('e5500000-0000-0000-0000-0000000000ad',
+  pg_temp.sous_depuis('e5500000-0000-0000-0000-0000000000ad',
+    '{"origin": "https://dev.tradingcorp.fr"}',
     $$select public.accorder_essai('e5500000-0000-0000-0000-0000000000a1')$$),
   'annonce',
-  'essai — l''administratrice l''accorde à Lea, prévenue tout de suite'
+  'essai — l''administratrice l''accorde à Lea depuis dev, prévenue tout de suite'
 );
 
 select is(
@@ -200,14 +242,14 @@ select is(
 );
 
 select is(
-  (select rc.famille from public.reserver_courriels(50) rc
+  (select rc.famille || ' | ' || coalesce(rc.site, 'nul') from public.reserver_courriels(50) rc
     where rc.id_courriel = (
       select c.id_courriel from public.courriels c
         join public.notifications n on n.id_notification = c.id_notification
        where n.id_profil = 'e5500000-0000-0000-0000-0000000000a1'
          and n.cle_evenement = 'essai_accorde')),
-  'essai_accorde',
-  'e-mail — la fonction d''envoi sait qu''elle écrit un e-mail d''essai'
+  'essai_accorde | https://dev.tradingcorp.fr',
+  'e-mail — la fonction d''envoi sait qu''elle écrit un e-mail d''essai, et vers quel site mène son bouton'
 );
 
 select is(
@@ -227,12 +269,13 @@ select is(
 
 select is(
   (select count(*)::int || ' / ' || min(meta ->> 'annonce') || ' / ' || min(meta ->> 'lecons_offertes')
+          || ' / ' || min(meta ->> 'site')
      from public.journal_admin
     where action = 'octroi_essai'
       and id_profil = 'e5500000-0000-0000-0000-0000000000ad'
       and id_profil_cible = 'e5500000-0000-0000-0000-0000000000a1'),
-  '1 / immediate / 1',
-  'journal — l''octroi est tracé, avec son auteur'
+  '1 / immediate / 1 / https://dev.tradingcorp.fr',
+  'journal — l''octroi est tracé, avec son auteur et le site d''où il part'
 );
 
 select is(
@@ -298,8 +341,11 @@ select is(
 -- L'ESSAI PROGRAMMÉ — rien avant la mise en production, puis une fois
 -- ─────────────────────────────────────────────────────────────────────────────
 
+-- Programmé depuis dev : l'annonce partira de la CI, vers la production, et
+-- non vers le site d'où le geste a été fait.
 select is(
-  pg_temp.sous('e5500000-0000-0000-0000-0000000000ad',
+  pg_temp.sous_depuis('e5500000-0000-0000-0000-0000000000ad',
+    '{"origin": "https://dev.tradingcorp.fr"}',
     $$select public.accorder_essai('e5500000-0000-0000-0000-0000000000a3', true)$$),
   'programme',
   'programmé — l''essai de Paul attend la mise en production'
@@ -352,12 +398,13 @@ select ok(
 );
 
 select is(
-  (select replace(n.message, chr(160), ' ') || ' | ' || c.statut from public.notifications n
+  (select replace(n.message, chr(160), ' ') || ' | ' || c.statut || ' | ' || coalesce(c.site, 'nul')
+     from public.notifications n
      join public.courriels c on c.id_notification = n.id_notification
     where n.id_profil = 'e5500000-0000-0000-0000-0000000000a3'
       and n.cle_evenement = 'essai_accorde'),
-  'Tu peux suivre gratuitement 2 leçons de « Formation d''essai » : « Vidéo A » et « Vidéo B ». | a_envoyer',
-  'mise en production — Paul est prévenu, avec les leçons offertes à ce moment-là'
+  'Tu peux suivre gratuitement 2 leçons de « Formation d''essai » : « Vidéo A » et « Vidéo B ». | a_envoyer | nul',
+  'mise en production — Paul est prévenu, avec les leçons offertes alors ; son bouton garde l''adresse par défaut'
 );
 
 select ok(

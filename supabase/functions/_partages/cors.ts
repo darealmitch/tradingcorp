@@ -114,3 +114,18 @@ export function baseApplication(req: Request): string {
   // passerait donc à travers un `??`, produisant une URL de retour vide.
   return SITES.get(origine) || SITE_CONFIGURE || BASE_PAR_DEFAUT;
 }
+
+/**
+ * Base des liens d'un e-mail dont l'action est partie d'un site connu — dev
+ * pendant un essai, tradingcorp.fr en production —, ou `null` pour garder
+ * l'adresse par défaut. Même règle que pour une URL de retour : la base n'a
+ * fait que recopier ce que le navigateur annonçait, c'est ici qu'on décide.
+ * En https seulement : un lien vers le poste du développeur ne servirait à
+ * personne dans une boîte de réception.
+ */
+export function baseDesLiens(origine: string | null | undefined): string | null {
+  if (!origine?.startsWith('https://')) {
+    return null;
+  }
+  return SITES.get(origine) ?? null;
+}

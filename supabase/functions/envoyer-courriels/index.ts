@@ -2,6 +2,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { envoyer } from '../_partages/courriel.ts';
+import { baseDesLiens } from '../_partages/cors.ts';
 import { type Courriel, envoyable, html, texte } from './message.ts';
 
 // Envoi des e-mails des échanges — ceux que la base a rangés dans `courriels`,
@@ -33,6 +34,8 @@ interface Reserve extends Courriel {
   id_courriel: string;
   destinataire: string;
   prenom: string | null;
+  /** Site d'où l'action est partie (l'essai accordé depuis dev, par exemple), ou rien. */
+  site?: string | null;
 }
 
 function json(corps: unknown, statut: number): Response {
@@ -86,16 +89,19 @@ Deno.serve(async (req) => {
         if (envoyes + echecs > 0) {
           await pause(PAUSE_ENTRE_ENVOIS_MS);
         }
+        // Les liens mènent au site d'où l'action est partie, s'il est connu :
+        // un essai accordé depuis dev s'ouvre sur dev, où il se recette.
+        const base = baseDesLiens(c.site) ?? adresseSite;
         // Une annonce sans lien de désinscription n'a pas le droit de partir :
         // elle compte comme un échec, et sera abandonnée après ses reprises.
         const parti =
-          envoyable(c, adresseSite) &&
+          envoyable(c, base) &&
           (await envoyer({
             destinataire: c.destinataire,
             destinataireNom: c.prenom,
             objet: c.objet,
-            html: html(c, c.prenom, adresseSite),
-            texte: texte(c, c.prenom, adresseSite),
+            html: html(c, c.prenom, base),
+            texte: texte(c, c.prenom, base),
           }));
         // Un identifiant dans le journal, jamais une adresse.
         const { error: erreurConclusion } = await admin.rpc('conclure_courriel', {
