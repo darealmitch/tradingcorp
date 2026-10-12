@@ -14,7 +14,7 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./features/landing/landing').then((m) => m.Landing),
     canActivate: [inviteGuard],
-    title: 'TradingCorp — La plateforme de trading nouvelle génération',
+    title: 'TradingCorp — Formation au trading en ligne',
   },
   {
     path: 'facteurs',

@@ -36,7 +36,7 @@ const CASES: CaseItem[] = [
     titre: 'Forme-toi & Apprends',
     message:
       'Grâce à des vidéos éducatives et des supports écrits, ' +
-      'tu auras à ta disposition tous les outils dont tu as besoin pour performer sur les marchés.',
+      'tu auras à ta disposition tous les outils dont tu as besoin pour progresser sur les marchés.',
     visuel: 'tradingcorp/landing/cases/pexels-jakubzerdzicki-26841237',
   },
   {
@@ -45,7 +45,7 @@ const CASES: CaseItem[] = [
     message:
       'Avec la communauté, tes réussites comme tes pertes, ' +
       "tes questionnements et tes certitudes évoluent au sein d'une communauté engagée, " +
-      'composée de traders déjà compétents et rentables, dont moi.',
+      'composée de traders expérimentés, dont moi.',
     visuel: 'tradingcorp/landing/cases/vitaly-gariev-Y32qbykD69g-unsplash',
   },
   {

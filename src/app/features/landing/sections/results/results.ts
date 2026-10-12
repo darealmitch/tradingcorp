@@ -217,7 +217,7 @@ const RESULTS: Result[] = [
 /** Constats d'accroche affichés au-dessus du carrousel. */
 const CONSTATS = [
   'Ton pouvoir d’achat fond comme neige au soleil.',
-  'Il y a de très grandes chances que tu n’aies jamais de retraite.',
+  'Le montant de ta future retraite est de plus en plus incertain.',
   'Ta vie ne dépend que d’un salaire.',
 ];
 

@@ -54,8 +54,7 @@ const STATS: Stat[] = [
     label: "d'investissement",
   },
   { target: anneesDepuis(TRADING_DEBUT), decimals: 0, suffix: ' ans', label: 'de trading' },
-  { target: 1_000_000, decimals: 0, suffix: ' €+', label: 'générés en fonds propres' },
-  { target: 200, decimals: 0, suffix: '+', label: 'élèves formés' },
+  { target: 150, decimals: 0, suffix: '+', label: 'élèves accompagnés' },
 ];
 
 const MILESTONES: Milestone[] = [
@@ -76,13 +75,13 @@ const MILESTONES: Milestone[] = [
   },
   {
     step: 'Les marchés',
-    title: 'Plus de 1 000 000 €',
-    desc: 'Générés en fonds propres sur les marchés financiers, à force de méthode et de discipline.',
+    title: 'Des années de pratique',
+    desc: 'Sur les marchés financiers, avec une règle constante : méthode et discipline.',
   },
   {
     step: 'Transmission',
     title: 'Formateur & fondateur',
-    desc: '200+ élèves accompagnés, et Trading Corp fondée pour transmettre cette méthode.',
+    desc: '150+ élèves accompagnés, et Trading Corp fondée pour transmettre cette méthode.',
   },
 ];
 

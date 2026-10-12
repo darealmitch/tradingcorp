@@ -12,7 +12,7 @@ import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 import { Cases } from './cases';
 
-const IMPACT_TARGETS = [90, 161_115_493, 150];
+const IMPACT_TARGETS = [89, 161_115_493, 150];
 
 @Component({
   selector: 'app-formations',
