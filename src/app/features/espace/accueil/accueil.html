@@ -13,10 +13,39 @@
   }
 </header>
 
+<!-- Retour de Stripe. L'écran ne dit « accès ouvert » que lorsque la base le
+     confirme : jusque-là, le paiement est parti, l'accès pas encore. -->
 @if (retourAchat() === 'succes') {
-  <p class="alerte est-succes">Paiement confirmé ! Ton accès s'active dans quelques instants.</p>
+  @switch (activation()) {
+    @case ('ouvert') {
+      <p class="alerte est-succes" role="status">
+        Paiement confirmé&nbsp;: ton accès à la formation est ouvert. Bonne formation&nbsp;!
+      </p>
+    }
+    @case ('retard') {
+      <div class="alerte" role="status">
+        <p>
+          Ton paiement a bien été transmis à Stripe, mais l'ouverture de ton accès prend plus de
+          temps que prévu. Elle se fera automatiquement dès que Stripe aura confirmé le paiement, et
+          une notification te préviendra.
+        </p>
+        <p>
+          Une question&nbsp;? Écris-nous à
+          <a href="mailto:mailtradingcorp&#64;gmail.com">mailtradingcorp&#64;gmail.com</a>.
+        </p>
+      </div>
+    }
+    @default {
+      <p class="alerte" role="status">Paiement transmis. Ouverture de ton accès en cours…</p>
+    }
+  }
 } @else if (retourAchat() === 'annule') {
-  <p class="alerte">Paiement annulé. Tu peux réessayer quand tu veux.</p>
+  <div class="alerte alerte-action">
+    <p>
+      Paiement annulé&nbsp;: aucun montant n'a été débité. Tu peux reprendre l'achat quand tu veux.
+    </p>
+    <a class="btn btn-primary btn-compact" routerLink="/espace/formations">Reprendre l'achat</a>
+  </div>
 }
 
 @if (chargement()) {
@@ -270,6 +299,40 @@
       }
     </section>
   }
+
+  <!-- Entonnoir de conversion : où les visiteurs décrochent, de l'accueil au
+       paiement. Mesure sans cookie pour les vues et les clics ; comptes et
+       paiements lus là où ils sont enregistrés. -->
+  <section class="panneau entonnoir">
+    <div class="panneau-tete">
+      <h2 class="panneau-titre">Entonnoir des 30 derniers jours</h2>
+    </div>
+    @if (stats.entonnoir; as e) {
+      <ol class="entonnoir-etapes">
+        @for (etape of etapesEntonnoir(e); track etape.libelle) {
+          <li class="entonnoir-etape">
+            <span class="entonnoir-libelle">{{ etape.libelle }}</span>
+            <span class="entonnoir-valeur">{{ etape.valeur }}</span>
+          </li>
+        }
+      </ol>
+      <p class="entonnoir-taux">
+        Comptes ouverts pour 100 vues de l'accueil&nbsp;:
+        <strong>{{ taux(e.comptes_crees, e.vues_accueil) ?? '—' }}</strong> · Paiements pour 100
+        comptes ouverts&nbsp;: <strong>{{ taux(e.paiements, e.comptes_crees) ?? '—' }}</strong>
+        @if (e.remboursements > 0) {
+          · dont {{ e.remboursements }} remboursé{{ e.remboursements > 1 ? 's' : '' }}
+        }
+      </p>
+      <p class="cellule-discrete">
+        Vues et clics comptés sans cookie sur tradingcorp.fr, par jour et sans identifier personne
+        (un visiteur qui revient compte plusieurs fois). Comptes et paiements relevés en base, hors
+        comptes de test et comptes créés par l'équipe.
+      </p>
+    } @else {
+      <p class="cellule-discrete">La mesure n'a pas pu être lue pour l'instant.</p>
+    }
+  </section>
 
   <div class="grille-deux">
     <section class="panneau">

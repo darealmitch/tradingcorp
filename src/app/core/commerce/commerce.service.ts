@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { MesureService } from '../mesure/mesure.service';
 import { AccesDonnees } from '../supabase/acces-donnees';
 import { Formation, FormationStaff, Inscription } from './formation.model';
 
@@ -7,6 +8,7 @@ const ERREUR_GENERIQUE = 'Le paiement est indisponible pour le moment. Réessaie
 @Injectable({ providedIn: 'root' })
 export class CommerceService {
   private readonly acces = inject(AccesDonnees);
+  private readonly mesure = inject(MesureService);
 
   /** Formations publiées (policy RLS `formations_select_public`). */
   async chargerFormations(): Promise<Formation[]> {
@@ -88,6 +90,10 @@ export class CommerceService {
     if (!donnees?.url) {
       return ERREUR_GENERIQUE;
     }
+    // Compté ici, une fois la session Stripe créée : un paiement commencé est
+    // un départ effectif vers la page de paiement, pas un clic qui aurait
+    // échoué. La mesure n'attend jamais plus d'une fraction de seconde.
+    await this.mesure.debutPaiement();
     location.assign(donnees.url);
     return null;
   }

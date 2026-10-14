@@ -8,11 +8,50 @@
       Il est enfin l'heure<br />
       de devenir <span class="text-gradient">plus grand</span>
     </h1>
-    <p class="hero-lead">L'expérience du trading pour tous</p>
+    <!-- Le premier écran dit ce qu'est l'offre : une formation, pour qui, et ce
+         qu'on y apprend. Le slogan reste, mais il ne suffisait pas à le dire. -->
+    <p class="hero-lead">
+      Une formation en ligne pour apprendre à investir et à trader avec méthode, pensée pour les
+      débutants&nbsp;: du mental à la finance de marché, module après module.
+    </p>
+
+    @if (vitrine.vitrine(); as v) {
+      <ul class="hero-faits" aria-label="La formation en chiffres">
+        <li>
+          <strong>{{ v.modules }}</strong> modules
+        </li>
+        <li>
+          <strong>{{ v.lecons_video }}</strong> leçons vidéo, {{ duree(v.secondes_video) }}
+        </li>
+        <li>
+          <strong>{{ v.quiz }}</strong> quiz
+        </li>
+        @if (v.delivre_certificat) {
+          <li>Certificat vérifiable en ligne</li>
+        }
+      </ul>
+    }
+
     <div class="hero-actions">
-      <a class="btn btn-primary" href="#formations">Se former</a>
-      <a class="btn btn-ghost" routerLink="/connexion">Se connecter</a>
+      @if (vitrine.nombreOffertes() > 0) {
+        <a class="btn btn-primary" routerLink="/inscription" appMesureClic="hero"
+          >Commencer gratuitement</a
+        >
+      } @else {
+        <a class="btn btn-primary" href="#offre" appMesureClic="hero">Découvrir l'offre</a>
+      }
+      <a class="btn btn-ghost" href="#programme-detail">Voir le programme</a>
     </div>
+
+    <p class="hero-note">
+      @if (vitrine.nombreOffertes(); as offertes) {
+        <span
+          >{{ offertes }} {{ offertes > 1 ? 'leçons offertes' : 'leçon offerte' }}, sans carte
+          bancaire.</span
+        >
+      }
+      <a routerLink="/connexion">Déjà élève&nbsp;? Se connecter</a>
+    </p>
   </div>
 
   <a class="hero-scroll" href="#formations" aria-label="Descendre vers les formations">

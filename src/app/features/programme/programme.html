@@ -1,0 +1,141 @@
+<app-particles />
+
+<section class="programme-hero">
+  <div class="container">
+    <span class="eyebrow">Le programme</span>
+    <h1 class="programme-titre">
+      La formation,<br />
+      <span class="text-gradient">module par module</span>
+    </h1>
+    <p class="programme-lead">
+      Du mental à la finance de marché&nbsp;: un parcours pensé pour les débutants, à suivre dans
+      l'ordre, chaque module s'appuyant sur le précédent.
+    </p>
+
+    @if (vitrine.vitrine(); as v) {
+      <ul class="programme-faits" aria-label="La formation en chiffres">
+        <li>
+          <strong>{{ v.modules }}</strong> modules
+        </li>
+        <li>
+          <strong>{{ v.lecons_video }}</strong> leçons vidéo, {{ duree(v.secondes_video) }}
+        </li>
+        <li>
+          <strong>{{ v.quiz }}</strong> quiz
+        </li>
+        @if (v.ressources > 0) {
+          <li>
+            <strong>{{ v.ressources }}</strong> ressources complémentaires
+          </li>
+        }
+        @if (v.delivre_certificat) {
+          <li>Certificat vérifiable en ligne</li>
+        }
+      </ul>
+    }
+
+    <div class="programme-actions">
+      @if (vitrine.nombreOffertes() > 0) {
+        <a class="btn btn-primary" routerLink="/inscription" appMesureClic="programme-hero"
+          >Commencer gratuitement</a
+        >
+      } @else {
+        <a class="btn btn-primary" href="#offre" appMesureClic="programme-hero"
+          >Découvrir l'offre</a
+        >
+      }
+      <a class="btn btn-ghost" href="#modules">Voir les modules</a>
+    </div>
+  </div>
+</section>
+
+<section class="section programme-modules" id="modules">
+  <div class="container timeline" #timeline>
+    <svg class="timeline-rail" aria-hidden="true" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="rail-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#38e1ff" />
+          <stop offset="0.5" stop-color="#7c6cff" />
+          <stop offset="1" stop-color="#e14dff" />
+        </linearGradient>
+      </defs>
+      <path
+        #railPath
+        class="timeline-path"
+        fill="none"
+        stroke="url(#rail-grad)"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      />
+    </svg>
+
+    <ol class="module-liste">
+      @for (module of modules(); track module.position) {
+        <li class="module-ligne" appReveal>
+          <div class="module-node" aria-hidden="true">
+            <span class="module-num text-gradient">{{ module.position }}</span>
+          </div>
+
+          <article class="module-carte">
+            <span class="module-index"
+              >Module {{ module.position < 10 ? '0' + module.position : module.position }}</span
+            >
+            <h2 class="module-nom">{{ module.titre }}</h2>
+            @if (module.accroche) {
+              <p class="module-accroche">{{ module.accroche }}</p>
+            }
+            @if (module.objectifs.length > 0) {
+              <ul class="module-objectifs">
+                @for (objectif of module.objectifs; track objectif) {
+                  <li>{{ objectif }}</li>
+                }
+              </ul>
+            }
+            @if (chiffres(module); as texte) {
+              <p class="module-chiffres">
+                {{ texte }}
+                @if (module.lecons_offertes > 0) {
+                  ·
+                  <strong>{{
+                    compte(module.lecons_offertes, 'leçon offerte', 'leçons offertes')
+                  }}</strong>
+                }
+              </p>
+            }
+          </article>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<app-offre />
+
+<app-faq />
+
+<section class="section programme-cta">
+  <div class="container">
+    <div class="cta-panel" appReveal>
+      <h2>Prêt à commencer&nbsp;?</h2>
+      @if (vitrine.nombreOffertes() > 0) {
+        <p>
+          Crée ton compte gratuitement&nbsp;: les leçons offertes s'ouvrent tout de suite, et tu
+          décides ensuite.
+        </p>
+        <a class="btn btn-primary" routerLink="/inscription" appMesureClic="programme-fin"
+          >Commencer gratuitement</a
+        >
+      } @else {
+        <p>Crée ton compte, puis accède à la formation depuis ton espace.</p>
+        <a class="btn btn-primary" routerLink="/inscription" appMesureClic="programme-fin"
+          >Créer mon compte</a
+        >
+      }
+      <span class="cta-note"
+        >Accès sans limite de durée · 14 jours pour te rétracter · Paiement sécurisé par
+        Stripe</span
+      >
+    </div>
+  </div>
+</section>
+<app-barre-achat />

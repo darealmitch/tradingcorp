@@ -1,0 +1,92 @@
+/* ===== Questions fréquentes ===== */
+
+.faq-conteneur {
+  max-width: 860px;
+}
+
+.faq-liste {
+  display: grid;
+  gap: 12px;
+}
+
+.faq-question {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  transition: border-color 0.25s;
+}
+
+.faq-question[open] {
+  border-color: var(--line-strong);
+}
+
+.faq-question summary {
+  position: relative;
+  display: block;
+  /* 48 px au moins : une cible tactile confortable, même sur une ligne. */
+  min-height: 48px;
+  padding: 18px 56px 18px 22px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 1.04rem;
+  font-weight: 600;
+  line-height: 1.4;
+  list-style: none;
+}
+
+.faq-question summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Le « + » qui devient « − » : tracé en CSS, il tourne à l'ouverture. */
+.faq-question summary::before,
+.faq-question summary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 24px;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--muted);
+  transition: transform 0.25s var(--ease-out);
+}
+
+.faq-question summary::after {
+  transform: rotate(90deg);
+}
+
+.faq-question[open] summary::after {
+  transform: rotate(0deg);
+}
+
+.faq-question summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 16px;
+}
+
+.faq-reponse {
+  padding: 0 22px 20px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.faq-reponse a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.faq-reponse a:hover {
+  text-decoration-color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-question,
+  .faq-question summary::before,
+  .faq-question summary::after {
+    transition: none;
+  }
+}

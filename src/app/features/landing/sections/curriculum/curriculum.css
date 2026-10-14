@@ -172,6 +172,91 @@
   transform: translateX(4px);
 }
 
+/* ===== Modules dépliables (programme lu en base) ===== */
+
+/* Une seule colonne : un module déplié ne doit pas étirer son voisin. */
+.curriculum-topics.est-detaille {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.curriculum-grid:has(.est-detaille) {
+  align-items: start;
+}
+
+.est-detaille .topic {
+  display: block;
+  padding: 0;
+}
+
+.topic-tete {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  /* Cible tactile d'au moins 48 px, comme les autres déclencheurs du site. */
+  min-height: 48px;
+  padding: 18px 40px 18px 4px;
+  position: relative;
+  cursor: pointer;
+  list-style: none;
+}
+
+.topic-tete::-webkit-details-marker {
+  display: none;
+}
+
+/* Chevron qui pivote à l'ouverture. */
+.topic-tete::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.25s var(--ease-out);
+}
+
+.topic-details[open] .topic-tete::after {
+  transform: translateY(-30%) rotate(-135deg);
+}
+
+.topic-tete:focus-visible {
+  outline-offset: -2px;
+}
+
+.topic-corps {
+  padding: 0 4px 22px 44px;
+}
+
+.topic-accroche {
+  margin-bottom: 12px;
+  color: var(--text);
+  font-style: italic;
+}
+
+.topic-objectifs {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.topic-chiffres {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.topic-chiffres strong {
+  color: var(--up-text);
+  font-weight: 600;
+}
+
 /* ===== Lightbox certificat ===== */
 
 .cert-lightbox {
@@ -236,6 +321,10 @@
 @media (prefers-reduced-motion: reduce) {
   .cert-frame {
     animation: none;
+  }
+
+  .topic-tete::after {
+    transition: none;
   }
 
   .cert-lightbox,

@@ -15,7 +15,13 @@ import { ContenuService } from '../../../core/contenu/contenu.service';
 import { FinanceService } from '../../../core/finance/finance.service';
 import { ModerationService } from '../../../core/moderation/moderation.service';
 import { PilotageService } from '../../../core/pilotage/pilotage.service';
-import { Accueil } from './accueil';
+import {
+  Accueil,
+  INTERVALLE_ACTIVATION_MS,
+  VERIFICATIONS_ACTIVATION,
+  etapesEntonnoir,
+  taux,
+} from './accueil';
 
 /**
  * Tableau de bord d'un élève. Inscrit, il reprend où il s'est arrêté. Sans
@@ -221,5 +227,144 @@ describe('Tableau de bord — élève', () => {
     expect(lien(page, 'Commencer')).toBeUndefined();
     expect(progression(page)).toBe('100%');
     expect(lien(page, 'Débloquer la formation')?.getAttribute('href')).toBe('/espace/formations');
+  });
+});
+
+/**
+ * Retour de Stripe. L'accès s'ouvre quand le webhook a enregistré
+ * l'inscription : l'écran ne doit dire « ouvert » qu'à ce moment-là, et dire
+ * clairement ce qu'il en est si cela tarde.
+ */
+describe('Tableau de bord — retour de paiement', () => {
+  const ACTIVE = { id_inscription: 'i-1', id_formation: 'f-1', statut: 'active' };
+
+  /**
+   * `inscritAuAppel` : à partir de quel appel la base rend l'inscription (le
+   * premier est la lecture du tableau de bord ; les suivants, les
+   * vérifications). `null` : jamais pendant le test.
+   */
+  async function monterRetour(achat: 'succes' | 'annule', inscritAuAppel: number | null) {
+    let appels = 0;
+    const estInscrit = (): boolean => inscritAuAppel !== null && appels >= inscritAuAppel;
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({ achat }) } },
+        },
+        {
+          provide: AuthService,
+          useValue: { role: signal('apprenant'), profil: signal({ prenom: 'Lea' }) },
+        },
+        {
+          provide: CommerceService,
+          useValue: {
+            chargerInscriptions: () => {
+              appels++;
+              return Promise.resolve(estInscrit() ? [ACTIVE] : []);
+            },
+          },
+        },
+        {
+          provide: ContenuService,
+          useValue: {
+            maProgression: () => Promise.resolve({ terminees: 0, total: 103 }),
+            prochainesLecons: () => Promise.resolve(estInscrit() ? [PROCHAINE] : []),
+            chargerParcours: () =>
+              Promise.resolve({ id_formation: 'f-1', titre: 'F', inscrit: false, modules: [] }),
+            etatsLecons: () => Promise.resolve([]),
+          },
+        },
+        { provide: PilotageService, useValue: {} },
+        { provide: ModerationService, useValue: {} },
+        { provide: ComptesService, useValue: {} },
+        { provide: FinanceService, useValue: {} },
+      ],
+    });
+    const fixture = TestBed.createComponent(Accueil);
+    const avancer = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+    };
+    fixture.detectChanges();
+    await avancer(0);
+    await avancer(0);
+    return { page: fixture.nativeElement as HTMLElement, avancer };
+  }
+
+  beforeEach(() => vi.useFakeTimers());
+
+  afterEach(() => {
+    vi.useRealTimers();
+    TestBed.resetTestingModule();
+  });
+
+  it('n’annonce l’accès ouvert qu’une fois l’inscription enregistrée', async () => {
+    // Le webhook arrive à la deuxième vérification.
+    const { page, avancer } = await monterRetour('succes', 3);
+
+    expect(texte(page)).toContain('Ouverture de ton accès en cours');
+    expect(texte(page)).not.toContain('est ouvert');
+
+    await avancer(INTERVALLE_ACTIVATION_MS);
+    expect(texte(page)).toContain('Ouverture de ton accès en cours');
+
+    await avancer(INTERVALLE_ACTIVATION_MS);
+    expect(texte(page)).toContain('ton accès à la formation est ouvert');
+    expect(texte(page)).toContain('Reprendre où tu t');
+    expect(texte(page)).not.toContain('Débloque ta formation');
+  });
+
+  it('dit tout de suite que l’accès est ouvert quand le webhook a déjà fait son œuvre', async () => {
+    const { page } = await monterRetour('succes', 1);
+
+    expect(texte(page)).toContain('ton accès à la formation est ouvert');
+  });
+
+  it('explique un retard au lieu de laisser l’élève devant « Débloque ta formation »', async () => {
+    const { page, avancer } = await monterRetour('succes', null);
+
+    await avancer(INTERVALLE_ACTIVATION_MS * VERIFICATIONS_ACTIVATION);
+
+    expect(texte(page)).toContain('prend plus de temps que prévu');
+    expect(texte(page)).toContain('une notification te préviendra');
+    expect(texte(page)).not.toContain('est ouvert');
+  });
+
+  it('après une annulation, rassure et propose de reprendre l’achat', async () => {
+    const { page } = await monterRetour('annule', null);
+
+    expect(texte(page)).toContain("aucun montant n'a été débité");
+    expect(lien(page, "Reprendre l'achat")?.getAttribute('href')).toBe('/espace/formations');
+  });
+});
+
+describe('Tableau de bord — entonnoir de conversion', () => {
+  it('suit le parcours du visiteur, de l’accueil au paiement', () => {
+    const etapes = etapesEntonnoir({
+      depuis: '2026-09-15',
+      jours: 30,
+      vues_accueil: 400,
+      vues_programme: 120,
+      clics: 60,
+      vues_inscription: 50,
+      comptes_crees: 20,
+      vues_achat: 15,
+      debuts_paiement: 4,
+      paiements: 2,
+      remboursements: 0,
+      clics_par_bouton: {},
+    });
+
+    expect(etapes.map((e) => e.valeur)).toEqual([400, 120, 60, 50, 20, 15, 4, 2]);
+    expect(etapes[0].libelle).toBe('Vues de l’accueil');
+    expect(etapes.at(-1)?.libelle).toBe('Paiements encaissés');
+  });
+
+  it('calcule un taux, et n’en invente pas sur zéro', () => {
+    expect(taux(20, 400)?.replace(/\u00a0/g, ' ')).toBe('5 %');
+    expect(taux(1, 3)?.replace(/\u00a0/g, ' ')).toBe('33,3 %');
+    expect(taux(3, 0)).toBeNull();
   });
 });

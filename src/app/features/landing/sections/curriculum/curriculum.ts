@@ -3,15 +3,22 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  computed,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
+import { compte, dureeCourte } from '../../../../core/commerce/vitrine.textes';
+import { VitrineService } from '../../../../core/commerce/vitrine.service';
 import { MediaService } from '../../../../core/media/media.service';
 import { Reveal } from '../../../../shared/reveal';
 import { Icone } from '../../../../shared/ui/icone';
 
-/** ✏️ Les matières du programme, dans l'ordre d'affichage. */
+/**
+ * Les matières du programme, dans l'ordre d'affichage. Repli seulement : les
+ * modules publiés, avec leurs objectifs, viennent de la vitrine ; cette liste
+ * ne s'affiche que si elle n'a pas pu être lue.
+ */
 const TOPICS = [
   'Développement personnel',
   'Éducation financière',
@@ -33,8 +40,19 @@ const TOPICS = [
 export class Curriculum {
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly vitrine = inject(VitrineService);
+
   protected readonly media = inject(MediaService);
   protected readonly topics = TOPICS;
+  protected readonly compte = compte;
+  protected readonly dureeCourte = dureeCourte;
+
+  /**
+   * Les modules publiés, chacun dépliable sur son accroche et ses objectifs —
+   * ce qu'on y apprend, dit par la formation elle-même, et non une liste de
+   * huit intitulés à prendre sur parole.
+   */
+  protected readonly modules = computed(() => this.vitrine.vitrine()?.programme ?? []);
 
   /** Certificat affiché en grand (lightbox) ou non. */
   protected readonly certOpen = signal(false);

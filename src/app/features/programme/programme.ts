@@ -4,80 +4,112 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  computed,
+  effect,
   inject,
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ModuleVitrine } from '../../core/commerce/vitrine.model';
+import { compte, dureeAnnoncee, dureeCourte } from '../../core/commerce/vitrine.textes';
+import { VitrineService } from '../../core/commerce/vitrine.service';
+import { MesureClic } from '../../shared/mesure-clic';
 import { Particles } from '../../shared/particles';
 import { Reveal } from '../../shared/reveal';
 import { BarreAchat } from '../../shared/ui/barre-achat';
+import { Faq } from '../landing/sections/faq/faq';
+import { Offre } from '../landing/sections/offre/offre';
 
-/** Un facteur du programme : numéro, titre, description et phrase mise en avant. */
-interface Factor {
-  id: number;
-  title: string;
-  desc: string;
-  highlight: string;
-  icon: string;
-}
-
-/** ✏️ Contenu des 5 facteurs — seul endroit à éditer pour le texte. */
-const FACTORS: Factor[] = [
-  {
-    id: 1,
-    title: 'Éducation financière',
-    desc: 'Budgétisation, inflation, déflation, planche à billets, banque centrale, taux directeur, histoire monétaire, DeFi, cryptomonnaie, marchés et NFT.',
-    highlight: "Venez apprendre l'argent comme personne ne vous l'a jamais appris.",
-    icon: 'book',
-  },
-  {
-    id: 2,
-    title: 'Fiscalité',
-    desc: "Création de société, déclaration d'impôts, optimisation et automatisation fiscale. On vous apprend à gérer votre paperasse sans vous prendre la tête —",
-    highlight: "gagner de l'argent c'est bien, le garder c'est mieux.",
-    icon: 'receipt',
-  },
-  {
-    id: 3,
-    title: 'Investissement',
-    desc: 'Retraite, assurance, matières premières, cryptomonnaie, trading, marché des actions et dividendes. On vous apprend à sécuriser votre futur,',
-    highlight: "jusqu'à prendre une longueur d'avance sur lui.",
-    icon: 'trend',
-  },
-  {
-    id: 4,
-    title: 'Développement personnel',
-    desc: "Gagner de l'argent ne sert à rien sans le mental pour le gérer. Ici, on parle de vrai développement personnel qui",
-    highlight: 'change une vie — pas de simple motivation.',
-    icon: 'target',
-  },
-  {
-    id: 5,
-    title: 'Communauté',
-    desc: "On ne s'arrête pas là : au-delà d'une formation riche en contenu, vous bénéficiez d'un support 7j/7 et d'un groupe de passionnés à votre image, parce qu'",
-    highlight: 'un changement de vie se fait en groupe.',
-    icon: 'users',
-  },
+/**
+ * Intitulés des modules, pour le seul cas où la vitrine n'a pas pu être lue :
+ * la page montre alors la structure du programme, sans objectifs ni chiffres.
+ */
+const MODULES_DE_REPLI = [
+  'Développement personnel',
+  'Éducation financière',
+  'Fiscalité',
+  'Les marchés',
+  'Trading',
+  'Analyse fondamentale',
+  'Investissement',
+  'Optimisation',
 ];
 
+/**
+ * La page Programme : les modules de la formation, tels qu'ils sont publiés.
+ *
+ * Elle s'appelait « Les 5 facteurs qui changeront votre vie » et présentait
+ * cinq piliers qui ne correspondaient pas aux huit modules réels — le module
+ * Trading, le plus long, n'y figurait pas —, promettait « la liberté
+ * financière » et un « support 7j/7 » que rien n'établissait. Diagnostic
+ * commercial du 14/10/2026 : elle décrit désormais le programme lui-même, lu
+ * en base, avec ce que chaque module annonce lui-même de ses objectifs.
+ *
+ * La frise animée et sa mise en page sont conservées.
+ */
 @Component({
-  selector: 'app-factors',
-  templateUrl: './factors.html',
-  styleUrl: './factors.css',
-  imports: [RouterLink, Particles, Reveal, BarreAchat],
+  selector: 'app-programme',
+  templateUrl: './programme.html',
+  styleUrl: './programme.css',
+  imports: [RouterLink, Particles, Reveal, BarreAchat, Offre, Faq, MesureClic],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Factors {
+export class Programme {
   private readonly timeline = viewChild.required<ElementRef<HTMLElement>>('timeline');
   private readonly railPath = viewChild.required<ElementRef<SVGPathElement>>('railPath');
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly factors = FACTORS;
+  protected readonly vitrine = inject(VitrineService);
+  protected readonly compte = compte;
+  protected readonly duree = dureeAnnoncee;
+  protected readonly dureeCourte = dureeCourte;
+
+  /** Les modules publiés ; à défaut, leurs seuls intitulés. */
+  protected readonly modules = computed<ModuleVitrine[]>(() => {
+    const programme = this.vitrine.vitrine()?.programme ?? [];
+    if (programme.length > 0) {
+      return programme;
+    }
+    return MODULES_DE_REPLI.map((titre, i) => ({
+      position: i + 1,
+      titre,
+      accroche: null,
+      objectifs: [],
+      lecons_video: 0,
+      secondes_video: 0,
+      quiz: 0,
+      lecons_offertes: 0,
+    }));
+  });
+
+  /** Les chiffres d'un module, ou null s'ils sont inconnus (repli). */
+  protected chiffres(module: ModuleVitrine): string | null {
+    if (module.lecons_video === 0 && module.quiz === 0) {
+      return null;
+    }
+    const morceaux = [compte(module.lecons_video, 'leçon vidéo', 'leçons vidéo')];
+    if (module.secondes_video > 0) {
+      morceaux.push(dureeCourte(module.secondes_video));
+    }
+    if (module.quiz > 0) {
+      morceaux.push(compte(module.quiz, 'quiz', 'quiz'));
+    }
+    return morceaux.join(' · ');
+  }
+
+  /** Recalcule le tracé de la frise ; posé une fois la frise prête. */
+  private redessinerRail?: () => void;
 
   constructor() {
     afterNextRender(() => this.initRail());
+    // Une vitrine arrivée après l'affichage (réseau lent) change le nombre
+    // de modules : la frise doit relier les nouvelles sphères.
+    effect(() => {
+      this.modules();
+      setTimeout(() => this.redessinerRail?.());
+    });
   }
 
   /**
@@ -104,7 +136,7 @@ export class Factors {
     };
 
     const build = (): number => {
-      const nodes = Array.from(timeline.querySelectorAll<HTMLElement>('.factor-node'));
+      const nodes = Array.from(timeline.querySelectorAll<HTMLElement>('.module-node'));
       const points = nodes.map((node) => centerWithin(node));
       if (points.length < 2) {
         return 0;
@@ -141,7 +173,11 @@ export class Factors {
       window.addEventListener('resize', onResize);
       // La police Anton modifie la taille des numéros : on recalcule une fois chargée.
       void document.fonts.ready.then(onResize);
-      this.destroyRef.onDestroy(() => window.removeEventListener('resize', onResize));
+      this.redessinerRail = onResize;
+      this.destroyRef.onDestroy(() => {
+        window.removeEventListener('resize', onResize);
+        this.redessinerRail = undefined;
+      });
       return;
     }
 
@@ -163,7 +199,11 @@ export class Factors {
 
     // Recalcule le tracé une fois la police Anton chargée (métriques finales).
     void document.fonts.ready.then(() => ScrollTrigger.refresh());
+    this.redessinerRail = () => ScrollTrigger.refresh();
 
-    this.destroyRef.onDestroy(() => trigger.kill());
+    this.destroyRef.onDestroy(() => {
+      trigger.kill();
+      this.redessinerRail = undefined;
+    });
   }
 }

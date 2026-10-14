@@ -5,6 +5,7 @@ import {
   CertificatEmis,
   DecompteApprenants,
   EleveConnecte,
+  EntonnoirConversion,
   FicheApprenant,
   InscriptionRecente,
   LeconSuivie,
@@ -235,6 +236,19 @@ export class PilotageService {
         .order('date_inscription', { ascending: false })
         .limit(limite),
       [],
+    );
+  }
+
+  /**
+   * L'entonnoir de conversion des `jours` derniers jours, sur la production.
+   * Réservé aux administrateurs (la RPC refuse les autres) ; null si la
+   * lecture échoue, et l'incident est signalé.
+   */
+  async entonnoirConversion(jours = 30): Promise<EntonnoirConversion | null> {
+    return this.acces.lire<EntonnoirConversion | null>(
+      'lecture de l’entonnoir de conversion',
+      this.acces.appel('entonnoir_conversion', { p_jours: jours, p_site: 'prod' }),
+      null,
     );
   }
 }

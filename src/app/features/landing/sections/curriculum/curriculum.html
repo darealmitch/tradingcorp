@@ -46,15 +46,62 @@
         </p>
       </div>
 
-      <!-- Matières du programme -->
-      <ol class="curriculum-topics">
-        @for (topic of topics; track topic; let i = $index) {
-          <li class="topic" appReveal [revealDelay]="i * 60">
-            <span class="topic-index" aria-hidden="true">{{ i < 9 ? '0' + (i + 1) : i + 1 }}</span>
-            <span class="topic-name">{{ topic }}</span>
-          </li>
-        }
-      </ol>
+      <!-- Modules du programme : dépliables sur ce qu'on y apprend, tel que la
+           formation le décrit. Sans vitrine, la simple liste des matières. -->
+      @if (modules().length > 0) {
+        <ol class="curriculum-topics est-detaille">
+          @for (module of modules(); track module.position; let i = $index) {
+            <li class="topic" appReveal [revealDelay]="i * 60">
+              <details class="topic-details">
+                <summary class="topic-tete">
+                  <span class="topic-index" aria-hidden="true">{{
+                    i < 9 ? '0' + (i + 1) : i + 1
+                  }}</span>
+                  <span class="topic-name">{{ module.titre }}</span>
+                </summary>
+                <div class="topic-corps">
+                  @if (module.accroche) {
+                    <p class="topic-accroche">{{ module.accroche }}</p>
+                  }
+                  @if (module.objectifs.length > 0) {
+                    <ul class="topic-objectifs">
+                      @for (objectif of module.objectifs; track objectif) {
+                        <li>{{ objectif }}</li>
+                      }
+                    </ul>
+                  }
+                  <p class="topic-chiffres">
+                    {{ compte(module.lecons_video, 'leçon vidéo', 'leçons vidéo') }}
+                    @if (module.secondes_video > 0) {
+                      · {{ dureeCourte(module.secondes_video) }}
+                    }
+                    @if (module.quiz > 0) {
+                      · {{ compte(module.quiz, 'quiz', 'quiz') }}
+                    }
+                    @if (module.lecons_offertes > 0) {
+                      ·
+                      <strong>{{
+                        compte(module.lecons_offertes, 'leçon offerte', 'leçons offertes')
+                      }}</strong>
+                    }
+                  </p>
+                </div>
+              </details>
+            </li>
+          }
+        </ol>
+      } @else {
+        <ol class="curriculum-topics">
+          @for (topic of topics; track topic; let i = $index) {
+            <li class="topic" appReveal [revealDelay]="i * 60">
+              <span class="topic-index" aria-hidden="true">{{
+                i < 9 ? '0' + (i + 1) : i + 1
+              }}</span>
+              <span class="topic-name">{{ topic }}</span>
+            </li>
+          }
+        </ol>
+      }
     </div>
   </div>
 </section>

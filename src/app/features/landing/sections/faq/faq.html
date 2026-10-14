@@ -1,0 +1,138 @@
+<section class="section faq" id="questions">
+  <div class="container faq-conteneur">
+    <div class="section-head centered" appReveal>
+      <span class="eyebrow">Questions fréquentes</span>
+      <h2>Avant de <span class="text-gradient">te lancer</span></h2>
+      <p>L'essentiel à savoir avant de t'inscrire ou d'acheter.</p>
+    </div>
+
+    <div class="faq-liste" appReveal>
+      <!-- Source : l'ordre et l'intitulé des modules, en base ; la majorité,
+           contrôlée à l'inscription (CGU). -->
+      <details class="faq-question">
+        <summary>Je débute. La formation est-elle faite pour moi&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>{{ parcours() }} Il faut seulement être majeur pour t'inscrire.</p>
+        </div>
+      </details>
+
+      <!-- Source : le volume du programme, en base ; l'accès sans limite de
+           durée, CGV article 7. -->
+      <details class="faq-question">
+        <summary>Combien de temps faut-il pour suivre la formation&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>
+            @if (volume(); as v) {
+              La formation compte {{ v }}.
+            }
+            Tu avances à ton rythme&nbsp;: l'accès n'a pas de limite de durée.
+          </p>
+        </div>
+      </details>
+
+      <!-- Source : déblocage des leçons dans l'ordre ; commentaires relus avant
+           publication et réponses de l'équipe, CGU article 6. -->
+      <details class="faq-question">
+        <summary>Comment se déroule la formation&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>
+            Entièrement en ligne, sur ordinateur, tablette ou téléphone. Les leçons se suivent dans
+            l'ordre&nbsp;: chacune terminée ouvre la suivante, et des quiz vérifient tes acquis.
+            Sous chaque leçon, tu peux poser tes questions à l'équipe et échanger avec les autres
+            élèves&nbsp;; chaque message est relu avant sa publication.
+          </p>
+        </div>
+      </details>
+
+      <!-- Source : les leçons offertes, choisies par l'administrateur, en base. -->
+      @if (leconsOffertes(); as lecons) {
+        <details class="faq-question">
+          <summary>Puis-je essayer avant d'acheter&nbsp;?</summary>
+          <div class="faq-reponse">
+            <p>
+              Oui. {{ lecons }}
+              {{ vitrine.nombreOffertes() > 1 ? 'sont offertes' : 'est offerte' }}&nbsp;: crée ton
+              compte, sans carte bancaire, pour les suivre tout de suite.
+            </p>
+          </div>
+        </details>
+      }
+
+      <!-- Source : le prix, en base ; la TVA, CGV article 4 ; Stripe, article 6. -->
+      <details class="faq-question">
+        <summary>Combien coûte la formation, et comment la payer&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>
+            @if (vitrine.prix(); as prix) {
+              {{ prix }} TTC, sans abonnement (TVA non applicable, article 293&nbsp;B du CGI).
+            }
+            Le paiement se fait sur la page sécurisée de Stripe, qui affiche les moyens de paiement
+            disponibles&nbsp;; TradingCorp n'a jamais accès à tes données bancaires.
+          </p>
+        </div>
+      </details>
+
+      <!-- Source : CGV article 8 et politique de remboursement. -->
+      <details class="faq-question">
+        <summary>Et si la formation ne me convient pas&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>
+            Tu disposes de 14 jours après l'achat pour te rétracter, sans avoir à te justifier, et
+            être remboursé intégralement, même si tu as déjà commencé la formation. Il suffit de
+            l'écrire à
+            <a href="mailto:mailtradingcorp&#64;gmail.com">mailtradingcorp&#64;gmail.com</a>. Tout
+            est détaillé dans la <a routerLink="/remboursement">politique de remboursement</a>.
+          </p>
+        </div>
+      </details>
+
+      <!-- Source : CGV article 7. -->
+      <details class="faq-question">
+        <summary>Combien de temps l'accès reste-t-il ouvert&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>
+            Sans limite de durée, tant que TradingCorp maintient la plateforme (article 7 des
+            <a routerLink="/cgv">conditions générales de vente</a>).
+          </p>
+        </div>
+      </details>
+
+      <!-- Source : CGV article 12. -->
+      <details class="faq-question">
+        <summary>Le certificat est-il un diplôme&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>
+            Non. C'est un certificat d'achèvement, délivré quand tu as suivi tout le parcours et
+            vérifiable en ligne grâce à son numéro. Ce n'est ni un diplôme d'État ni une
+            certification professionnelle reconnue.
+          </p>
+        </div>
+      </details>
+
+      <!-- Source : CGV article 13 et mentions légales, section 7. -->
+      <details class="faq-question">
+        <summary>La formation va-t-elle me faire gagner de l'argent&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>
+            Personne ne peut te le promettre, et nous ne le faisons pas. La formation est
+            pédagogique&nbsp;: elle ne constitue pas un conseil en investissement. Le trading
+            comporte un risque de perte en capital, pouvant aller jusqu'à la totalité des sommes
+            engagées.
+          </p>
+        </div>
+      </details>
+
+      <!-- Source : mentions légales. -->
+      <details class="faq-question">
+        <summary>Qui est derrière TradingCorp&nbsp;?</summary>
+        <div class="faq-reponse">
+          <p>
+            Keryan André, formateur et fondateur de TradingCorp, qui exerce en entrepreneur
+            individuel. Ses coordonnées complètes figurent dans les
+            <a routerLink="/mentions-legales">mentions légales</a>.
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>

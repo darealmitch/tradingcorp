@@ -1,17 +1,27 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BarreAchat } from './barre-achat';
-import { CommerceService } from '../../core/commerce/commerce.service';
-import { Formation } from '../../core/commerce/formation.model';
+import { Vitrine } from '../../core/commerce/vitrine.model';
 import { VerrouDefilement } from '../../core/defilement/verrou-defilement';
+import { AccesDonnees } from '../../core/supabase/acces-donnees';
 
-const FORMATION: Formation = {
+const FORMATION: Vitrine = {
   id_formation: 'f-1',
   titre: 'Formation Trader Pro',
-  slug: 'trader-pro',
-  description: null,
   prix_centimes: 99_700,
   devise: 'eur',
+  delivre_certificat: true,
+  modules: 8,
+  lecons_video: 64,
+  secondes_video: 145_044,
+  quiz: 30,
+  ressources: 15,
+  lecons_offertes: [
+    { titre: '1.1 Le processus', module: 'Développement personnel', duree_s: 1742 },
+    { titre: '1.2 Confiance en soi', module: 'Développement personnel', duree_s: 1164 },
+    { titre: '1.3 Tes rêves', module: 'Développement personnel', duree_s: 767 },
+  ],
+  programme: [],
 };
 
 /**
@@ -42,12 +52,24 @@ describe('BarreAchat', () => {
     return barre()?.classList.contains('est-visible') ?? false;
   }
 
-  async function monter(formations: Formation[]): Promise<void> {
+  /**
+   * La vitrine passe par le vrai `VitrineService` : seule la lecture en base
+   * est simulée. C'est bien le prix de la base qui doit s'afficher, mis en
+   * forme par le service — pas une valeur posée par le test.
+   */
+  async function monter(vitrines: Vitrine[]): Promise<void> {
     await TestBed.configureTestingModule({
       imports: [BarreAchat],
       providers: [
         provideRouter([]),
-        { provide: CommerceService, useValue: { chargerFormations: async () => formations } },
+        {
+          provide: AccesDonnees,
+          useValue: {
+            lire: async () => vitrines,
+            appel: () => ({}),
+            mesurer: () => Promise.resolve(),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -137,11 +159,31 @@ describe('BarreAchat', () => {
     const texte = barre()?.textContent?.replace(/\s/g, ' ') ?? '';
     expect(texte).toContain('997');
     expect(texte).toContain('€');
-    expect(texte).toContain('Accès à vie');
+  });
+
+  it('annonce les leçons offertes et l’accès sans limite de durée, jamais « à vie »', async () => {
+    await monter([FORMATION]);
+    defilerA(HAUTEUR_FENETRE + 100);
+
+    // L'article 7 des CGV promet un accès sans limitation de durée, sous
+    // réserve du maintien de la plateforme : « à vie » en disait plus.
+    const texte = barre()?.textContent?.replace(/\s+/g, ' ') ?? '';
+    expect(texte).toContain('3 leçons offertes');
+    expect(texte).toContain('accès sans limite de durée');
+    expect(texte).not.toContain('à vie');
+  });
+
+  it('sans leçon offerte, rappelle seulement l’accès sans limite de durée', async () => {
+    await monter([{ ...FORMATION, lecons_offertes: [] }]);
+    defilerA(HAUTEUR_FENETRE + 100);
+
+    const texte = barre()?.textContent?.replace(/\s+/g, ' ') ?? '';
+    expect(texte).not.toContain('offerte');
+    expect(texte).toContain('Accès sans limite de durée');
   });
 
   it('garde son bouton quand le prix n’a pas pu être lu', async () => {
-    // `chargerFormations` renvoie un tableau vide en cas d'échec de lecture :
+    // La lecture de la vitrine renvoie un tableau vide en cas d'échec :
     // la barre perd son prix, jamais son appel à l'action.
     await monter([]);
     defilerA(HAUTEUR_FENETRE + 100);

@@ -7,8 +7,9 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CommerceService } from '../../core/commerce/commerce.service';
+import { VitrineService } from '../../core/commerce/vitrine.service';
 import { VerrouDefilement } from '../../core/defilement/verrou-defilement';
+import { MesureClic } from '../mesure-clic';
 
 /**
  * La barre paraît quand un écran entier a été laissé derrière soi, et non à une
@@ -30,34 +31,51 @@ const FRACTION_DISPARITION = 0.6;
 
 /**
  * Rappel d'achat posé en bas d'écran sur les pages de vente — l'accueil et
- * `/facteurs`.
+ * `/programme`.
  *
  * Mesurée sur un iPhone, la page d'accueil fait 16 834 px — près de vingt et un
  * écrans — et ses seuls appels à l'action se trouvent à 3 % et à 97 % du
  * défilement. Entre les deux, plus de quinze mille pixels sans aucun moyen
  * d'acheter : une visiteuse convaincue à mi-parcours n'a rien à cliquer. Le mal
  * est moindre sur grand écran, où l'en-tête reste visible, mais l'en-tête ne
- * dit pas le prix — et le prix n'est écrit nulle part ailleurs.
+ * dit pas le prix. La section « L'offre » le détaille, en fin de page ; la
+ * barre le garde sous les yeux tout au long du défilement.
  *
- * Ce prix vient de la base, pas du code : la policy `formations_select_public`
- * l'ouvre aux visiteurs anonymes. Un tarif recopié en dur finirait par diverger
- * de celui que Stripe facture, et c'est la page de vente qui aurait tort.
+ * Ce prix vient de la base, pas du code (`vitrine_formation`). Un tarif
+ * recopié en dur finirait par diverger de celui que Stripe facture, et c'est
+ * la page de vente qui aurait tort.
+ *
+ * « Accès à vie » est devenu « accès sans limite de durée » : c'est ce que
+ * promet l'article 7 des CGV, qui le subordonne au maintien de la plateforme.
+ * Une page de vente qui en dit plus que le contrat est une promesse de trop.
  */
 @Component({
   selector: 'app-barre-achat',
-  imports: [RouterLink],
+  imports: [RouterLink, MesureClic],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <aside class="barre-achat" [class.est-visible]="visible()" aria-label="Accès à la formation">
       <div class="barre-achat-contenu">
         <p class="barre-achat-offre">
-          @if (prix(); as montant) {
+          @if (vitrine.prix(); as montant) {
             <span class="barre-achat-prix">{{ montant }}</span>
           }
-          <span class="barre-achat-mention">Accès à vie</span>
+          @if (vitrine.nombreOffertes(); as offertes) {
+            <span class="barre-achat-mention"
+              >{{ offertes }} {{ offertes > 1 ? 'leçons offertes' : 'leçon offerte'
+              }}<span class="barre-achat-suite"> · accès sans limite de durée</span></span
+            >
+          } @else {
+            <span class="barre-achat-mention">Accès sans limite de durée</span>
+          }
         </p>
 
-        <a class="btn btn-primary barre-achat-action" routerLink="/inscription">Commencer</a>
+        <a
+          class="btn btn-primary barre-achat-action"
+          routerLink="/inscription"
+          appMesureClic="barre"
+          >Commencer</a
+        >
       </div>
     </aside>
   `,
@@ -132,6 +150,14 @@ const FRACTION_DISPARITION = 0.6;
       color: var(--muted);
     }
 
+    /* Sur téléphone, la mention tient sur une ligne : la barre garde sa
+       hauteur, celle que le corps de page lui réserve. */
+    @media (max-width: 560px) {
+      .barre-achat-suite {
+        display: none;
+      }
+    }
+
     /* 48 px : au-delà du minimum de 44 px recommandé pour une cible tactile, ce
        bouton étant la seule action de la barre. */
     .barre-achat-action {
@@ -150,11 +176,10 @@ const FRACTION_DISPARITION = 0.6;
   `,
 })
 export class BarreAchat {
-  private readonly commerce = inject(CommerceService);
   private readonly verrou = inject(VerrouDefilement);
 
+  protected readonly vitrine = inject(VitrineService);
   protected readonly visible = signal(false);
-  protected readonly prix = signal<string | null>(null);
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -194,26 +219,9 @@ export class BarreAchat {
         document.body.classList.remove('a-barre-achat');
       });
 
-      void this.chargerPrix();
-    });
-  }
-
-  private async chargerPrix(): Promise<void> {
-    const [formation] = await this.commerce.chargerFormations();
-    if (!formation) {
       // Lecture en échec ou catalogue vide : la barre garde tout son sens sans
       // le prix. Le bouton est le seul élément dont on ne peut pas se passer.
-      return;
-    }
-
-    const euros = formation.prix_centimes / 100;
-    this.prix.set(
-      new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: formation.devise.toUpperCase(),
-        // Arrondir un prix à centimes l'afficherait plus bas qu'il n'est.
-        maximumFractionDigits: Number.isInteger(euros) ? 0 : 2,
-      }).format(euros),
-    );
+      void this.vitrine.charger();
+    });
   }
 }

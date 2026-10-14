@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommerceService } from '../../../core/commerce/commerce.service';
 import { Formation } from '../../../core/commerce/formation.model';
+import { lignesInclus } from '../../../core/commerce/vitrine.textes';
+import { VitrineService } from '../../../core/commerce/vitrine.service';
 import { Certificat, ModuleParcours } from '../../../core/contenu/apprentissage.model';
 import { ContenuService } from '../../../core/contenu/contenu.service';
 import { Icone } from '../../../shared/ui/icone';
@@ -19,6 +21,7 @@ export class MesFormations {
   private readonly commerce = inject(CommerceService);
   private readonly contenu = inject(ContenuService);
   private readonly router = inject(Router);
+  private readonly vitrine = inject(VitrineService);
 
   protected readonly chargement = signal(true);
   protected readonly formations = signal<Formation[]>([]);
@@ -32,6 +35,21 @@ export class MesFormations {
   /** Certificats obtenus — l'aboutissement du parcours, mis en tête de page. */
   protected readonly certificats = signal<Certificat[]>([]);
 
+  /**
+   * Ce que l'achat comprend, au moment de décider : la même liste que la page
+   * de vente, lue en base. L'écran n'affichait jusqu'ici que le titre, la
+   * description de la formation et le bouton — 997 € sans un mot du contenu.
+   */
+  protected readonly inclus = computed(() => {
+    const v = this.vitrine.vitrine();
+    return v ? lignesInclus(v) : [];
+  });
+
+  /** La formation en vitrine est-elle celle de cette carte ? Ses chiffres ne valent que pour elle. */
+  protected decrite(formation: Formation): boolean {
+    return this.vitrine.vitrine()?.id_formation === formation.id_formation;
+  }
+
   constructor() {
     void this.charger();
   }
@@ -42,6 +60,7 @@ export class MesFormations {
       this.commerce.chargerInscriptions(),
       this.contenu.chargerParcours(),
       this.contenu.mesCertificats(),
+      this.vitrine.charger(),
     ]);
     this.formations.set(formations);
     this.inscrites.set(new Set(inscriptions.map((i) => i.id_formation)));
@@ -55,7 +74,7 @@ export class MesFormations {
   protected readonly erreurCertificat = signal<string | null>(null);
 
   /**
-   * Ouvre le diplôme PDF du titulaire dans un nouvel onglet.
+   * Ouvre le certificat PDF du titulaire dans un nouvel onglet.
    *
    * L'ouverture se fait sur une URL signée que le serveur vient de produire ;
    * elle expire, donc on ne la mémorise pas — chaque consultation en redemande

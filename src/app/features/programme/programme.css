@@ -1,14 +1,14 @@
-/* ===== Page « Les 5 facteurs » ===== */
+/* ===== Page « Programme » ===== */
 
 /* En-tête de page */
-.factors-hero {
+.programme-hero {
   position: relative;
   padding-block: 160px 40px;
   text-align: center;
   overflow: hidden;
 }
 
-.factors-hero::before {
+.programme-hero::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -18,23 +18,48 @@
     radial-gradient(ellipse 55% 60% at 78% 15%, rgba(225, 77, 255, 0.1), transparent 70%);
 }
 
-.factors-hero .eyebrow {
+.programme-hero .eyebrow {
   margin-bottom: 20px;
 }
 
-.factors-title {
+.programme-titre {
   font-size: clamp(2.4rem, 6vw, 4.6rem);
   line-height: 1.02;
 }
 
-.factors-lead {
+.programme-lead {
   max-width: 620px;
-  margin: 26px auto 40px;
+  margin: 26px auto 28px;
   color: var(--muted);
   font-size: clamp(1.05rem, 1.6vw, 1.2rem);
 }
 
-.factors-hero-actions {
+/* Les chiffres du programme, lus en base — même famille que l'accueil. */
+.programme-faits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto 40px;
+  padding: 0;
+  list-style: none;
+}
+
+.programme-faits li {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.programme-faits strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.programme-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -56,7 +81,13 @@
   overflow: visible;
 }
 
-.factor-row {
+.module-liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.module-ligne {
   position: relative;
   display: grid;
   grid-template-columns: 128px 1fr;
@@ -66,7 +97,7 @@
 }
 
 /* Sphère numérotée à anneau dégradé */
-.factor-node {
+.module-node {
   position: relative;
   z-index: 1;
   justify-self: center;
@@ -90,23 +121,23 @@
     box-shadow 0.4s;
 }
 
-.factor-row:hover .factor-node {
+.module-ligne:hover .module-node {
   transform: scale(1.06);
   box-shadow:
     0 12px 40px rgba(5, 6, 11, 0.7),
     0 0 46px rgba(124, 108, 255, 0.35);
 }
 
-.factor-num {
+.module-num {
   font-family: var(--font-title);
   font-size: 3.2rem;
   line-height: 1;
 }
 
 /* Carte de contenu */
-.factor-card {
+.module-carte {
   position: relative;
-  padding: 34px 34px 36px;
+  padding: 34px 34px 32px;
   border: 1px solid var(--line);
   border-radius: 20px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--text) 3%, transparent), transparent);
@@ -116,7 +147,7 @@
     box-shadow 0.4s;
 }
 
-.factor-card::before {
+.module-carte::before {
   content: '';
   position: absolute;
   left: -40px;
@@ -126,30 +157,13 @@
   background: linear-gradient(90deg, transparent, rgba(124, 108, 255, 0.5));
 }
 
-.factor-row:hover .factor-card {
+.module-ligne:hover .module-carte {
   transform: translateY(-4px);
   border-color: rgba(124, 108, 255, 0.45);
   box-shadow: 0 22px 60px rgba(5, 6, 11, 0.6);
 }
 
-.factor-icon {
-  display: grid;
-  place-items: center;
-  width: 50px;
-  height: 50px;
-  margin-bottom: 20px;
-  border-radius: 14px;
-  border: 1px solid rgba(124, 108, 255, 0.35);
-  background: rgba(124, 108, 255, 0.12);
-  color: var(--accent);
-}
-
-.factor-icon svg {
-  width: 26px;
-  height: 26px;
-}
-
-.factor-index {
+.module-index {
   display: block;
   margin-bottom: 8px;
   font-family: var(--font-display);
@@ -160,29 +174,49 @@
   color: var(--muted);
 }
 
-.factor-name {
+.module-nom {
   margin-bottom: 14px;
   font-size: clamp(1.5rem, 3vw, 2.1rem);
 }
 
-.factor-desc {
-  color: var(--muted);
+/* L'accroche du module, mise en avant comme l'était la phrase de chaque facteur. */
+.module-accroche {
+  margin-bottom: 16px;
   font-size: 1.02rem;
-  line-height: 1.7;
-}
-
-.factor-hl {
   font-weight: 600;
   font-style: italic;
-  background: var(--gradient);
+  line-height: 1.6;
+  background: var(--gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
+.module-objectifs {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 18px;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.module-chiffres {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.module-chiffres strong {
+  color: var(--up-text);
+  font-weight: 600;
+}
+
 /* ===== CTA final ===== */
 
-.factors-cta .cta-panel {
+.programme-cta .cta-panel {
   position: relative;
   overflow: hidden;
   padding: 80px 40px;
@@ -195,12 +229,12 @@
     var(--surface);
 }
 
-.factors-cta h2 {
+.programme-cta h2 {
   margin-bottom: 16px;
   font-size: clamp(1.9rem, 4.4vw, 3rem);
 }
 
-.factors-cta p {
+.programme-cta p {
   max-width: 460px;
   margin: 0 auto 34px;
   color: var(--muted);
@@ -217,7 +251,7 @@
 /* ===== Responsive ===== */
 
 @media (max-width: 760px) {
-  .factors-hero {
+  .programme-hero {
     padding-top: 130px;
   }
 
@@ -226,28 +260,32 @@
     display: none;
   }
 
-  .factor-row {
+  .module-ligne {
     grid-template-columns: 1fr;
     justify-items: start;
     gap: 20px;
     padding-block: 20px;
   }
 
-  .factor-node {
+  .module-node {
     width: 76px;
     height: 76px;
     justify-self: start;
   }
 
-  .factor-num {
+  .module-num {
     font-size: 2.3rem;
   }
 
-  .factor-card {
-    padding: 26px 24px 28px;
+  .module-carte {
+    padding: 26px 24px 26px;
   }
 
-  .factor-card::before {
+  .module-carte::before {
     display: none;
+  }
+
+  .programme-cta .cta-panel {
+    padding: 56px 24px;
   }
 }

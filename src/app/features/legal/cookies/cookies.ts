@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConsentementService } from '../../../core/consentement/consentement.service';
+import { MesureService } from '../../../core/mesure/mesure.service';
 
 @Component({
   selector: 'app-cookies',
@@ -12,4 +13,7 @@ import { ConsentementService } from '../../../core/consentement/consentement.ser
 export class Cookies {
   /** Le choix se modifie depuis la page même qui l'explique. */
   protected readonly consentement = inject(ConsentementService);
+
+  /** L'opposition à la mesure d'audience, de même : sur la page qui la décrit. */
+  protected readonly mesure = inject(MesureService);
 }

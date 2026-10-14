@@ -23,7 +23,9 @@
     </button>
 
     @if (!auth.estConnecte()) {
-      <a class="btn btn-primary header-cta" routerLink="/inscription">Ouvrir un compte</a>
+      <a class="btn btn-primary header-cta" routerLink="/inscription" appMesureClic="entete"
+        >Ouvrir un compte</a
+      >
     } @else {
       <a class="btn btn-primary header-cta" routerLink="/espace">Mon espace</a>
     }
@@ -74,8 +76,17 @@
     <a routerLink="/" fragment="notice" (click)="closeMenu()">Avis</a>
     <a routerLink="/" fragment="resultats" (click)="closeMenu()">Résultats</a>
     <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
-    <a routerLink="/facteurs" (click)="closeMenu()">Programme</a>
-    <a class="btn btn-primary nav-cta" routerLink="/inscription" (click)="closeMenu()"
+    <a routerLink="/programme" (click)="closeMenu()">Programme</a>
+    <!-- Le prix et ses conditions, à un clic de n'importe quelle page. -->
+    <a routerLink="/" fragment="offre" (click)="closeMenu()">Offre</a>
+    <!-- Les élèves qui reviennent n'avaient, sur l'accueil, que le bouton du
+         premier écran pour se connecter. -->
+    <a routerLink="/connexion" (click)="closeMenu()">Se connecter</a>
+    <a
+      class="btn btn-primary nav-cta"
+      routerLink="/inscription"
+      appMesureClic="entete"
+      (click)="closeMenu()"
       >Ouvrir un compte</a
     >
   } @else {

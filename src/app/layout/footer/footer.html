@@ -7,11 +7,15 @@
 
     <nav class="footer-nav" aria-label="Plan du site">
       <span class="footer-label">Explorer</span>
-      <a routerLink="/facteurs">Programme</a>
+      <a routerLink="/programme">Programme</a>
       <a routerLink="/" fragment="formations">Formations</a>
       <a routerLink="/" fragment="resultats">Résultats</a>
+      <a routerLink="/" fragment="offre">Offre et prix</a>
+      <a routerLink="/" fragment="questions">Questions fréquentes</a>
       <a routerLink="/" fragment="formateur">Formateur</a>
-      <a routerLink="/" fragment="commencer">Ouvrir un compte</a>
+      <!-- Il visait une ancre « #commencer » disparue : le clic ramenait en
+           haut de l'accueil au lieu d'ouvrir l'inscription. -->
+      <a routerLink="/inscription">Ouvrir un compte</a>
     </nav>
 
     <!--

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   NonNullableFormBuilder,
@@ -6,8 +6,10 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, GOOGLE_OAUTH_ACTIF } from '../../../core/auth/auth.service';
+import { RETOUR_ACHAT, retourSur } from '../../../core/auth/retour';
+import { VitrineService } from '../../../core/commerce/vitrine.service';
 import { Logo } from '../../../shared/ui/logo';
 
 /** Les deux champs mot de passe doivent correspondre. */
@@ -54,8 +56,38 @@ export class Inscription {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly vitrine = inject(VitrineService);
 
   protected readonly googleActif = GOOGLE_OAUTH_ACTIF;
+
+  /**
+   * Où mener la personne une fois son compte créé. Les boutons « Acheter » des
+   * pages de vente passent `?retour=/espace/formations` : l'acheteur décidé
+   * arrive alors sur l'écran d'achat, sans détour par le tableau de bord.
+   */
+  protected readonly retour = retourSur(
+    inject(ActivatedRoute).snapshot.queryParamMap.get('retour'),
+  );
+
+  /** Lien « Se connecter » : il garde la destination, pour qui avait déjà un compte. */
+  protected readonly parametresRetour = this.retour ? { retour: this.retour } : {};
+
+  /**
+   * Ce que la page promet, selon ce qu'on vient y chercher. Le compte est
+   * gratuit dans tous les cas ; il n'ouvre des leçons que si l'administrateur
+   * en a offert, et la phrase ne l'annonce qu'à cette condition.
+   */
+  protected readonly accroche = computed(() => {
+    if (this.retour === RETOUR_ACHAT) {
+      return 'Étape 1 sur 2 : crée ton compte. Tu passeras ensuite au paiement sécurisé de ta formation.';
+    }
+    const offertes = this.vitrine.nombreOffertes();
+    if (offertes > 0) {
+      const lecons = offertes > 1 ? `${offertes} leçons offertes` : 'une leçon offerte';
+      return `Ton compte est gratuit : il t’ouvre tout de suite ${lecons}, sans carte bancaire.`;
+    }
+    return 'Rejoins TradingCorp et accède à ton espace personnel.';
+  });
 
   protected readonly chargement = signal(false);
   protected readonly erreur = signal<string | null>(null);
@@ -118,7 +150,7 @@ export class Inscription {
       this.chargement.set(false);
       return;
     }
-    await this.router.navigateByUrl('/espace');
+    await this.router.navigateByUrl(this.retour ?? '/espace');
   }
 
   protected async avecGoogle(): Promise<void> {

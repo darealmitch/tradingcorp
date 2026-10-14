@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   computed,
   effect,
   inject,
@@ -23,6 +24,7 @@ import { ContenuService } from '../../../core/contenu/contenu.service';
 import {
   ApprenantSuivi,
   CertificatEmis,
+  EntonnoirConversion,
   InscriptionRecente,
 } from '../../../core/pilotage/pilotage.model';
 import { PilotageService } from '../../../core/pilotage/pilotage.service';
@@ -33,6 +35,22 @@ import {
 import { BarreProgression } from '../../../shared/ui/barre-progression';
 import { Icone } from '../../../shared/ui/icone';
 import { StatCard } from '../../../shared/ui/stat-card';
+
+/**
+ * Retour de Stripe : l'inscription est ouverte par le webhook, qui peut
+ * arriver après la personne. On revérifie à cet intervalle, ce nombre de fois
+ * — une demi-minute en tout — avant de dire que c'est plus long que prévu.
+ */
+export const INTERVALLE_ACTIVATION_MS = 2000;
+export const VERIFICATIONS_ACTIVATION = 15;
+
+/**
+ * Où en est l'accès après un paiement :
+ *   • `attente` — le paiement est parti, l'inscription pas encore là ;
+ *   • `ouvert`  — l'inscription est active, l'écran le dit et affiche la suite ;
+ *   • `retard`  — rien après une demi-minute (paiement différé, webhook lent).
+ */
+export type ActivationAcces = 'attente' | 'ouvert' | 'retard';
 
 interface StatsApprenant {
   progression: ProgressionResume;
@@ -75,6 +93,43 @@ interface StatsAdmin {
   certificats: number;
   paiements: PaiementLigne[];
   nouveauxComptes: ProfilAdmin[];
+  /** Null si la lecture a échoué : l'écran le dit, au lieu d'afficher des zéros. */
+  entonnoir: EntonnoirConversion | null;
+}
+
+/** Une étape de l'entonnoir, telle que le tableau de bord la montre. */
+export interface EtapeEntonnoir {
+  libelle: string;
+  valeur: number;
+}
+
+/**
+ * Les étapes, dans l'ordre du parcours d'un visiteur. Les vues et les clics
+ * sont des événements, pas des personnes : un visiteur qui revient trois fois
+ * compte trois vues. Les comptes et paiements, eux, sont des personnes et des
+ * ventes réelles.
+ */
+export function etapesEntonnoir(e: EntonnoirConversion): EtapeEntonnoir[] {
+  return [
+    { libelle: 'Vues de l’accueil', valeur: e.vues_accueil },
+    { libelle: 'Vues de la page Programme', valeur: e.vues_programme },
+    { libelle: 'Clics sur « Commencer » ou « Acheter »', valeur: e.clics },
+    { libelle: 'Vues de l’inscription', valeur: e.vues_inscription },
+    { libelle: 'Comptes ouverts', valeur: e.comptes_crees },
+    { libelle: 'Vues de l’écran d’achat', valeur: e.vues_achat },
+    { libelle: 'Paiements commencés', valeur: e.debuts_paiement },
+    { libelle: 'Paiements encaissés', valeur: e.paiements },
+  ];
+}
+
+/** « 4,2 % », ou null quand le dénominateur est nul — un taux sur zéro ne dit rien. */
+export function taux(numerateur: number, denominateur: number): string | null {
+  if (denominateur <= 0) {
+    return null;
+  }
+  return `${((numerateur / denominateur) * 100).toLocaleString('fr-FR', {
+    maximumFractionDigits: 1,
+  })}\u00a0%`;
 }
 
 @Component({
@@ -100,6 +155,10 @@ export class Accueil {
 
   protected readonly chargement = signal(true);
   protected readonly retourAchat = signal<'succes' | 'annule' | null>(null);
+  protected readonly activation = signal<ActivationAcces | null>(null);
+
+  /** La page a été quittée : le suivi de l'activation s'arrête là. */
+  private detruit = false;
 
   protected readonly inscrites = signal<ReadonlySet<string>>(new Set());
   protected readonly apprenant = signal<StatsApprenant | null>(null);
@@ -124,6 +183,8 @@ export class Accueil {
   private roleCharge: Role | null = null;
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => (this.detruit = true));
+
     // Retour de Stripe Checkout : l'Edge Function redirige vers /espace?achat=…
     const retour = inject(ActivatedRoute).snapshot.queryParamMap.get('achat');
     if (retour === 'succes' || retour === 'annule') {
@@ -145,10 +206,8 @@ export class Accueil {
   private async charger(role: Role, attendreWebhook: boolean): Promise<void> {
     if (role === 'apprenant') {
       await this.chargerApprenant();
-      // Au retour de Stripe, le webhook peut mettre quelques secondes à
-      // enregistrer l'inscription : on revérifie une fois.
       if (attendreWebhook) {
-        setTimeout(() => void this.chargerApprenant(), 2500);
+        void this.suivreActivation();
       }
     } else if (role === 'formateur') {
       await this.chargerFormateur();
@@ -156,6 +215,37 @@ export class Accueil {
       await this.chargerAdmin();
     }
     this.chargement.set(false);
+  }
+
+  /**
+   * Au retour de Stripe, l'accès s'ouvre quand le webhook a enregistré
+   * l'inscription — souvent avant que la page ne s'affiche, parfois quelques
+   * secondes après, beaucoup plus tard pour un paiement différé.
+   *
+   * L'écran annonçait « Paiement confirmé » et ne revérifiait qu'une fois, au
+   * bout de 2,5 s : passé ce délai, l'élève qui venait de payer retombait sur
+   * l'encart « Débloque ta formation », sans un mot d'explication. Il suit
+   * maintenant l'ouverture, et dit ce qu'il en est à chaque étape.
+   */
+  private async suivreActivation(): Promise<void> {
+    if (this.possedeFormation()) {
+      this.activation.set('ouvert');
+      return;
+    }
+    this.activation.set('attente');
+    for (let i = 0; i < VERIFICATIONS_ACTIVATION; i++) {
+      await new Promise((resoudre) => setTimeout(resoudre, INTERVALLE_ACTIVATION_MS));
+      if (this.detruit) {
+        return;
+      }
+      const inscriptions = await this.commerce.chargerInscriptions();
+      if (inscriptions.length > 0) {
+        await this.chargerApprenant();
+        this.activation.set('ouvert');
+        return;
+      }
+    }
+    this.activation.set('retard');
   }
 
   private async chargerApprenant(): Promise<void> {
@@ -228,10 +318,11 @@ export class Accueil {
   }
 
   private async chargerAdmin(): Promise<void> {
-    const [paiements, profils, certificats] = await Promise.all([
+    const [paiements, profils, certificats, entonnoir] = await Promise.all([
       this.finance.listerPaiements(),
       this.comptes.lister(),
       this.pilotage.compterCertificats(),
+      this.pilotage.entonnoirConversion(30),
     ]);
     // Seuls les paiements réels d'apprenants comptent (ni test, ni staff).
     const reels = paiements.filter(compteDansCa);
@@ -254,8 +345,12 @@ export class Accueil {
         .filter((p) => !p.est_test)
         .sort((a, b) => b.date_creation.localeCompare(a.date_creation))
         .slice(0, 4),
+      entonnoir,
     });
   }
+
+  protected readonly etapesEntonnoir = etapesEntonnoir;
+  protected readonly taux = taux;
 
   /**
    * Mention discrète sous le nombre d'apprenants, ou rien s'il n'y a aucun

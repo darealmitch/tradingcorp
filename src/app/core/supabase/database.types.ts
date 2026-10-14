@@ -386,6 +386,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      mesures_audience: {
+        Row: {
+          cible: string;
+          evenement: string;
+          jour: string;
+          nombre: number;
+          site: string;
+        };
+        Insert: {
+          cible: string;
+          evenement: string;
+          jour: string;
+          nombre?: number;
+          site: string;
+        };
+        Update: {
+          cible?: string;
+          evenement?: string;
+          jour?: string;
+          nombre?: number;
+          site?: string;
+        };
+        Relationships: [];
+      };
       notifications: {
         Row: {
           cle_evenement: string | null;
@@ -835,6 +859,10 @@ export type Database = {
         Args: { p_id_profil: string; p_role: string };
         Returns: undefined;
       };
+      compter_evenement: {
+        Args: { p_cible: string; p_evenement: string; p_site: string };
+        Returns: undefined;
+      };
       corriger_mon_identite: {
         Args: { p_nom: string; p_prenom: string };
         Returns: undefined;
@@ -873,6 +901,10 @@ export type Database = {
           nom: string;
           prenom: string;
         }[];
+      };
+      entonnoir_conversion: {
+        Args: { p_jours?: number; p_site?: string };
+        Returns: Json;
       };
       est_apprenant: { Args: { p_id_profil: string }; Returns: boolean };
       est_auteur_du_message: { Args: { p_id_commentaire: string }; Returns: boolean };
@@ -1067,6 +1099,23 @@ export type Database = {
         }[];
       };
       video_lecon_terminee: { Args: { p_id_lecon: string }; Returns: boolean };
+      vitrine_formation: {
+        Args: never;
+        Returns: {
+          delivre_certificat: boolean;
+          devise: string;
+          id_formation: string;
+          lecons_offertes: Json;
+          lecons_video: number;
+          modules: number;
+          prix_centimes: number;
+          programme: Json;
+          quiz: number;
+          ressources: number;
+          secondes_video: number;
+          titre: string;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

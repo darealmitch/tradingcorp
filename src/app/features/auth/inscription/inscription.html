@@ -2,14 +2,19 @@
   <div class="auth-card">
     <app-logo class="auth-logo" [taille]="26" />
     <h1 class="auth-title">Créer un compte</h1>
-    <p class="auth-sub">Rejoins TradingCorp et accède à ton espace personnel.</p>
+    <p class="auth-sub">{{ accroche() }}</p>
 
     @if (confirmationRequise()) {
       <p class="form-succes" role="status">
         Compte créé ! Un e-mail de confirmation vient de t'être envoyé — clique sur le lien qu'il
         contient, puis connecte-toi.
       </p>
-      <a class="btn btn-primary auth-submit" routerLink="/connexion">Aller à la connexion</a>
+      <a
+        class="btn btn-primary auth-submit"
+        routerLink="/connexion"
+        [queryParams]="parametresRetour"
+        >Aller à la connexion</a
+      >
     } @else {
       @if (erreur(); as message) {
         <p class="form-erreur" role="alert">{{ message }}</p>
@@ -194,7 +199,10 @@
         </button>
       }
 
-      <p class="auth-alt">Déjà un compte ? <a routerLink="/connexion">Se connecter</a></p>
+      <p class="auth-alt">
+        Déjà un compte ?
+        <a routerLink="/connexion" [queryParams]="parametresRetour">Se connecter</a>
+      </p>
     }
   </div>
 </div>

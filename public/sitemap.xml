@@ -12,6 +12,11 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://tradingcorp.fr/programme</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://tradingcorp.fr/verification</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>

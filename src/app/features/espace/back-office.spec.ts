@@ -130,6 +130,7 @@ function socle(): (Provider | EnvironmentProviders)[] {
         compterCertificats: () => Promise.resolve(3),
         inscriptionsRecentes: () => Promise.resolve([]),
         suivreApprenants: () => Promise.resolve([]),
+        entonnoirConversion: () => Promise.resolve(null),
       }),
     },
     {

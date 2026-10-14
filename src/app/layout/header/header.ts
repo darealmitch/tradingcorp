@@ -7,6 +7,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { Icone } from '../../shared/ui/icone';
 import { VerrouDefilement } from '../../core/defilement/verrou-defilement';
+import { MesureClic } from '../../shared/mesure-clic';
 import { Logo } from '../../shared/ui/logo';
 
 /** Au-delà, le bouton burger disparaît : le menu en surcouche n'a plus lieu d'être. */
@@ -16,7 +17,7 @@ const LARGEUR_MENU_MOBILE = 860;
   selector: 'app-header',
   templateUrl: './header.html',
   styleUrl: './header.css',
-  imports: [RouterLink, RouterLinkActive, Logo, Icone, NgTemplateOutlet],
+  imports: [RouterLink, RouterLinkActive, Logo, Icone, NgTemplateOutlet, MesureClic],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(window:scroll)': 'onScroll()',

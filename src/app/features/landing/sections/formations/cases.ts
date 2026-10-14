@@ -39,19 +39,28 @@ const CASES: CaseItem[] = [
       'tu auras à ta disposition tous les outils dont tu as besoin pour progresser sur les marchés.',
     visuel: 'tradingcorp/landing/cases/pexels-jakubzerdzicki-26841237',
   },
+  // Les cases 2 et 3 ne décrivent que ce que la plateforme fait réellement
+  // (diagnostic commercial du 14/10/2026). Elles promettaient une communauté
+  // de « traders expérimentés » et, « aux meilleurs », de travailler avec
+  // TradingCorp : des avantages que rien ne permettait de vérifier. Les
+  // échanges sous les leçons et leurs réponses sont décrits à l'article 6 des
+  // CGU ; le déblocage pas à pas est celui du parcours (`lecon_debloquee`), et
+  // le certificat, l'article 12 des CGV.
   {
     id: 2,
     titre: 'Communauté & Partage',
     message:
-      'Avec la communauté, tes réussites comme tes pertes, ' +
-      "tes questionnements et tes certitudes évoluent au sein d'une communauté engagée, " +
-      'composée de traders expérimentés, dont moi.',
+      'Sous chaque leçon, tu poses tes questions, partages tes réussites comme tes doutes ' +
+      'et échanges avec les autres élèves. Chaque message est relu avant publication, ' +
+      "et l'équipe peut y répondre, en public ou en privé.",
     visuel: 'tradingcorp/landing/cases/vitaly-gariev-Y32qbykD69g-unsplash',
   },
   {
     id: 3,
     titre: 'Évolue & Progresse',
-    message: "Et si tu fais partie des meilleurs, tu auras l'opportunité de travailler avec nous.",
+    message:
+      'Chaque leçon terminée ouvre la suivante, les quiz vérifient tes acquis, ' +
+      'et un certificat vérifiable en ligne atteste ton parcours une fois la formation achevée.',
     visuel: 'tradingcorp/landing/cases/adeolu-eletu-E7RLgUjjazc-unsplash',
   },
 ];

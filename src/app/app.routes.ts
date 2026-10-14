@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { vitrineResolver } from './core/commerce/vitrine.resolver';
 import {
   authGuard,
   changementMdpRequisGuard,
@@ -14,14 +15,19 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./features/landing/landing').then((m) => m.Landing),
     canActivate: [inviteGuard],
+    resolve: { vitrine: vitrineResolver },
     title: 'TradingCorp — Formation au trading en ligne',
   },
   {
-    path: 'facteurs',
-    loadComponent: () => import('./features/factors/factors').then((m) => m.Factors),
+    path: 'programme',
+    loadComponent: () => import('./features/programme/programme').then((m) => m.Programme),
     canActivate: [inviteGuard],
-    title: 'TradingCorp — Les 5 facteurs qui changeront votre vie',
+    resolve: { vitrine: vitrineResolver },
+    title: 'TradingCorp — Le programme de la formation',
   },
+  // Ancienne adresse de la page Programme (« Les 5 facteurs »), encore dans
+  // des liens partagés : elle mène au programme réel de la formation.
+  { path: 'facteurs', redirectTo: 'programme' },
   {
     path: 'connexion',
     loadComponent: () => import('./features/auth/connexion/connexion').then((m) => m.Connexion),
@@ -33,6 +39,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/auth/inscription/inscription').then((m) => m.Inscription),
     canActivate: [inviteGuard],
+    resolve: { vitrine: vitrineResolver },
     title: 'TradingCorp — Créer un compte',
   },
   {

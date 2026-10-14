@@ -36,7 +36,7 @@
         @if (certificatEnCours() === certificat.id_certificat) {
           Préparation…
         } @else {
-          Télécharger mon diplôme (PDF)
+          Télécharger mon certificat (PDF)
         }
       </button>
       <!-- Le lien de vérification appartient au titulaire : c'est lui qui le
@@ -69,6 +69,13 @@
             @if (formation.description) {
               <p>{{ formation.description }}</p>
             }
+            @if (!inscrites().has(formation.id_formation) && decrite(formation)) {
+              <ul class="formation-inclus">
+                @for (ligne of inclus(); track ligne) {
+                  <li>{{ ligne }}</li>
+                }
+              </ul>
+            }
           </div>
           @if (inscrites().has(formation.id_formation)) {
             <span class="badge-statut est-succes">Accès actif</span>
@@ -96,8 +103,16 @@
       <p class="cellule-discrete mention-achat">
         En cliquant sur « Acheter », tu acceptes les
         <a routerLink="/cgv">conditions générales de vente</a> et tu es redirigé vers la page de
-        paiement sécurisée de Stripe. L'accès est ouvert dès le paiement, et tu conserves ton droit
-        de rétractation de 14 jours, même après avoir commencé la formation.
+        paiement sécurisée de Stripe&nbsp;; TradingCorp n'a jamais accès à tes données bancaires.
+        L'accès est ouvert dès le paiement, et tu conserves ton droit de rétractation de 14 jours,
+        même après avoir commencé la formation.
+      </p>
+      <!-- L'avertissement sur le risque, au point de décision : il n'existait
+           jusqu'ici que sous les témoignages de la page d'accueil. -->
+      <p class="cellule-discrete mention-achat">
+        La formation est pédagogique et ne constitue pas un conseil en investissement. Le trading
+        comporte un risque de perte en capital, pouvant aller jusqu'à la totalité des sommes
+        engagées.
       </p>
     }
   }

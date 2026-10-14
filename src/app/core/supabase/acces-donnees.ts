@@ -267,6 +267,18 @@ export class AccesDonnees {
     return { erreur: echec };
   }
 
+  /**
+   * Envoi dont l'issue ne regarde personne : la mesure d'audience.
+   *
+   * C'est la SEULE exception à la règle de ce service, et elle est voulue. Un
+   * compteur de visites n'est pas un service rendu à la personne : son échec
+   * ne doit ni s'afficher, ni écrire en console, ni remonter au collecteur
+   * d'incidents — un envoi raté par visite y noierait les vraies pannes.
+   */
+  async mesurer(requete: PromiseLike<ReponseSupabase>): Promise<void> {
+    await this.executer(requete);
+  }
+
   /** Efface les incidents — après un rechargement réussi, par exemple. */
   reinitialiser(): void {
     this.incidentsSig.set([]);

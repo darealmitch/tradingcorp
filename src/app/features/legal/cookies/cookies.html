@@ -1,7 +1,7 @@
 <article class="legal">
   <header class="legal-tete">
     <h1>Politique de cookies</h1>
-    <p class="legal-maj">Version en vigueur au 11 septembre 2026</p>
+    <p class="legal-maj">Version en vigueur au 14 octobre 2026</p>
   </header>
 
   <nav class="legal-sommaire" aria-label="Sommaire">
@@ -9,6 +9,7 @@
     <ol>
       <li><a [routerLink]="[]" fragment="definition">Qu'est-ce qu'un cookie ?</a></li>
       <li><a [routerLink]="[]" fragment="necessaires">Cookies strictement nécessaires</a></li>
+      <li><a [routerLink]="[]" fragment="mesure">Mesure d'audience sans cookie</a></li>
       <li><a [routerLink]="[]" fragment="consentement">Cookies soumis à votre consentement</a></li>
       <li><a [routerLink]="[]" fragment="tiers">Services tiers</a></li>
       <li><a [routerLink]="[]" fragment="preferences">Gestion de vos préférences</a></li>
@@ -26,8 +27,9 @@
       navigateur.
     </p>
     <p>
-      TradingCorp n'utilise aucun cookie publicitaire, aucun outil de mesure d'audience et aucun
-      traceur permettant de suivre votre navigation d'un site à l'autre.
+      TradingCorp n'utilise aucun cookie publicitaire et aucun traceur permettant de suivre votre
+      navigation d'un site à l'autre. Sa mesure d'audience ne dépose aucun cookie&nbsp;: elle est
+      décrite à la section 3.
     </p>
   </section>
 
@@ -71,6 +73,15 @@
           <td>6 mois</td>
         </tr>
         <tr>
+          <td><code>tradingcorp-mesure</code></td>
+          <td>Stockage local</td>
+          <td>TradingCorp</td>
+          <td>
+            Mémorisation de votre opposition à la mesure d'audience, uniquement si vous l'exprimez
+          </td>
+          <td>Jusqu'au retrait de l'opposition ou à l'effacement des données du navigateur</td>
+        </tr>
+        <tr>
           <td><code>__cf_bm</code></td>
           <td>Cookie</td>
           <td>Cloudflare, pour le compte de Supabase</td>
@@ -82,8 +93,56 @@
   </section>
 
   <section>
+    <span class="legal-ancre" id="mesure"></span>
+    <h2>3. Mesure d'audience sans cookie</h2>
+    <p>
+      Pour savoir quelles pages sont consultées et à quelle étape les visiteurs abandonnent leur
+      inscription ou leur achat, TradingCorp compte&nbsp;:
+    </p>
+    <ul>
+      <li>
+        les visites de la page d'accueil, de la page Programme, de la page d'inscription et de la
+        page d'achat&nbsp;;
+      </li>
+      <li>les clics sur les boutons qui mènent à l'inscription ou à l'achat&nbsp;;</li>
+      <li>les départs vers la page de paiement.</li>
+    </ul>
+    <p>
+      Chaque événement ajoute 1 à un total quotidien, et rien d'autre n'est enregistré&nbsp;: ni
+      cookie, ni identifiant, ni adresse IP, ni information sur votre appareil. Ces totaux ne
+      permettent de reconnaître personne. Ils ne servent qu'à TradingCorp et sont supprimés au bout
+      de 25 mois.
+    </p>
+    <p>
+      Aucun traceur n'étant lu ni déposé sur votre terminal, cette mesure ne requiert pas votre
+      consentement. Vous pouvez néanmoins vous y opposer&nbsp;: votre choix est alors retenu dans ce
+      navigateur (traceur <code>tradingcorp-mesure</code>, section 2). La mesure est aussi
+      désactivée d'office lorsque votre navigateur exprime un refus de suivi (Do Not Track ou Global
+      Privacy Control).
+    </p>
+    <p class="legal-choix" role="status">
+      @if (mesure.opposition()) {
+        Votre opposition est enregistrée dans ce navigateur&nbsp;: vos visites ne sont pas comptées.
+      } @else {
+        Vos visites sont actuellement comptées, de façon anonyme.
+      }
+    </p>
+    <p>
+      @if (mesure.opposition()) {
+        <button class="btn btn-ghost" type="button" (click)="mesure.accepter()">
+          Compter de nouveau mes visites
+        </button>
+      } @else {
+        <button class="btn btn-ghost" type="button" (click)="mesure.sOpposer()">
+          Ne plus compter mes visites
+        </button>
+      }
+    </p>
+  </section>
+
+  <section>
     <span class="legal-ancre" id="consentement"></span>
-    <h2>3. Cookies soumis à votre consentement</h2>
+    <h2>4. Cookies soumis à votre consentement</h2>
     <p>
       La vidéo de présentation de la page d'accueil est diffusée par le lecteur de Bunny.net
       (BunnyWay d.o.o., Slovénie). Ce lecteur n'est chargé qu'après votre accord. Il dépose alors
@@ -134,7 +193,7 @@
 
   <section>
     <span class="legal-ancre" id="tiers"></span>
-    <h2>4. Services tiers</h2>
+    <h2>5. Services tiers</h2>
     <p>
       Lorsque vous êtes redirigé vers un service tiers, celui-ci peut déposer ses propres cookies,
       sous sa seule responsabilité :
@@ -153,7 +212,7 @@
 
   <section>
     <span class="legal-ancre" id="preferences"></span>
-    <h2>5. Gestion de vos préférences</h2>
+    <h2>6. Gestion de vos préférences</h2>
     <p>
       Lors de votre première visite, un bandeau vous permet d'accepter ou de refuser les cookies
       soumis à consentement, ou de personnaliser votre choix. Refuser est aussi simple qu'accepter
@@ -183,7 +242,7 @@
 
   <section>
     <span class="legal-ancre" id="mise-a-jour"></span>
-    <h2>6. Mise à jour</h2>
+    <h2>7. Mise à jour</h2>
     <p>
       La présente politique peut être modifiée, notamment en cas d'évolution des traceurs utilisés.
       La version en vigueur est celle publiée sur cette page, à la date indiquée en en-tête.

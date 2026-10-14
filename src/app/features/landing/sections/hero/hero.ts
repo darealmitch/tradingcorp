@@ -9,8 +9,11 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { dureeAnnoncee } from '../../../../core/commerce/vitrine.textes';
+import { VitrineService } from '../../../../core/commerce/vitrine.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { nombreJeton, rgbJeton, valeurJeton } from '../../../../shared/couleurs-theme';
+import { MesureClic } from '../../../../shared/mesure-clic';
 
 interface Stream {
   rgb: string;
@@ -28,13 +31,21 @@ const STEP = 16;
   selector: 'app-hero',
   templateUrl: './hero.html',
   styleUrl: './hero.css',
-  imports: [RouterLink],
+  imports: [RouterLink, MesureClic],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Hero {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('bg');
   private readonly destroyRef = inject(DestroyRef);
   private readonly theme = inject(ThemeService);
+
+  /**
+   * Les chiffres du premier écran viennent de la base. La route attend la
+   * vitrine avant d'afficher l'accueil (`vitrineResolver`) : ni le bouton ni
+   * les chiffres ne changent sous les yeux du visiteur.
+   */
+  protected readonly vitrine = inject(VitrineService);
+  protected readonly duree = dureeAnnoncee;
 
   /** Recolore le canvas depuis les jetons CSS ; posé une fois le canvas prêt. */
   private rafraichirCouleurs?: () => void;

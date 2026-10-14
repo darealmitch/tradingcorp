@@ -6,6 +6,8 @@ import { Ticker } from './sections/ticker/ticker';
 import { Notice } from './sections/notice/notice';
 import { Trainer } from './sections/trainer/trainer';
 import { Curriculum } from './sections/curriculum/curriculum';
+import { Faq } from './sections/faq/faq';
+import { Offre } from './sections/offre/offre';
 import { Transition } from './sections/transition/transition';
 import { Particles } from '../../shared/particles';
 import { BarreAchat } from '../../shared/ui/barre-achat';
@@ -21,6 +23,8 @@ import { BarreAchat } from '../../shared/ui/barre-achat';
     Results,
     Trainer,
     Curriculum,
+    Offre,
+    Faq,
     Transition,
     Particles,
     BarreAchat,

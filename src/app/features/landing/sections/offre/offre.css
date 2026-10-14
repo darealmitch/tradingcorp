@@ -1,0 +1,185 @@
+/* ===== Section L'offre ===== */
+
+.offre {
+  position: relative;
+}
+
+/* Cible des anciens liens « #commencer » : posée au-dessus de la section pour
+   que l'en-tête fixe ne masque pas son titre à l'arrivée. */
+.offre-ancre {
+  position: absolute;
+  top: -72px;
+}
+
+.offre-grille {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* ===== Carte principale : le prix et ce qu'il comprend ===== */
+
+.offre-carte {
+  position: relative;
+  padding: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 85% 0%, rgba(124, 108, 255, 0.12), transparent 55%), var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.offre-titre {
+  font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+  margin-bottom: 18px;
+}
+
+.offre-prix {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.offre-mention {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.offre-inclus {
+  display: grid;
+  gap: 12px;
+  margin: 28px 0 32px;
+  padding: 26px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.offre-inclus li {
+  position: relative;
+  padding-left: 30px;
+  line-height: 1.5;
+}
+
+/* Coche tracée en CSS : un repère visuel, l'information reste dans le texte. */
+.offre-inclus li::before {
+  content: '';
+  position: absolute;
+  top: 0.32em;
+  left: 2px;
+  width: 14px;
+  height: 8px;
+  border-left: 2px solid var(--up-etat);
+  border-bottom: 2px solid var(--up-etat);
+  transform: rotate(-45deg);
+}
+
+.offre-action {
+  width: 100%;
+}
+
+.offre-securite {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+/* ===== Colonne : essai gratuit et rétractation ===== */
+
+.offre-colonne {
+  display: grid;
+  gap: 20px;
+}
+
+.offre-encart {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.offre-encart-titre {
+  margin-bottom: 12px;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+}
+
+.offre-encart p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.offre-lecons {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.offre-lecons li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 0.94rem;
+}
+
+.offre-lecon-duree {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.offre-lien {
+  display: inline-block;
+  margin-top: 14px;
+  color: var(--text);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.offre-lien:hover {
+  text-decoration-color: currentColor;
+}
+
+.offre-repli {
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+  max-width: 640px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* L'avertissement sur le risque, au plus près des boutons d'achat. */
+.offre-risque {
+  max-width: 760px;
+  margin: 36px auto 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .offre-grille {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .offre-carte {
+    padding: 28px 22px;
+  }
+
+  .offre-encart {
+    padding: 24px 20px;
+  }
+}

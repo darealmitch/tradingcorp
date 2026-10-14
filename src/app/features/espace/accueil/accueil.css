@@ -63,3 +63,81 @@
 .apercu-panneau {
   margin-top: 16px;
 }
+
+/* Paiement annulé : le message et l'action qui le prolonge, sur une ligne. */
+.alerte-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.alerte p + p {
+  margin-top: 6px;
+}
+
+.alerte a:not(.btn) {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ===== Entonnoir de conversion (administrateur) ===== */
+
+.entonnoir {
+  margin-block: 16px 24px;
+}
+
+/* Dans une grille, l'écart vient de la grille : l'espacement entre panneaux
+   successifs décalait le second d'une rangée vers le bas. */
+.grille-deux > .panneau + .panneau {
+  margin-top: 0;
+}
+
+.entonnoir-etapes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: etape;
+}
+
+.entonnoir-etape {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  counter-increment: etape;
+}
+
+.entonnoir-libelle {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.entonnoir-libelle::before {
+  content: counter(etape) '. ';
+}
+
+.entonnoir-valeur {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.entonnoir-taux {
+  margin: 14px 0 8px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.entonnoir-taux strong {
+  color: var(--text);
+}

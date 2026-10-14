@@ -12,6 +12,10 @@ export const CATEGORIE_VIDEOS = 'videos';
  * pour faire complet reviendrait à annoncer des traceurs qui n'existent pas —
  * et une information inexacte vicie le consentement qu'elle recueille.
  *
+ * La mesure d'audience (`MesureService`, 14/10/2026) n'en ajoute pas : elle
+ * ne lit ni ne dépose rien sur le terminal, et ne conserve que des totaux par
+ * jour. Le visiteur s'y oppose depuis la politique de cookies, pas ici.
+ *
  * Tout ce qui est écrit ici doit rester d'accord avec la politique de cookies
  * (`features/legal/cookies`). Changer l'un sans l'autre, c'est promettre une
  * chose et en faire une autre.
@@ -61,7 +65,8 @@ export const CONFIG_CONSENTEMENT: CookieConsentConfig = {
         consentModal: {
           title: 'Vos préférences en matière de cookies',
           description:
-            "TradingCorp n'utilise aucun cookie publicitaire ni outil de mesure d'audience. " +
+            "TradingCorp n'utilise aucun cookie publicitaire, et sa mesure d'audience ne dépose " +
+            'rien sur votre terminal. ' +
             'Seule la <strong>vidéo de présentation</strong> nécessite votre accord : son lecteur ' +
             'enregistre vos préférences de lecture sur votre terminal et transmet des mesures ' +
             "techniques à notre prestataire de diffusion. Refuser n'affecte pas votre navigation.",

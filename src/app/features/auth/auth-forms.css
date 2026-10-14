@@ -219,13 +219,23 @@
   margin-top: 4px;
 }
 
-.case-consentement {
+/* `.champ .case-consentement`, et non la classe seule : la règle des
+   intitulés de champ (`.champ label`, majuscules espacées, en bloc) est plus
+   précise et l'emportait — le texte des CGU et de l'accord aux nouveautés
+   s'affichait en capitales, la case au-dessus de la ligne. */
+.champ .case-consentement {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  margin-bottom: 0;
   cursor: pointer;
+  font-family: var(--font-body);
   font-size: 0.92rem;
+  font-weight: 400;
+  letter-spacing: normal;
   line-height: 1.5;
+  text-transform: none;
+  color: var(--text);
 }
 
 /*

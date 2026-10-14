@@ -1,0 +1,91 @@
+<section class="section offre" id="offre">
+  <!-- Les anciens liens « Ouvrir un compte » visaient une ancre « #commencer »
+       disparue avec une refonte : elle mène désormais à l'offre. -->
+  <span class="offre-ancre" id="commencer" aria-hidden="true"></span>
+
+  <div class="container">
+    <div class="section-head centered" appReveal>
+      <span class="eyebrow">L'offre</span>
+      <h2>Tout le programme, <span class="text-gradient">sans abonnement</span></h2>
+      <p>
+        Un prix pour toute la formation&nbsp;: tu avances à ton rythme, et l'accès reste ouvert sans
+        limite de durée.
+      </p>
+    </div>
+
+    @if (vitrine.vitrine(); as v) {
+      <div class="offre-grille">
+        <article class="offre-carte" appReveal>
+          <h3 class="offre-titre">{{ v.titre }}</h3>
+          <p class="offre-prix">{{ vitrine.prix() }}</p>
+          <p class="offre-mention">Prix TTC · TVA non applicable, article 293&nbsp;B du CGI</p>
+
+          <ul class="offre-inclus">
+            @for (ligne of inclus(); track ligne) {
+              <li>{{ ligne }}</li>
+            }
+          </ul>
+
+          <a
+            class="btn btn-primary offre-action"
+            routerLink="/inscription"
+            [queryParams]="retourAchat"
+            appMesureClic="offre-achat"
+            >Acheter la formation</a
+          >
+          <p class="offre-securite">
+            Paiement sur la page sécurisée de Stripe&nbsp;: TradingCorp n'a jamais accès à tes
+            données bancaires.
+          </p>
+        </article>
+
+        <div class="offre-colonne">
+          @if (essai(); as phrase) {
+            <article class="offre-encart" appReveal revealDelay="80">
+              <h3 class="offre-encart-titre">Essaie avant d'acheter</h3>
+              <p>{{ phrase }} Crée ton compte, sans carte bancaire, et suis-les tout de suite.</p>
+              <ul class="offre-lecons">
+                @for (lecon of v.lecons_offertes; track lecon.titre) {
+                  <li>
+                    <span>{{ lecon.titre }}</span>
+                    <span class="offre-lecon-duree">{{ duree(lecon.duree_s) }}</span>
+                  </li>
+                }
+              </ul>
+              <a class="btn btn-ghost" routerLink="/inscription" appMesureClic="offre-essai"
+                >Commencer gratuitement</a
+              >
+            </article>
+          }
+
+          <article class="offre-encart" appReveal revealDelay="140">
+            <h3 class="offre-encart-titre">14 jours pour changer d'avis</h3>
+            <p>
+              Après l'achat, tu disposes de 14 jours pour te rétracter, sans avoir à te justifier,
+              et être remboursé intégralement — même si tu as déjà commencé la formation.
+            </p>
+            <a class="offre-lien" routerLink="/remboursement">Lire la politique de remboursement</a>
+          </article>
+        </div>
+      </div>
+    } @else {
+      <!-- Vitrine illisible : l'offre renvoie aux CGV, qui disent le prix, plutôt
+           que d'afficher un chiffre qu'on ne peut pas garantir. -->
+      <div class="offre-carte offre-repli">
+        <p>
+          Le prix, le contenu de la formation et les conditions d'achat sont détaillés dans les
+          <a class="offre-lien" routerLink="/cgv">conditions générales de vente</a>.
+        </p>
+        <a class="btn btn-primary" routerLink="/inscription" appMesureClic="offre-essai"
+          >Créer mon compte</a
+        >
+      </div>
+    }
+
+    <p class="offre-risque" appReveal>
+      La formation est pédagogique&nbsp;: elle ne constitue pas un conseil en investissement et ne
+      promet aucun gain. Le trading comporte un risque de perte en capital, pouvant aller jusqu'à la
+      totalité des sommes engagées.
+    </p>
+  </div>
+</section>

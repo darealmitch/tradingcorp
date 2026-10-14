@@ -121,3 +121,31 @@ export interface FicheApprenant {
   } | null;
   certificat: { numero: string; date_obtention: string } | null;
 }
+
+/**
+ * Entonnoir de conversion des derniers jours (`entonnoir_conversion`).
+ *
+ * Les vues et les clics viennent de la mesure d'audience sans cookie, sur la
+ * seule production ; les comptes et les paiements, des tables où ils vivent
+ * déjà — hors comptes de test et comptes créés par l'équipe.
+ */
+export interface EntonnoirConversion {
+  /** Premier jour compté (date ISO, heure de Paris). */
+  depuis: string;
+  jours: number;
+  vues_accueil: number;
+  vues_programme: number;
+  /** Clics sur l'ensemble des boutons mesurés. */
+  clics: number;
+  vues_inscription: number;
+  /** Comptes ouverts par les visiteurs eux-mêmes. */
+  comptes_crees: number;
+  /** Vues de l'écran d'achat (espace « Ma formation »). */
+  vues_achat: number;
+  /** Départs vers la page de paiement Stripe. */
+  debuts_paiement: number;
+  /** Paiements réels encaissés, remboursés depuis compris. */
+  paiements: number;
+  remboursements: number;
+  clics_par_bouton: Record<string, number>;
+}

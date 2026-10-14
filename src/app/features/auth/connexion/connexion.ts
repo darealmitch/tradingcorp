@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { ReactiveFormsModule, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, GOOGLE_OAUTH_ACTIF } from '../../../core/auth/auth.service';
+import { retourSur } from '../../../core/auth/retour';
 import { Logo } from '../../../shared/ui/logo';
 
 @Component({
@@ -18,6 +19,12 @@ export class Connexion {
   private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly googleActif = GOOGLE_OAUTH_ACTIF;
+
+  /** Destination après connexion : la page que la personne voulait ouvrir. */
+  private readonly retour = retourSur(this.route.snapshot.queryParamMap.get('retour'));
+
+  /** Lien « Créer un compte » : il garde la destination, pour l'acheteur sans compte. */
+  protected readonly parametresRetour = this.retour ? { retour: this.retour } : {};
 
   protected readonly chargement = signal(false);
   protected readonly erreur = signal<string | null>(null);
@@ -43,8 +50,7 @@ export class Connexion {
       this.chargement.set(false);
       return;
     }
-    const retour = this.route.snapshot.queryParamMap.get('retour');
-    await this.router.navigateByUrl(retour ?? '/espace');
+    await this.router.navigateByUrl(this.retour ?? '/espace');
   }
 
   protected async avecGoogle(): Promise<void> {

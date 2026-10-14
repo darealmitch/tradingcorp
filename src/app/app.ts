@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -27,6 +27,17 @@ export class App {
     // Le signal de présence des élèves, pour l'écran « Connectés » : ici et
     // non dans l'espace, car le lecteur de leçons vit hors de son gabarit.
     inject(PresenceService).demarrer();
+    // Vues des pages de vente, comptées sans cookie ni identifiant. Importée
+    // à la demande : le chargement initial a un budget, et la mesure peut
+    // attendre — `demarrer` compte aussi la page déjà affichée.
+    const injecteur = inject(Injector);
+    let detruite = false;
+    inject(DestroyRef).onDestroy(() => (detruite = true));
+    void import('./core/mesure/mesure.service').then((m) => {
+      if (!detruite) {
+        injecteur.get(m.MesureService).demarrer();
+      }
+    });
   }
 
   /** Le footer marketing n'a pas sa place dans les pages connectées (espace + parcours). */
