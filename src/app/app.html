@@ -2,7 +2,7 @@
 <main>
   <router-outlet />
 </main>
-@if (!pageInterne()) {
+@if (pageInterne() === false) {
   <app-footer />
 }
 

@@ -59,9 +59,19 @@ export class MediaService {
     url: { analytics: false, forceVersion: false },
   });
 
-  /** URL de livraison image optimisée (format & qualité automatiques). */
-  url(publicId: string): string {
-    return this.cld.image(publicId).addTransformation('f_auto,q_auto').toURL();
+  /**
+   * URL de livraison image optimisée (format & qualité automatiques).
+   *
+   * `largeurMax` réduit une image plus large que son affichage, sans jamais
+   * l'agrandir (`c_limit`). Sans elle, la photo de 6 000 px de l'accueil
+   * partait en entier : 828 Ko au lieu de 36 Ko à 1 600 px, sur le premier
+   * chargement d'un téléphone.
+   */
+  url(publicId: string, largeurMax?: number): string {
+    const transformation = largeurMax
+      ? `f_auto,q_auto,c_limit,w_${Math.round(largeurMax)}`
+      : 'f_auto,q_auto';
+    return this.cld.image(publicId).addTransformation(transformation).toURL();
   }
 
   /** URL de livraison vidéo optimisée (format & qualité automatiques). */

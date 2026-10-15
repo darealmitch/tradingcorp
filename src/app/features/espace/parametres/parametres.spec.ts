@@ -288,7 +288,7 @@ describe('Parametres — annonce d’une mise à jour des conditions', () => {
     await creer();
     const page = fixture.nativeElement as HTMLElement;
 
-    expect((page.querySelector('#annonce-date') as HTMLInputElement).value).toBe('2026-10-14');
+    expect((page.querySelector('#annonce-date') as HTMLInputElement).value).toBe('2026-10-16');
     expect((page.querySelector('#annonce-resume') as HTMLTextAreaElement).value).toContain(
       '« Léa M. »',
     );
@@ -308,7 +308,7 @@ describe('Parametres — annonce d’une mise à jour des conditions', () => {
       {
         mode: 'essai',
         miseAJour: {
-          date: '2026-10-14',
+          date: '2026-10-16',
           documents: ['cgu', 'confidentialite'],
           resume: DERNIERE_MISE_A_JOUR.resume,
         },

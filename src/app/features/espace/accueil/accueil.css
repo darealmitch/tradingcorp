@@ -141,3 +141,8 @@
 .entonnoir-taux strong {
   color: var(--text);
 }
+
+.entonnoir-sous-titre {
+  margin: 22px 0 10px;
+  font-size: 0.95rem;
+}

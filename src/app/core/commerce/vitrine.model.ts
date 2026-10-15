@@ -12,6 +12,16 @@ export interface LeconOfferteVitrine {
   duree_s: number;
 }
 
+/** Une étape du sommaire d'un module : son titre, sa nature, sa durée. Aucun contenu. */
+export interface EtapeVitrine {
+  titre: string;
+  /** `video`, `quiz` ou `article` (les introductions n'y figurent pas). */
+  type: string;
+  /** Durée en secondes, pour les vidéos seulement. */
+  duree_s: number | null;
+  offerte: boolean;
+}
+
 /** Un module publié du programme, avec ses chiffres. */
 export interface ModuleVitrine {
   position: number;
@@ -22,6 +32,8 @@ export interface ModuleVitrine {
   secondes_video: number;
   quiz: number;
   lecons_offertes: number;
+  /** Le sommaire du module ; absent tant que la base n'a pas `sommaire_du_programme`. */
+  lecons?: EtapeVitrine[];
 }
 
 /** La formation en vitrine : prix, chiffres du programme, leçons offertes. */

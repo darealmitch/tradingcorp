@@ -148,4 +148,10 @@ export interface EntonnoirConversion {
   paiements: number;
   remboursements: number;
   clics_par_bouton: Record<string, number>;
+  /**
+   * Arrivées sur une page de vente et comptes ouverts depuis le formulaire,
+   * par provenance (`direct`, `recherche`, `meta-ads`…). Absent tant que la
+   * base n'a pas la migration `provenance_des_visites`.
+   */
+  provenances?: Record<string, { arrivees: number; inscriptions: number }>;
 }

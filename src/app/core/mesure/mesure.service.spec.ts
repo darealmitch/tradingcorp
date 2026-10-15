@@ -9,6 +9,9 @@ import { HOTE_SITE, MesureService } from './mesure.service';
 @Component({ template: '' })
 class PageVide {}
 
+/** Une page rechargée depuis le site lui-même : ce n'est pas une arrivée. */
+const DEPUIS_LE_SITE = { recherche: '', referent: 'https://tradingcorp.fr/' };
+
 /**
  * La mesure n'a qu'un droit : ajouter 1 à un compteur connu. Ce qui est
  * éprouvé ici, c'est tout ce qui la ferait compter à tort — une ancre prise
@@ -57,7 +60,7 @@ describe('MesureService', () => {
 
   it('compte la vue d’une page de vente, une fois par page', async () => {
     const { mesure, router } = monter();
-    mesure.demarrer();
+    mesure.demarrer(DEPUIS_LE_SITE);
 
     await router.navigateByUrl('/');
     // Une ancre de l'accueil n'est pas une nouvelle page.
@@ -85,9 +88,50 @@ describe('MesureService', () => {
     const { mesure, router } = monter();
     await router.navigateByUrl('/programme');
 
-    mesure.demarrer();
+    mesure.demarrer(DEPUIS_LE_SITE);
 
     expect(envois).toEqual([{ p_site: 'prod', p_evenement: 'vue', p_cible: '/programme' }]);
+  });
+
+  it('compte l’arrivée sur une page de vente sous sa provenance, une seule fois', async () => {
+    const { mesure, router } = monter();
+    mesure.demarrer({ recherche: '?utm_source=facebook&utm_medium=paid', referent: '' });
+
+    await router.navigateByUrl('/');
+    await router.navigateByUrl('/programme');
+
+    expect(envois.filter((e) => e.p_evenement === 'arrivee')).toEqual([
+      { p_site: 'prod', p_evenement: 'arrivee', p_cible: 'meta-ads' },
+    ]);
+  });
+
+  it('ne compte pas d’arrivée au retour de la page de paiement', async () => {
+    const { mesure, router } = monter();
+    mesure.demarrer({ recherche: '', referent: 'https://checkout.stripe.com/c/pay/cs_test' });
+
+    await router.navigateByUrl('/');
+
+    expect(envois.map((e) => e.p_evenement)).toEqual(['vue']);
+  });
+
+  it('ne compte pas d’arrivée pour une visite entrée hors des pages de vente', async () => {
+    const { mesure, router } = monter();
+    mesure.demarrer({ recherche: '', referent: 'https://www.google.com/' });
+
+    await router.navigateByUrl('/cgv');
+    await router.navigateByUrl('/');
+
+    expect(envois.map((e) => e.p_evenement)).toEqual(['vue']);
+  });
+
+  it('répartit un compte ouvert sous la provenance de la visite, une fois', () => {
+    const { mesure } = monter();
+    mesure.demarrer({ recherche: '?gclid=abc', referent: 'https://www.google.com/' });
+
+    mesure.inscription();
+    mesure.inscription();
+
+    expect(envois).toEqual([{ p_site: 'prod', p_evenement: 'inscription', p_cible: 'google-ads' }]);
   });
 
   it('compte la recette à part, et rien ailleurs', async () => {

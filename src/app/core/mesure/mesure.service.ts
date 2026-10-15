@@ -2,7 +2,15 @@ import { Injectable, InjectionToken, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { AccesDonnees } from '../supabase/acces-donnees';
-import { BoutonMesure, CLE_OPPOSITION_MESURE, PAGES_MESUREES, SiteMesure } from './mesure.model';
+import {
+  BoutonMesure,
+  CLE_OPPOSITION_MESURE,
+  PAGES_D_ARRIVEE,
+  PAGES_MESUREES,
+  Provenance,
+  SiteMesure,
+} from './mesure.model';
+import { Arrivee, lireArrivee, provenanceDe } from './provenance';
 
 /**
  * Nom d'hôte de la page, fourni par jeton : les tests se placent ainsi sur
@@ -26,11 +34,18 @@ const ATTENTE_MAX_PAIEMENT_MS = 600;
 /**
  * Mesure d'audience du site, SANS COOKIE NI IDENTIFIANT.
  *
- * Elle compte trois choses, et les envoie une à une à `compter_evenement`,
+ * Elle compte cinq choses, et les envoie une à une à `compter_evenement`,
  * qui n'en garde que des totaux par jour :
  *   • les vues des pages de vente (accueil, programme, inscription, achat) ;
  *   • les clics sur les boutons qui mènent à l'inscription ou à l'achat ;
- *   • les paiements commencés (départ vers Stripe).
+ *   • les paiements commencés (départ vers Stripe) ;
+ *   • les arrivées sur une page de vente, par provenance (recherche, annonce
+ *     Meta, e-mail…) ;
+ *   • les comptes ouverts depuis le formulaire, par la même provenance.
+ *
+ * La provenance n'est qu'une catégorie, calculée dans le navigateur (voir
+ * `provenance.ts`) et gardée en mémoire le temps de la visite : rien n'est
+ * écrit sur l'appareil, et une visite suivante repart de zéro.
  *
  * Rien n'est déposé sur le terminal, et rien ne relie deux événements entre
  * eux : ni compte, ni session, ni empreinte. Les comptes créés et les paiements
@@ -54,6 +69,10 @@ export class MesureService {
 
   private demarree = false;
   private dernierChemin: string | null = null;
+  /** `undefined` avant `demarrer`, `null` quand la visite n'est pas une arrivée. */
+  private provenance: Provenance | null | undefined;
+  private arriveeTraitee = false;
+  private inscriptionComptee = false;
   private readonly derniersClics = new Map<BoutonMesure, number>();
 
   private readonly oppositionSig = signal(this.lireOpposition());
@@ -65,12 +84,16 @@ export class MesureService {
    * À appeler une seule fois, depuis le composant racine. Le service étant
    * importé à la demande, la première navigation peut déjà être terminée :
    * la page affichée est alors comptée tout de suite.
+   *
+   * `arrivee` est lue par l'appelant avant le chargement du service : une
+   * redirection de route efface les paramètres de campagne de l'adresse.
    */
-  demarrer(): void {
+  demarrer(arrivee: Arrivee = lireArrivee()): void {
     if (this.demarree) {
       return;
     }
     this.demarree = true;
+    this.provenance = provenanceDe(arrivee);
     this.router.events
       .pipe(filter((evenement): evenement is NavigationEnd => evenement instanceof NavigationEnd))
       .subscribe((evenement) => this.surNavigation(evenement.urlAfterRedirects));
@@ -109,6 +132,19 @@ export class MesureService {
     ]);
   }
 
+  /**
+   * Un compte vient d'être ouvert depuis le formulaire d'inscription. Compté
+   * une fois par visite, sous la provenance de cette visite. Le nombre de
+   * comptes, lui, se lit en base : ce compteur ne sert qu'à le RÉPARTIR.
+   */
+  inscription(): void {
+    if (this.inscriptionComptee || this.provenance === undefined) {
+      return;
+    }
+    this.inscriptionComptee = true;
+    void this.envoyer('inscription', this.provenance ?? 'direct');
+  }
+
   /** Opposition du visiteur, retenue dans ce navigateur (politique de cookies). */
   sOpposer(): void {
     this.ecrireOpposition(true);
@@ -129,6 +165,14 @@ export class MesureService {
     this.dernierChemin = chemin;
     if ((PAGES_MESUREES as readonly string[]).includes(chemin)) {
       void this.envoyer('vue', chemin);
+    }
+    // L'arrivée, c'est la PREMIÈRE page de la visite, et seulement si c'est
+    // une page de vente : un visiteur entré par les CGV n'a pas « atterri ».
+    if (!this.arriveeTraitee) {
+      this.arriveeTraitee = true;
+      if (this.provenance && (PAGES_D_ARRIVEE as readonly string[]).includes(chemin)) {
+        void this.envoyer('arrivee', this.provenance);
+      }
     }
   }
 

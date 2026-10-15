@@ -28,6 +28,7 @@ import {
   InscriptionRecente,
 } from '../../../core/pilotage/pilotage.model';
 import { PilotageService } from '../../../core/pilotage/pilotage.service';
+import { PROVENANCES, Provenance } from '../../../core/mesure/mesure.model';
 import {
   CommentaireEnAttente,
   ModerationService,
@@ -120,6 +121,42 @@ export function etapesEntonnoir(e: EntonnoirConversion): EtapeEntonnoir[] {
     { libelle: 'Paiements commencés', valeur: e.debuts_paiement },
     { libelle: 'Paiements encaissés', valeur: e.paiements },
   ];
+}
+
+/** Les provenances, dans les mots du tableau de bord. */
+const LIBELLES_PROVENANCE: Record<Provenance, string> = {
+  direct: 'Accès direct (adresse tapée, favori, application)',
+  recherche: 'Recherche (Google, Bing, Qwant…)',
+  'google-ads': 'Annonces Google',
+  'meta-ads': 'Annonces Meta (Facebook, Instagram)',
+  'tiktok-ads': 'Annonces TikTok',
+  'youtube-ads': 'Annonces YouTube',
+  reseaux: 'Réseaux sociaux, hors annonces',
+  email: 'E-mails',
+  'autre-site': 'Autres sites',
+};
+
+/** Une ligne du tableau des provenances. */
+export interface LigneProvenance {
+  libelle: string;
+  arrivees: number;
+  inscriptions: number;
+}
+
+/**
+ * Les provenances qui ont amené quelqu'un, dans l'ordre de la liste — stable
+ * d'un jour à l'autre, pour comparer d'un coup d'œil. Une provenance sans
+ * arrivée ni compte n'apprend rien : elle n'est pas affichée.
+ */
+export function lignesProvenance(e: EntonnoirConversion): LigneProvenance[] {
+  const totaux = e.provenances ?? {};
+  return PROVENANCES.filter(
+    (p) => (totaux[p]?.arrivees ?? 0) + (totaux[p]?.inscriptions ?? 0) > 0,
+  ).map((p) => ({
+    libelle: LIBELLES_PROVENANCE[p],
+    arrivees: totaux[p].arrivees,
+    inscriptions: totaux[p].inscriptions,
+  }));
 }
 
 /** « 4,2 % », ou null quand le dénominateur est nul — un taux sur zéro ne dit rien. */
@@ -350,6 +387,7 @@ export class Accueil {
   }
 
   protected readonly etapesEntonnoir = etapesEntonnoir;
+  protected readonly lignesProvenance = lignesProvenance;
   protected readonly taux = taux;
 
   /**

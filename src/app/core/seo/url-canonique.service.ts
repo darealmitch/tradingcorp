@@ -13,7 +13,7 @@ import { filter } from 'rxjs';
  * cette déclaration, les moteurs de recherche y voient trois sites au contenu
  * identique et répartissent entre eux la valeur qui devrait revenir à un seul.
  */
-const SITE_CANONIQUE = 'https://tradingcorp.fr';
+export const SITE_CANONIQUE = 'https://tradingcorp.fr';
 
 /**
  * Tient à jour `<link rel="canonical">` au fil des navigations.

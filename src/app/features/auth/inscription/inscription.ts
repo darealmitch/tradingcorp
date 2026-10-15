@@ -10,6 +10,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, GOOGLE_OAUTH_ACTIF } from '../../../core/auth/auth.service';
 import { RETOUR_ACHAT, retourSur } from '../../../core/auth/retour';
 import { VitrineService } from '../../../core/commerce/vitrine.service';
+import { MesureService } from '../../../core/mesure/mesure.service';
 import { Logo } from '../../../shared/ui/logo';
 
 /** Les deux champs mot de passe doivent correspondre. */
@@ -57,6 +58,7 @@ export class Inscription {
   private readonly router = inject(Router);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly vitrine = inject(VitrineService);
+  private readonly mesure = inject(MesureService);
 
   protected readonly googleActif = GOOGLE_OAUTH_ACTIF;
 
@@ -145,6 +147,9 @@ export class Inscription {
       this.chargement.set(false);
       return;
     }
+    // Le compte existe : sa provenance est comptée, qu'il reste ou non une
+    // adresse à confirmer. Un compte refusé ne l'est pas.
+    this.mesure.inscription();
     if (resultat.confirmationRequise) {
       this.confirmationRequise.set(true);
       this.chargement.set(false);

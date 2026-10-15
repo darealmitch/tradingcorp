@@ -14,15 +14,28 @@
     </div>
 
     <div class="formations-visual" appReveal revealDelay="100">
+      <!-- Dimensions déclarées : la place est réservée avant l'arrivée de
+           l'image, rien ne bouge sous les yeux. Chargées à l'approche : elles
+           sont sous le premier écran. -->
       <img
         class="visual-screen"
-        [src]="media.url('tradingcorp/landing/formations/austin-hervias-VLpWpv3oDB4-unsplash')"
+        [src]="
+          media.url('tradingcorp/landing/formations/austin-hervias-VLpWpv3oDB4-unsplash', 1800)
+        "
         alt="Analyse technique annotée sur un écran de trading"
+        width="1800"
+        height="1200"
+        loading="lazy"
+        decoding="async"
       />
       <img
         class="visual-panel"
         [src]="media.url('tradingcorp/landing/formations/apercu-trading')"
         alt="Aperçu du parcours de formation Trader pro sur tablette"
+        width="862"
+        height="584"
+        loading="lazy"
+        decoding="async"
       />
     </div>
 

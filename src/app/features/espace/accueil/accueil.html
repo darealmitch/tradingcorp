@@ -329,6 +329,42 @@
         (un visiteur qui revient compte plusieurs fois). Comptes et paiements relevés en base, hors
         comptes de test et comptes créés par l'équipe.
       </p>
+
+      <!-- Quelles sources amènent des inscriptions : de quoi juger une
+           publicité sur ce qu'elle rapporte, pas sur ses clics. -->
+      @if (lignesProvenance(e); as lignes) {
+        @if (lignes.length > 0) {
+          <h3 class="entonnoir-sous-titre">D'où viennent les visiteurs</h3>
+          <div class="tableau-defile">
+            <table class="tableau">
+              <thead>
+                <tr>
+                  <th>Provenance</th>
+                  <th>Arrivées</th>
+                  <th>Comptes ouverts</th>
+                  <th>Pour 100 arrivées</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ligne of lignes; track ligne.libelle) {
+                  <tr>
+                    <td>{{ ligne.libelle }}</td>
+                    <td>{{ ligne.arrivees }}</td>
+                    <td>{{ ligne.inscriptions }}</td>
+                    <td>{{ taux(ligne.inscriptions, ligne.arrivees) ?? '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="cellule-discrete">
+            Arrivée&nbsp;: première page de la visite, si c'est une page de vente. La provenance
+            n'est qu'une catégorie, déduite de l'adresse d'arrivée et jamais enregistrée avec la
+            personne. Les comptes ouverts avec Google et les visiteurs opposés à la mesure n'y
+            figurent pas&nbsp;: le total des comptes, plus haut, fait foi.
+          </p>
+        }
+      }
     } @else {
       <p class="cellule-discrete">La mesure n'a pas pu être lue pour l'instant.</p>
     }

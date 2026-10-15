@@ -10,6 +10,7 @@ import { Faq } from './sections/faq/faq';
 import { Offre } from './sections/offre/offre';
 import { Transition } from './sections/transition/transition';
 import { Particles } from '../../shared/particles';
+import { exposerFormation } from '../../core/seo/donnees-structurees';
 import { BarreAchat } from '../../shared/ui/barre-achat';
 
 @Component({
@@ -31,4 +32,10 @@ import { BarreAchat } from '../../shared/ui/barre-achat';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Landing {}
+export class Landing {
+  constructor() {
+    // La fiche « formation » lue par les moteurs de recherche : prix, durée,
+    // modules, tirés de la vitrine.
+    exposerFormation();
+  }
+}

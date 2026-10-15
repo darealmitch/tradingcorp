@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angul
 import { vi } from 'vitest';
 import { AuthService } from '../../../core/auth/auth.service';
 import { VitrineService } from '../../../core/commerce/vitrine.service';
+import { MesureService } from '../../../core/mesure/mesure.service';
 import { Inscription } from './inscription';
 
 /**
@@ -14,8 +15,14 @@ import { Inscription } from './inscription';
 describe('Inscription', () => {
   let fixture: ComponentFixture<Inscription>;
   let navigateByUrl: ReturnType<typeof vi.fn>;
+  let compterInscription: ReturnType<typeof vi.fn>;
 
-  async function monter(retour: string | null, offertes = 3): Promise<HTMLElement> {
+  async function monter(
+    retour: string | null,
+    offertes = 3,
+    resultat: { ok: boolean; erreur?: string } = { ok: true },
+  ): Promise<HTMLElement> {
+    compterInscription = vi.fn();
     TestBed.configureTestingModule({
       imports: [Inscription],
       providers: [
@@ -28,9 +35,10 @@ describe('Inscription', () => {
         },
         {
           provide: AuthService,
-          useValue: { inscription: () => Promise.resolve({ ok: true }) },
+          useValue: { inscription: () => Promise.resolve(resultat) },
         },
         { provide: VitrineService, useValue: { nombreOffertes: signal(offertes) } },
+        { provide: MesureService, useValue: { inscription: compterInscription } },
       ],
     });
     navigateByUrl = vi
@@ -96,6 +104,17 @@ describe('Inscription', () => {
     const page = await monter(null, 0);
 
     expect(sousTitre(page)).not.toContain('offerte');
+  });
+
+  it('compte la provenance d’un compte ouvert, et seulement d’un compte ouvert', async () => {
+    let page = await monter(null);
+    await remplirEtEnvoyer(page);
+    expect(compterInscription).toHaveBeenCalledTimes(1);
+
+    TestBed.resetTestingModule();
+    page = await monter(null, 3, { ok: false, erreur: 'Adresse déjà utilisée.' });
+    await remplirEtEnvoyer(page);
+    expect(compterInscription).not.toHaveBeenCalled();
   });
 
   it('garde la destination sur le lien « Se connecter », pour qui a déjà un compte', async () => {

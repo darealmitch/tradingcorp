@@ -40,7 +40,7 @@ export interface ResultatAnnonce {
  * chaque envoi.
  */
 export const DERNIERE_MISE_A_JOUR: MiseAJourConditions = {
-  date: '2026-10-14',
+  date: '2026-10-16',
   documents: ['cgu', 'confidentialite'],
   resume: [
     '- Vos commentaires publiés apparaissent désormais aux autres élèves sous votre prénom et l’initiale de votre nom (par exemple « Léa M. »).',
@@ -48,7 +48,7 @@ export const DERNIERE_MISE_A_JOUR: MiseAJourConditions = {
     '- Vous voyez l’état de chacun de vos commentaires (en attente, publié ou non publié) et pouvez le supprimer à tout moment.',
     '- La politique de confidentialité précise qui voit vos commentaires et vos échanges privés.',
     '- Si vous l’acceptez, nous pouvons vous envoyer nos nouveautés et nos offres par e-mail. Cet accord est facultatif et se retire à tout moment, depuis votre profil ou d’un clic dans chacun de ces e-mails.',
-    '- Nous mesurons la fréquentation du site sans cookie et sans vous identifier : seuls des totaux quotidiens de visites et de clics sont conservés. Vous pouvez vous y opposer depuis la politique de cookies.',
+    '- Nous mesurons la fréquentation du site sans cookie et sans vous identifier : seuls des totaux quotidiens de visites, de clics et de provenances (moteur de recherche, annonce, réseau social…) sont conservés. Vous pouvez vous y opposer depuis la politique de cookies.',
   ].join('\n'),
 };
 

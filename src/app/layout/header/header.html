@@ -72,11 +72,14 @@
 -->
 <ng-template #liens>
   @if (!auth.estConnecte()) {
-    <a routerLink="/" fragment="formations" (click)="closeMenu()">Formations</a>
-    <a routerLink="/" fragment="notice" (click)="closeMenu()">Avis</a>
-    <a routerLink="/" fragment="resultats" (click)="closeMenu()">Résultats</a>
-    <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
+    <!-- Cinq liens, dans l'ordre où un visiteur décide : quoi, qui, ce qu'en
+         disent les élèves, combien. À sept, le bandeau débordait entre 860 et
+         1 150 px de large, et chaque lien de plus dispersait l'attention. Les
+         sections « Formations » et « Résultats » restent sur l'accueil et dans
+         le pied de page. -->
     <a routerLink="/programme" (click)="closeMenu()">Programme</a>
+    <a routerLink="/" fragment="formateur" (click)="closeMenu()">Formateur</a>
+    <a routerLink="/" fragment="notice" (click)="closeMenu()">Avis</a>
     <!-- Le prix et ses conditions, à un clic de n'importe quelle page. -->
     <a routerLink="/" fragment="offre" (click)="closeMenu()">Offre</a>
     <!-- Les élèves qui reviennent n'avaient, sur l'accueil, que le bouton du

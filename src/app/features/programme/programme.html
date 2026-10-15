@@ -102,6 +102,33 @@
                 }
               </p>
             }
+            <!-- Le sommaire : ce que l'acheteur recevra, étape par étape. Replié
+                 par défaut, pour que la frise reste lisible d'un coup d'œil. -->
+            @if (module.lecons?.length) {
+              <details class="module-sommaire" (toggle)="redessiner()">
+                <summary>
+                  Voir le sommaire ({{ compte(module.lecons!.length, 'étape', 'étapes') }})
+                </summary>
+                <ol class="sommaire-liste">
+                  @for (etape of module.lecons; track $index) {
+                    <!-- `&ngsp;` garde une espace entre les morceaux : sans elle, un
+                         lecteur d'écran lisait « Vidéo1.1 Le processus29 min ». La
+                         mise en page, en flex, n'en tient pas compte. -->
+                    <li class="sommaire-etape">
+                      <span class="sommaire-nature">{{ nature(etape.type) }}</span
+                      >&ngsp;
+                      <span class="sommaire-titre">{{ titreEtape(etape) }}</span>
+                      @if (etape.duree_s) {
+                        &ngsp;<span class="sommaire-duree">{{ dureeCourte(etape.duree_s) }}</span>
+                      }
+                      @if (etape.offerte) {
+                        &ngsp;<span class="sommaire-offerte">Offerte</span>
+                      }
+                    </li>
+                  }
+                </ol>
+              </details>
+            }
           </article>
         </li>
       }

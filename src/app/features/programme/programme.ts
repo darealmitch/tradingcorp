@@ -12,9 +12,10 @@ import {
 import { RouterLink } from '@angular/router';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ModuleVitrine } from '../../core/commerce/vitrine.model';
+import { EtapeVitrine, ModuleVitrine } from '../../core/commerce/vitrine.model';
 import { compte, dureeAnnoncee, dureeCourte } from '../../core/commerce/vitrine.textes';
 import { VitrineService } from '../../core/commerce/vitrine.service';
+import { exposerFormation } from '../../core/seo/donnees-structurees';
 import { MesureClic } from '../../shared/mesure-clic';
 import { Particles } from '../../shared/particles';
 import { Reveal } from '../../shared/reveal';
@@ -36,6 +37,9 @@ const MODULES_DE_REPLI = [
   'Investissement',
   'Optimisation',
 ];
+
+/** La nature d'une étape, dans les mots de la page. */
+const NATURES: Record<string, string> = { video: 'Vidéo', quiz: 'Quiz', article: 'Lecture' };
 
 /**
  * La page Programme : les modules de la formation, tels qu'ils sont publiés.
@@ -99,10 +103,28 @@ export class Programme {
     return morceaux.join(' · ');
   }
 
+  protected nature(type: string): string {
+    return NATURES[type] ?? 'Étape';
+  }
+
+  /**
+   * « Quiz - Éducation financière » devient « Éducation financière » : la
+   * nature de l'étape est déjà écrite à côté.
+   */
+  protected titreEtape(etape: EtapeVitrine): string {
+    return etape.type === 'quiz' ? etape.titre.replace(/^quiz\s*[-–—:]\s*/i, '') : etape.titre;
+  }
+
+  /** Un sommaire ouvert ou refermé déplace les modules suivants : la frise suit. */
+  protected redessiner(): void {
+    this.redessinerRail?.();
+  }
+
   /** Recalcule le tracé de la frise ; posé une fois la frise prête. */
   private redessinerRail?: () => void;
 
   constructor() {
+    exposerFormation();
     afterNextRender(() => this.initRail());
     // Une vitrine arrivée après l'affichage (réseau lent) change le nombre
     // de modules : la frise doit relier les nouvelles sphères.

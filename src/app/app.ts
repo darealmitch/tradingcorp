@@ -33,14 +33,34 @@ export class App {
     const injecteur = inject(Injector);
     let detruite = false;
     inject(DestroyRef).onDestroy(() => (detruite = true));
+    // L'adresse d'arrivée est lue MAINTENANT : quand le service sera chargé,
+    // une redirection de route peut en avoir effacé les paramètres de campagne.
+    const arrivee = { recherche: location.search, referent: document.referrer };
     void import('./core/mesure/mesure.service').then((m) => {
       if (!detruite) {
-        injecteur.get(m.MesureService).demarrer();
+        injecteur.get(m.MesureService).demarrer(arrivee);
+      }
+    });
+    // La description de chaque page pour les moteurs de recherche : à la
+    // demande elle aussi, ses textes n'ont rien à faire dans le chargement
+    // initial.
+    void import('./core/seo/description-page.service').then((m) => {
+      if (!detruite) {
+        injecteur.get(m.DescriptionPageService).demarrer();
       }
     });
   }
 
-  /** Le footer marketing n'a pas sa place dans les pages connectées (espace + parcours). */
+  /**
+   * Le footer marketing n'a pas sa place dans les pages connectées (espace +
+   * parcours).
+   *
+   * `null` tant que la première navigation n'est pas terminée : le footer
+   * attend la page. Il s'affichait sinon seul en haut de l'écran pendant le
+   * chargement de l'accueil, puis la page le repoussait d'un coup vers le bas
+   * — le premier écran d'un visiteur mobile était le pied de page, et ce saut
+   * suffisait à porter le décalage de mise en page (CLS) mesuré à 1,0.
+   */
   protected readonly pageInterne = toSignal(
     this.router.events.pipe(
       filter((evenement): evenement is NavigationEnd => evenement instanceof NavigationEnd),
@@ -49,6 +69,6 @@ export class App {
         return url.startsWith('/espace') || url.startsWith('/parcours');
       }),
     ),
-    { initialValue: false },
+    { initialValue: null },
   );
 }

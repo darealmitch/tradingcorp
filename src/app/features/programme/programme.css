@@ -214,6 +214,86 @@
   font-weight: 600;
 }
 
+/* ===== Sommaire d'un module ===== */
+
+.module-sommaire {
+  margin-top: 14px;
+}
+
+.module-sommaire summary {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.module-sommaire summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Même chevron que les modules de l'accueil : il pivote à l'ouverture. */
+.module-sommaire summary::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-25%) rotate(45deg);
+  transition: transform 0.25s var(--ease-out);
+}
+
+.module-sommaire[open] summary::after {
+  transform: translateY(25%) rotate(-135deg);
+}
+
+.sommaire-liste {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sommaire-etape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.sommaire-nature {
+  min-width: 68px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sommaire-titre {
+  flex: 1 1 200px;
+}
+
+.sommaire-duree {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sommaire-offerte {
+  color: var(--up-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 /* ===== CTA final ===== */
 
 .programme-cta .cta-panel {

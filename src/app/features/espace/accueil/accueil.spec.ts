@@ -20,6 +20,7 @@ import {
   INTERVALLE_ACTIVATION_MS,
   VERIFICATIONS_ACTIVATION,
   etapesEntonnoir,
+  lignesProvenance,
   taux,
 } from './accueil';
 
@@ -360,6 +361,43 @@ describe('Tableau de bord — entonnoir de conversion', () => {
     expect(etapes.map((e) => e.valeur)).toEqual([400, 120, 60, 50, 20, 15, 4, 2]);
     expect(etapes[0].libelle).toBe('Vues de l’accueil');
     expect(etapes.at(-1)?.libelle).toBe('Paiements encaissés');
+  });
+
+  it('range les provenances dans un ordre fixe, sans les vides', () => {
+    const base = {
+      depuis: '2026-09-15',
+      jours: 30,
+      vues_accueil: 0,
+      vues_programme: 0,
+      clics: 0,
+      vues_inscription: 0,
+      comptes_crees: 0,
+      vues_achat: 0,
+      debuts_paiement: 0,
+      paiements: 0,
+      remboursements: 0,
+      clics_par_bouton: {},
+    };
+
+    const lignes = lignesProvenance({
+      ...base,
+      provenances: {
+        'meta-ads': { arrivees: 80, inscriptions: 2 },
+        direct: { arrivees: 30, inscriptions: 1 },
+        email: { arrivees: 0, inscriptions: 0 },
+      },
+    });
+
+    expect(lignes).toEqual([
+      {
+        libelle: 'Accès direct (adresse tapée, favori, application)',
+        arrivees: 30,
+        inscriptions: 1,
+      },
+      { libelle: 'Annonces Meta (Facebook, Instagram)', arrivees: 80, inscriptions: 2 },
+    ]);
+    // Une base sans la migration ne renvoie pas le champ : rien à afficher.
+    expect(lignesProvenance(base)).toEqual([]);
   });
 
   it('calcule un taux, et n’en invente pas sur zéro', () => {

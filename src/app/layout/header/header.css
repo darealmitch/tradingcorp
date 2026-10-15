@@ -46,6 +46,8 @@
   color: var(--muted);
   font-size: 0.92rem;
   font-weight: 500;
+  /* Un libellé coupé en deux lignes faisait déborder le bandeau. */
+  white-space: nowrap;
   transition: color 0.2s;
 }
 
@@ -98,6 +100,22 @@
   height: 44px;
   padding-inline: 24px;
   font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Tablette à l'horizontale, petit portable : mêmes liens, gouttières resserrées. */
+@media (max-width: 1100px) {
+  .header-inner {
+    gap: 24px;
+  }
+
+  .header-nav {
+    gap: 22px;
+  }
+
+  .header-cta {
+    padding-inline: 18px;
+  }
 }
 
 .menu-toggle {

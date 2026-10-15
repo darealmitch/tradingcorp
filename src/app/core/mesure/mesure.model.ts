@@ -23,8 +23,32 @@ export const BOUTONS_MESURES = [
   'programme-fin',
 ] as const;
 
+/**
+ * Provenances d'une visite, en catégories et rien de plus fin. Elles servent à
+ * deux compteurs : les arrivées sur une page de vente, et les comptes ouverts
+ * depuis le formulaire d'inscription. Voir `provenance.ts`.
+ */
+export const PROVENANCES = [
+  'direct',
+  'recherche',
+  'google-ads',
+  'meta-ads',
+  'tiktok-ads',
+  'youtube-ads',
+  'reseaux',
+  'email',
+  'autre-site',
+] as const;
+
+/**
+ * Pages où une arrivée compte. L'écran d'achat n'en fait pas partie : on n'y
+ * entre que connecté, depuis le site ou un e-mail, jamais depuis une annonce.
+ */
+export const PAGES_D_ARRIVEE = ['/', '/programme', '/inscription'] as const;
+
 export type PageMesuree = (typeof PAGES_MESUREES)[number];
 export type BoutonMesure = (typeof BOUTONS_MESURES)[number];
+export type Provenance = (typeof PROVENANCES)[number];
 
 /** Site d'où vient la mesure : la recette écrit dans la même base que la production. */
 export type SiteMesure = 'prod' | 'dev';

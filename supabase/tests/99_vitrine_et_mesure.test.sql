@@ -165,13 +165,14 @@ select is(
   'vitrine — accroche et objectifs du module accompagnent ses chiffres'
 );
 
--- Aucun champ de contenu : chaque module ne porte que ces clés-là.
+-- Aucun champ de contenu : chaque module ne porte que ces clés-là. `lecons`
+-- est le sommaire (titre, nature, durée — voir 99_provenance_et_sommaire).
 select is(
   pg_temp.anonyme($$select string_agg(distinct k, ',' order by k)
                       from public.vitrine_formation() v,
                            jsonb_array_elements(v.programme) m, jsonb_object_keys(m) k
                      where v.id_formation = 'f9910000-0000-0000-0000-000000000001'$$),
-  'accroche,lecons_offertes,lecons_video,objectifs,position,quiz,secondes_video,titre',
+  'accroche,lecons,lecons_offertes,lecons_video,objectifs,position,quiz,secondes_video,titre',
   'vitrine — aucun contenu de leçon ne transite par le programme'
 );
 
