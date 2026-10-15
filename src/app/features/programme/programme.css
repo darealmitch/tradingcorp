@@ -68,6 +68,12 @@
 
 /* ===== Timeline serpentine ===== */
 
+/* La section suit l'en-tête de page : l'écart standard (120 px, en plus de
+   celui de l'en-tête) laissait près de 200 px de vide avant le premier module. */
+.programme-modules {
+  padding-top: 56px;
+}
+
 .timeline {
   position: relative;
 }
@@ -88,11 +94,16 @@
 }
 
 .module-ligne {
+  /* Hauteur, depuis le haut de la carte, du centre du titre du module : la
+     sphère et son trait s'y alignent. Centrés sur la carte, ils tombaient à
+     mi-hauteur de cartes de 450 à 630 px — loin du titre —, et le haut de
+     chaque module paraissait décalé vers la droite, à côté d'une colonne vide. */
+  --centre-titre: 80px;
   position: relative;
   display: grid;
   grid-template-columns: 128px 1fr;
   gap: 40px;
-  align-items: center;
+  align-items: start;
   padding-block: 34px;
 }
 
@@ -105,6 +116,7 @@
   place-items: center;
   width: 104px;
   height: 104px;
+  margin-top: calc(var(--centre-titre) - 52px);
   border-radius: 50%;
   border: 2px solid transparent;
   background:
@@ -151,7 +163,7 @@
   content: '';
   position: absolute;
   left: -40px;
-  top: 50%;
+  top: var(--centre-titre);
   width: 40px;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(124, 108, 255, 0.5));
@@ -350,6 +362,7 @@
   .module-node {
     width: 76px;
     height: 76px;
+    margin-top: 0;
     justify-self: start;
   }
 
