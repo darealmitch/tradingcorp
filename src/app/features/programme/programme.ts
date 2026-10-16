@@ -20,8 +20,6 @@ import { MesureClic } from '../../shared/mesure-clic';
 import { Particles } from '../../shared/particles';
 import { Reveal } from '../../shared/reveal';
 import { BarreAchat } from '../../shared/ui/barre-achat';
-import { Faq } from '../landing/sections/faq/faq';
-import { Offre } from '../landing/sections/offre/offre';
 
 /**
  * Intitulés des modules, pour le seul cas où la vitrine n'a pas pu être lue :
@@ -57,7 +55,7 @@ const NATURES: Record<string, string> = { video: 'Vidéo', quiz: 'Quiz', article
   selector: 'app-programme',
   templateUrl: './programme.html',
   styleUrl: './programme.css',
-  imports: [RouterLink, Particles, Reveal, BarreAchat, Offre, Faq, MesureClic],
+  imports: [RouterLink, Particles, Reveal, BarreAchat, MesureClic],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Programme {

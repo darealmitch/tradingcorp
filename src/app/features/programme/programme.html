@@ -40,7 +40,7 @@
           >Commencer gratuitement</a
         >
       } @else {
-        <a class="btn btn-primary" href="#offre" appMesureClic="programme-hero"
+        <a class="btn btn-primary" routerLink="/" fragment="offre" appMesureClic="programme-hero"
           >Découvrir l'offre</a
         >
       }
@@ -136,10 +136,10 @@
   </div>
 </section>
 
-<app-offre />
-
-<app-faq />
-
+<!-- Les blocs « L'offre » et « Questions fréquentes » appartiennent à
+     l'accueil : repris ici le 14/10/2026, ils faisaient de la fin de cette page
+     une copie de l'accueil. La page garde sa structure d'origine — en-tête,
+     modules, appel final — et la barre d'achat donne le prix. -->
 <section class="section programme-cta">
   <div class="container">
     <div class="cta-panel" appReveal>
