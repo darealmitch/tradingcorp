@@ -1,155 +1,13 @@
 /* ===== Page « Programme » ===== */
 
-/* En-tête de page — même mécanique que celui de l'accueil : il occupe tout
-   le premier écran, contenu centré, et la liste des modules n'apparaît qu'en
-   descendant. */
-.programme-hero {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: 100vh;
-  min-height: 100svh;
-  text-align: center;
-  overflow: hidden;
-}
-
-.programme-hero-contenu {
-  padding-block: 130px 96px;
-}
-
-/* Les éléments montent l'un après l'autre, au même rythme que sur l'accueil. */
-.programme-hero-contenu > * {
-  animation: programme-monte 0.9s var(--ease-out) both;
-}
-
-.programme-hero-contenu > *:nth-child(2) {
-  animation-delay: 0.12s;
-}
-
-.programme-hero-contenu > *:nth-child(3) {
-  animation-delay: 0.24s;
-}
-
-.programme-hero-contenu > *:nth-child(4) {
-  animation-delay: 0.36s;
-}
-
-.programme-hero-contenu > *:nth-child(5) {
-  animation-delay: 0.48s;
-}
-
-/* L'invitation à descendre, la même que sur l'accueil. */
-.programme-scroll {
-  position: absolute;
-  bottom: 22px;
-  left: 50%;
-  translate: -50% 0;
-  display: flex;
-  justify-content: center;
-  width: 28px;
-  height: 46px;
-  border: 1.5px solid var(--line-strong);
-  border-radius: 999px;
-}
-
-.programme-scroll span {
-  width: 4px;
-  height: 10px;
-  margin-top: 8px;
-  border-radius: 999px;
-  background: var(--muted);
-  animation: programme-defile 2s ease-in-out infinite;
-}
-
-@keyframes programme-monte {
-  from {
-    opacity: 0;
-    transform: translateY(32px);
-  }
-}
-
-@keyframes programme-defile {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  55% {
-    transform: translateY(14px);
-    opacity: 0.2;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .programme-hero-contenu > *,
-  .programme-scroll span {
-    animation: none;
-  }
-}
-
-.programme-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(ellipse 50% 60% at 30% 0%, rgba(56, 225, 255, 0.1), transparent 70%),
-    radial-gradient(ellipse 55% 60% at 78% 15%, rgba(225, 77, 255, 0.1), transparent 70%);
-}
-
-.programme-hero .eyebrow {
-  margin-bottom: 20px;
-}
-
-.programme-titre {
-  font-size: clamp(2.4rem, 6vw, 4.6rem);
-  line-height: 1.02;
-}
-
-.programme-lead {
-  max-width: 620px;
-  margin: 26px auto 28px;
-  color: var(--muted);
-  font-size: clamp(1.05rem, 1.6vw, 1.2rem);
-}
-
-/* Les chiffres du programme, lus en base — même famille que l'accueil. */
-.programme-faits {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 0 auto 40px;
-  padding: 0;
-  list-style: none;
-}
-
-.programme-faits li {
-  padding: 7px 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  color: var(--muted);
-  font-size: 0.88rem;
-}
-
-.programme-faits strong {
-  color: var(--text);
-  font-weight: 600;
-}
-
-.programme-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-}
+/* Le premier écran (`.hero`, `.hero-content`…) vient de la feuille partagée
+   avec l'accueil : `shared/premier-ecran.css`. */
 
 /* ===== Timeline serpentine ===== */
 
-/* La section suit l'en-tête de page : l'écart standard (120 px, en plus de
-   celui de l'en-tête) laissait près de 200 px de vide avant le premier module. */
+/* La section suit le premier écran, qui se termine déjà par un large espace :
+   l'écart standard (120 px) creusait près de 200 px de vide avant le premier
+   module. */
 .programme-modules {
   padding-top: 56px;
 }
@@ -423,15 +281,6 @@
 /* ===== Responsive ===== */
 
 @media (max-width: 760px) {
-  .programme-hero-contenu {
-    padding-block: 104px 64px;
-  }
-
-  /* Comme sur l'accueil : sur téléphone, on descend sans y être invité. */
-  .programme-scroll {
-    display: none;
-  }
-
   /* La timeline passe en une colonne : numéro au-dessus de la carte */
   .timeline-rail {
     display: none;
