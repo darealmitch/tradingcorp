@@ -1,6 +1,7 @@
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { vi } from 'vitest';
 import { Vitrine, prixAffiche } from '../../core/commerce/vitrine.model';
 import { VitrineService } from '../../core/commerce/vitrine.service';
 import { Programme } from './programme';
@@ -136,5 +137,92 @@ describe('Programme — sommaire des modules', () => {
     ]);
     expect(donnees).not.toHaveProperty('aggregateRating');
     expect(donnees).not.toHaveProperty('review');
+  });
+
+  /**
+   * Avec `<base href="/">`, un lien « #modules » menait à l'accueil. Le clic
+   * sur l'indicateur doit faire coulisser CETTE page jusqu'aux modules.
+   */
+  describe('indicateur « Les modules »', () => {
+    let defile: ReturnType<typeof vi.fn>;
+    let matchMediaOrigine: unknown;
+    let scrollIntoViewOrigine: PropertyDescriptor | undefined;
+
+    function preferer(reduit: boolean): void {
+      (globalThis as Record<string, unknown>)['matchMedia'] = (requete: string) => ({
+        matches: requete.includes('reduce') ? reduit : false,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      });
+    }
+
+    /** Clique, et dit si le lien a été empêché de suivre son adresse. */
+    function cliquer(touches: MouseEventInit = {}): boolean {
+      let empeche = false;
+      // Relevé après le composant, puis neutralisé : jsdom ne sait pas
+      // naviguer vers une autre page.
+      const temoin = (e: Event): void => {
+        empeche = e.defaultPrevented;
+        e.preventDefault();
+      };
+      document.addEventListener('click', temoin);
+      try {
+        page
+          .querySelector('.programme-suite')!
+          .dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ...touches }));
+      } finally {
+        document.removeEventListener('click', temoin);
+      }
+      return empeche;
+    }
+
+    beforeEach(() => {
+      matchMediaOrigine = globalThis.matchMedia;
+      scrollIntoViewOrigine = Object.getOwnPropertyDescriptor(
+        HTMLElement.prototype,
+        'scrollIntoView',
+      );
+      defile = vi.fn();
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+        value: defile,
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    afterEach(() => {
+      (globalThis as Record<string, unknown>)['matchMedia'] = matchMediaOrigine;
+      if (scrollIntoViewOrigine) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', scrollIntoViewOrigine);
+      } else {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView;
+      }
+    });
+
+    it('fait coulisser la page jusqu’au début des modules, sans la quitter', () => {
+      preferer(false);
+
+      expect(cliquer()).toBe(true);
+      expect(defile).toHaveBeenCalledExactlyOnceWith({ behavior: 'smooth', block: 'start' });
+      expect(defile.mock.contexts[0]).toBe(page.querySelector('.timeline'));
+    });
+
+    it('défile sans animation quand le système demande de les réduire', () => {
+      preferer(true);
+
+      cliquer();
+
+      expect(defile).toHaveBeenCalledExactlyOnceWith({ behavior: 'auto', block: 'start' });
+    });
+
+    it('laisse un clic avec une touche suivre le lien, qui vise cette page', () => {
+      preferer(false);
+
+      expect(cliquer({ ctrlKey: true })).toBe(false);
+      expect(defile).not.toHaveBeenCalled();
+      expect(page.querySelector('.programme-suite')!.getAttribute('href')).toBe(
+        'programme#modules',
+      );
+    });
   });
 });

@@ -51,8 +51,16 @@
   <!-- L'invitation à descendre, dans le langage de la frise : un trait aux
        couleurs du ruban, qui se trace vers le bas, là où les modules
        commencent. Redondante avec « Voir les modules », elle reste hors du
-       parcours au clavier et des lecteurs d'écran. -->
-  <a class="programme-suite" href="#modules" tabindex="-1" aria-hidden="true">
+       parcours au clavier et des lecteurs d'écran. Le clic fait coulisser la
+       page (`allerAuxModules`) ; l'adresse, relative à `<base href>`, sert au
+       clic molette et à l'ouverture dans un nouvel onglet. -->
+  <a
+    class="programme-suite"
+    href="programme#modules"
+    tabindex="-1"
+    aria-hidden="true"
+    (click)="allerAuxModules($event)"
+  >
     <span>Les modules</span>
     <span class="programme-suite-trait"></span>
   </a>

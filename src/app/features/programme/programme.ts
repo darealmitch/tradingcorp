@@ -118,6 +118,33 @@ export class Programme {
     this.redessinerRail?.();
   }
 
+  /**
+   * Fait coulisser la page jusqu'au début des modules.
+   *
+   * Un simple lien « #modules » ne suffit pas : avec `<base href="/">`, le
+   * navigateur le résout en « /#modules » et charge l'accueil. Ici, la page
+   * reste en place et défile jusqu'à la frise ; `scrollIntoView` respecte la
+   * marge réservée à l'en-tête fixe (`scroll-padding-top`), rien ne passe
+   * dessous.
+   *
+   * Défilement fluide, sauf si le système demande de réduire les animations :
+   * il est alors immédiat (`auto` suit la règle globale, qui ne rend le
+   * défilement fluide qu'en l'absence de cette préférence).
+   */
+  protected allerAuxModules(evenement: MouseEvent): void {
+    // Clic avec une touche (nouvel onglet, nouvelle fenêtre) : le navigateur
+    // suit l'adresse du lien, comme pour n'importe quel lien.
+    if (evenement.ctrlKey || evenement.metaKey || evenement.shiftKey || evenement.altKey) {
+      return;
+    }
+    evenement.preventDefault();
+    const reduit = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.timeline().nativeElement.scrollIntoView({
+      behavior: reduit ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  }
+
   /** Recalcule le tracé de la frise ; posé une fois la frise prête. */
   private redessinerRail?: () => void;
 
