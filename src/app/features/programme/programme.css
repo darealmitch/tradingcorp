@@ -3,6 +3,10 @@
 /* En-tête de page */
 .programme-hero {
   position: relative;
+  /* Colonne : l'invitation à descendre (`.programme-suite`) se place sous le
+     contenu, au bas de l'écran quand il reste de la place. */
+  display: flex;
+  flex-direction: column;
   /* Il occupe au moins tout le premier écran : la liste des modules
      n'apparaît qu'en faisant défiler. Son contenu reste à sa place. */
   min-height: 100vh;
@@ -68,6 +72,85 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 16px;
+}
+
+/*
+ * Invitation à descendre — le début de la frise : un libellé discret et un
+ * trait aux couleurs du ruban, qui se trace vers le bas comme le ruban le fait
+ * au défilement.
+ *
+ * Elle suit le contenu au lieu de se poser dessus : aucun chevauchement
+ * possible. `margin-top: auto` l'envoie au bas de l'écran quand il reste de la
+ * place ; et elle ne s'affiche que là où il en reste — sinon elle allongerait
+ * l'en-tête et ferait défiler pour rien (téléphones courants, écrans de moins
+ * de 800 px de haut, où le contenu remplit déjà l'écran).
+ */
+.programme-suite {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: auto auto 0;
+  padding-top: 28px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.programme-suite:hover {
+  color: var(--text);
+}
+
+@media (min-width: 761px) and (min-height: 800px), (min-height: 900px) {
+  .programme-suite {
+    display: flex;
+  }
+}
+
+.programme-suite-trait {
+  position: relative;
+  width: 2px;
+  height: clamp(40px, 8vh, 96px);
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.programme-suite-trait::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--cyan), var(--violet) 52%, var(--magenta));
+  transform-origin: top;
+  animation: programme-trace 2.6s var(--ease-out) infinite;
+}
+
+@keyframes programme-trace {
+  0% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+
+  55% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .programme-suite-trait::after {
+    animation: none;
+  }
 }
 
 /* ===== Timeline serpentine ===== */
