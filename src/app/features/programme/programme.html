@@ -1,7 +1,10 @@
 <app-particles />
 
+<!-- Même mécanique que l'accueil : cet en-tête occupe tout le premier écran,
+     ses éléments montent l'un après l'autre, et les modules n'apparaissent
+     qu'en descendant. -->
 <section class="programme-hero">
-  <div class="container">
+  <div class="container programme-hero-contenu">
     <span class="eyebrow">Le programme</span>
     <h1 class="programme-titre">
       La formation,<br />
@@ -47,6 +50,10 @@
       <a class="btn btn-ghost" href="#modules">Voir les modules</a>
     </div>
   </div>
+
+  <a class="programme-scroll" href="#modules" aria-label="Descendre vers les modules">
+    <span></span>
+  </a>
 </section>
 
 <section class="section programme-modules" id="modules">

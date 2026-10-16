@@ -1,11 +1,91 @@
 /* ===== Page « Programme » ===== */
 
-/* En-tête de page */
+/* En-tête de page — même mécanique que celui de l'accueil : il occupe tout
+   le premier écran, contenu centré, et la liste des modules n'apparaît qu'en
+   descendant. */
 .programme-hero {
   position: relative;
-  padding-block: 160px 40px;
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
   text-align: center;
   overflow: hidden;
+}
+
+.programme-hero-contenu {
+  padding-block: 130px 96px;
+}
+
+/* Les éléments montent l'un après l'autre, au même rythme que sur l'accueil. */
+.programme-hero-contenu > * {
+  animation: programme-monte 0.9s var(--ease-out) both;
+}
+
+.programme-hero-contenu > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.programme-hero-contenu > *:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.programme-hero-contenu > *:nth-child(4) {
+  animation-delay: 0.36s;
+}
+
+.programme-hero-contenu > *:nth-child(5) {
+  animation-delay: 0.48s;
+}
+
+/* L'invitation à descendre, la même que sur l'accueil. */
+.programme-scroll {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  justify-content: center;
+  width: 28px;
+  height: 46px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 999px;
+}
+
+.programme-scroll span {
+  width: 4px;
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--muted);
+  animation: programme-defile 2s ease-in-out infinite;
+}
+
+@keyframes programme-monte {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+
+@keyframes programme-defile {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  55% {
+    transform: translateY(14px);
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .programme-hero-contenu > *,
+  .programme-scroll span {
+    animation: none;
+  }
 }
 
 .programme-hero::before {
@@ -343,8 +423,13 @@
 /* ===== Responsive ===== */
 
 @media (max-width: 760px) {
-  .programme-hero {
-    padding-top: 130px;
+  .programme-hero-contenu {
+    padding-block: 104px 64px;
+  }
+
+  /* Comme sur l'accueil : sur téléphone, on descend sans y être invité. */
+  .programme-scroll {
+    display: none;
   }
 
   /* La timeline passe en une colonne : numéro au-dessus de la carte */
