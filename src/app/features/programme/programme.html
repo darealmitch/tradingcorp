@@ -1,24 +1,19 @@
 <app-particles />
 
-<!-- Le premier écran est celui de l'accueil : même disposition, même fond
-     animé, mêmes animations (feuille partagée `shared/premier-ecran.css`). Il
-     occupe tout l'écran ; la liste des modules n'apparaît qu'en descendant. -->
-<section class="hero">
-  <app-fond-courbes />
-
-  <div class="container hero-content">
-    <p class="hero-badge">Le programme</p>
-    <h1 class="hero-title">
+<section class="programme-hero">
+  <div class="container">
+    <span class="eyebrow">Le programme</span>
+    <h1 class="programme-titre">
       La formation,<br />
       <span class="text-gradient">module par module</span>
     </h1>
-    <p class="hero-lead">
+    <p class="programme-lead">
       Du mental à la finance de marché&nbsp;: un parcours pensé pour les débutants, à suivre dans
       l'ordre, chaque module s'appuyant sur le précédent.
     </p>
 
     @if (vitrine.vitrine(); as v) {
-      <ul class="hero-faits" aria-label="La formation en chiffres">
+      <ul class="programme-faits" aria-label="La formation en chiffres">
         <li>
           <strong>{{ v.modules }}</strong> modules
         </li>
@@ -39,7 +34,7 @@
       </ul>
     }
 
-    <div class="hero-actions">
+    <div class="programme-actions">
       @if (vitrine.nombreOffertes() > 0) {
         <a class="btn btn-primary" routerLink="/inscription" appMesureClic="programme-hero"
           >Commencer gratuitement</a
@@ -51,21 +46,7 @@
       }
       <a class="btn btn-ghost" href="#modules">Voir les modules</a>
     </div>
-
-    <p class="hero-note">
-      @if (vitrine.nombreOffertes(); as offertes) {
-        <span
-          >{{ offertes }} {{ offertes > 1 ? 'leçons offertes' : 'leçon offerte' }}, sans carte
-          bancaire.</span
-        >
-      }
-      <a routerLink="/connexion">Déjà élève&nbsp;? Se connecter</a>
-    </p>
   </div>
-
-  <a class="hero-scroll" href="#modules" aria-label="Descendre vers les modules">
-    <span></span>
-  </a>
 </section>
 
 <section class="section programme-modules" id="modules">

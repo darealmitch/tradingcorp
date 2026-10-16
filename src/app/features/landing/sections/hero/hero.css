@@ -1,27 +1,33 @@
-/*
- * Premier écran des pages de vente — l'accueil et la page Programme.
- *
- * Une seule feuille pour les deux : ils ont la même disposition (contenu
- * aligné à gauche dans 980 px, centré en hauteur), le même fond animé
- * (`app-fond-courbes`) et la même montée des éléments. Recopiée, l'une
- * aurait fini par diverger de l'autre.
- */
-
-/* Il occupe tout le premier écran : rien de la suite n'y apparaît. */
 .hero {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 100vh;
-  min-height: 100svh;
+  /* 60px = hauteur du ticker crypto : la bande reste visible dès l'arrivée,
+     collée au bas du premier écran. */
+  min-height: calc(100vh - 60px);
+  min-height: calc(100svh - 60px);
   overflow: hidden;
 }
 
-/* Sur l'accueil, 60px = hauteur du ticker crypto : la bande reste visible
-   dès l'arrivée, collée au bas du premier écran. */
-.hero-avec-bandeau {
-  min-height: calc(100vh - 60px);
-  min-height: calc(100svh - 60px);
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 18% 30%, rgba(56, 225, 255, 0.1), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 85% 65%, rgba(225, 77, 255, 0.09), transparent 70%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 55%, transparent),
+      color-mix(in srgb, var(--bg) 25%, transparent) 45%,
+      var(--bg)
+    );
 }
 
 .hero-content {

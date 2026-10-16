@@ -17,7 +17,6 @@ import { compte, dureeAnnoncee, dureeCourte } from '../../core/commerce/vitrine.
 import { VitrineService } from '../../core/commerce/vitrine.service';
 import { exposerFormation } from '../../core/seo/donnees-structurees';
 import { MesureClic } from '../../shared/mesure-clic';
-import { FondCourbes } from '../../shared/fond-courbes';
 import { Particles } from '../../shared/particles';
 import { Reveal } from '../../shared/reveal';
 import { BarreAchat } from '../../shared/ui/barre-achat';
@@ -57,9 +56,8 @@ const NATURES: Record<string, string> = { video: 'Vidéo', quiz: 'Quiz', article
 @Component({
   selector: 'app-programme',
   templateUrl: './programme.html',
-  // Le premier écran est celui de l'accueil, avec sa feuille de style.
-  styleUrls: ['../../shared/premier-ecran.css', './programme.css'],
-  imports: [RouterLink, Particles, FondCourbes, Reveal, BarreAchat, Offre, Faq, MesureClic],
+  styleUrl: './programme.css',
+  imports: [RouterLink, Particles, Reveal, BarreAchat, Offre, Faq, MesureClic],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Programme {

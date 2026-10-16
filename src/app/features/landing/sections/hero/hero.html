@@ -1,7 +1,6 @@
-<!-- `hero-avec-bandeau` : le bandeau des cours crypto suit, et reste visible
-     en bas du premier écran. -->
-<section class="hero hero-avec-bandeau" id="accueil">
-  <app-fond-courbes />
+<section class="hero" id="accueil">
+  <canvas #bg class="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-veil" aria-hidden="true"></div>
 
   <div class="container hero-content">
     <p class="hero-badge">Le Trading pour tous</p>
